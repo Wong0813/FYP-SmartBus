@@ -30,18 +30,22 @@ public final class ItemFleetCardBinding implements ViewBinding {
   public final TextView tvBusName;
 
   @NonNull
+  public final TextView tvBusOrder;
+
+  @NonNull
   public final TextView tvBusPlate;
 
   @NonNull
   public final TextView tvBusRoute;
 
   private ItemFleetCardBinding(@NonNull LinearLayout rootView, @NonNull ImageButton btnDeleteBus,
-      @NonNull View statusDot, @NonNull TextView tvBusName, @NonNull TextView tvBusPlate,
-      @NonNull TextView tvBusRoute) {
+      @NonNull View statusDot, @NonNull TextView tvBusName, @NonNull TextView tvBusOrder,
+      @NonNull TextView tvBusPlate, @NonNull TextView tvBusRoute) {
     this.rootView = rootView;
     this.btnDeleteBus = btnDeleteBus;
     this.statusDot = statusDot;
     this.tvBusName = tvBusName;
+    this.tvBusOrder = tvBusOrder;
     this.tvBusPlate = tvBusPlate;
     this.tvBusRoute = tvBusRoute;
   }
@@ -91,6 +95,12 @@ public final class ItemFleetCardBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.tvBusOrder;
+      TextView tvBusOrder = ViewBindings.findChildViewById(rootView, id);
+      if (tvBusOrder == null) {
+        break missingId;
+      }
+
       id = R.id.tvBusPlate;
       TextView tvBusPlate = ViewBindings.findChildViewById(rootView, id);
       if (tvBusPlate == null) {
@@ -104,7 +114,7 @@ public final class ItemFleetCardBinding implements ViewBinding {
       }
 
       return new ItemFleetCardBinding((LinearLayout) rootView, btnDeleteBus, statusDot, tvBusName,
-          tvBusPlate, tvBusRoute);
+          tvBusOrder, tvBusPlate, tvBusRoute);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

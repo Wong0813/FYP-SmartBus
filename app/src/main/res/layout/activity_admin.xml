@@ -6,42 +6,72 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Main content -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="@color/bg_screen">
+        android:background="@color/bg_screen"
+        android:orientation="vertical">
 
-        <!-- Top bar -->
+        <!-- Admin toolbar -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_admin_toolbar"
+            android:elevation="4dp"
             android:gravity="center_vertical"
+            android:minHeight="60dp"
+            android:orientation="horizontal"
             android:paddingHorizontal="16dp"
-            android:background="@color/card_bg"
-            android:elevation="2dp">
+            android:paddingTop="8dp"
+            android:paddingBottom="11dp">
 
             <ImageButton
                 android:id="@+id/btnDrawer"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_menu_sort_by_size"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_icon_btn_edit"
+                android:contentDescription="@string/navigation_drawer_open"
+                android:padding="10dp"
                 android:scaleType="centerInside"
-                android:padding="8dp"
-                android:contentDescription="@string/navigation_drawer_open" />
+                android:src="@android:drawable/ic_menu_sort_by_size"
+                app:tint="@color/crimson_primary" />
 
-            <TextView
-                android:id="@+id/tvToolbarTitle"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
                 android:layout_weight="1"
-                android:text="@string/nav_manage_accounts"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginStart="12dp" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvToolbarTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nav_dashboard"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:text="@string/admin_portal_subtitle"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_admin_badge"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:text="ADMIN"
+                android:textColor="@color/crimson_primary"
+                android:textSize="10sp"
+                android:textStyle="bold" />
 
         </LinearLayout>
 
@@ -52,15 +82,18 @@
 
     </LinearLayout>
 
-    <!-- Navigation Drawer -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navView"
-        android:layout_width="280dp"
+        android:layout_width="300dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:headerLayout="@layout/nav_header_drawer"
-        app:menu="@menu/drawer_admin"
-        app:itemTextColor="@color/text_primary"
-        app:itemIconTint="@color/crimson_primary" />
+        android:background="@color/card_bg"
+        app:headerLayout="@layout/nav_header_admin"
+        app:itemBackground="@drawable/bg_nav_item_admin"
+        app:itemHorizontalPadding="20dp"
+        app:itemIconPadding="16dp"
+        app:itemIconTint="@color/nav_item_admin_color"
+        app:itemTextColor="@color/nav_item_admin_color"
+        app:menu="@menu/drawer_admin" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

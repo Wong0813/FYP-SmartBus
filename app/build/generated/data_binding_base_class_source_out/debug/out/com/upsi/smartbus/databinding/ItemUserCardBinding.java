@@ -4,6 +4,7 @@ package com.upsi.smartbus.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -27,7 +28,16 @@ public final class ItemUserCardBinding implements ViewBinding {
   public final ImageButton btnEditUser;
 
   @NonNull
+  public final FrameLayout flAvatarContainer;
+
+  @NonNull
+  public final TextView tvAccountType;
+
+  @NonNull
   public final TextView tvAssignedRoute;
+
+  @NonNull
+  public final TextView tvDriverNumber;
 
   @NonNull
   public final TextView tvUserEmail;
@@ -42,13 +52,17 @@ public final class ItemUserCardBinding implements ViewBinding {
   public final TextView tvUserRole;
 
   private ItemUserCardBinding(@NonNull LinearLayout rootView, @NonNull ImageButton btnDeleteUser,
-      @NonNull ImageButton btnEditUser, @NonNull TextView tvAssignedRoute,
-      @NonNull TextView tvUserEmail, @NonNull TextView tvUserInitial, @NonNull TextView tvUserName,
-      @NonNull TextView tvUserRole) {
+      @NonNull ImageButton btnEditUser, @NonNull FrameLayout flAvatarContainer,
+      @NonNull TextView tvAccountType, @NonNull TextView tvAssignedRoute,
+      @NonNull TextView tvDriverNumber, @NonNull TextView tvUserEmail,
+      @NonNull TextView tvUserInitial, @NonNull TextView tvUserName, @NonNull TextView tvUserRole) {
     this.rootView = rootView;
     this.btnDeleteUser = btnDeleteUser;
     this.btnEditUser = btnEditUser;
+    this.flAvatarContainer = flAvatarContainer;
+    this.tvAccountType = tvAccountType;
     this.tvAssignedRoute = tvAssignedRoute;
+    this.tvDriverNumber = tvDriverNumber;
     this.tvUserEmail = tvUserEmail;
     this.tvUserInitial = tvUserInitial;
     this.tvUserName = tvUserName;
@@ -94,9 +108,27 @@ public final class ItemUserCardBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.flAvatarContainer;
+      FrameLayout flAvatarContainer = ViewBindings.findChildViewById(rootView, id);
+      if (flAvatarContainer == null) {
+        break missingId;
+      }
+
+      id = R.id.tvAccountType;
+      TextView tvAccountType = ViewBindings.findChildViewById(rootView, id);
+      if (tvAccountType == null) {
+        break missingId;
+      }
+
       id = R.id.tvAssignedRoute;
       TextView tvAssignedRoute = ViewBindings.findChildViewById(rootView, id);
       if (tvAssignedRoute == null) {
+        break missingId;
+      }
+
+      id = R.id.tvDriverNumber;
+      TextView tvDriverNumber = ViewBindings.findChildViewById(rootView, id);
+      if (tvDriverNumber == null) {
         break missingId;
       }
 
@@ -125,7 +157,8 @@ public final class ItemUserCardBinding implements ViewBinding {
       }
 
       return new ItemUserCardBinding((LinearLayout) rootView, btnDeleteUser, btnEditUser,
-          tvAssignedRoute, tvUserEmail, tvUserInitial, tvUserName, tvUserRole);
+          flAvatarContainer, tvAccountType, tvAssignedRoute, tvDriverNumber, tvUserEmail,
+          tvUserInitial, tvUserName, tvUserRole);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

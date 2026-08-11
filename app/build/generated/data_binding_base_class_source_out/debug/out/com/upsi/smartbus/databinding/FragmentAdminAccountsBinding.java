@@ -5,11 +5,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ScrollView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
@@ -20,10 +21,25 @@ import java.lang.String;
 
 public final class FragmentAdminAccountsBinding implements ViewBinding {
   @NonNull
-  private final ScrollView rootView;
+  private final CoordinatorLayout rootView;
 
   @NonNull
   public final TextView btnCreateAccount;
+
+  @NonNull
+  public final TextView btnSyncOfficial;
+
+  @NonNull
+  public final TextView btnToggleCreate;
+
+  @NonNull
+  public final LinearLayout chipAdmin;
+
+  @NonNull
+  public final LinearLayout chipDriver;
+
+  @NonNull
+  public final LinearLayout chipStudent;
 
   @NonNull
   public final EditText etAdminPassword;
@@ -32,38 +48,135 @@ public final class FragmentAdminAccountsBinding implements ViewBinding {
   public final EditText etAdminUsername;
 
   @NonNull
-  public final EditText etDriverRoute;
+  public final EditText etDriverBus;
+
+  @NonNull
+  public final EditText etDriverPlate;
+
+  @NonNull
+  public final EditText etFaculty;
 
   @NonNull
   public final EditText etName;
 
   @NonNull
+  public final EditText etProgram;
+
+  @NonNull
+  public final EditText etSearchUsers;
+
+  @NonNull
   public final EditText etStaffNo;
+
+  @NonNull
+  public final TextView filterAdmin;
+
+  @NonNull
+  public final TextView filterAll;
+
+  @NonNull
+  public final TextView filterDriver;
+
+  @NonNull
+  public final TextView filterStudent;
+
+  @NonNull
+  public final LinearLayout llCreateForm;
+
+  @NonNull
+  public final LinearLayout llDriverFields;
+
+  @NonNull
+  public final LinearLayout llStudentFields;
 
   @NonNull
   public final RecyclerView rvUsers;
 
   @NonNull
+  public final Spinner spinnerDriverRoute;
+
+  @NonNull
   public final Spinner spinnerRole;
 
-  private FragmentAdminAccountsBinding(@NonNull ScrollView rootView,
-      @NonNull TextView btnCreateAccount, @NonNull EditText etAdminPassword,
-      @NonNull EditText etAdminUsername, @NonNull EditText etDriverRoute, @NonNull EditText etName,
-      @NonNull EditText etStaffNo, @NonNull RecyclerView rvUsers, @NonNull Spinner spinnerRole) {
+  @NonNull
+  public final Spinner spinnerUserFilter;
+
+  @NonNull
+  public final TextView tvCountAdmin;
+
+  @NonNull
+  public final TextView tvCountDriver;
+
+  @NonNull
+  public final TextView tvCountStudent;
+
+  @NonNull
+  public final TextView tvEmptyUsers;
+
+  @NonNull
+  public final TextView tvSyncStatus;
+
+  @NonNull
+  public final TextView tvTotalAccounts;
+
+  @NonNull
+  public final TextView tvUserCount;
+
+  private FragmentAdminAccountsBinding(@NonNull CoordinatorLayout rootView,
+      @NonNull TextView btnCreateAccount, @NonNull TextView btnSyncOfficial,
+      @NonNull TextView btnToggleCreate, @NonNull LinearLayout chipAdmin,
+      @NonNull LinearLayout chipDriver, @NonNull LinearLayout chipStudent,
+      @NonNull EditText etAdminPassword, @NonNull EditText etAdminUsername,
+      @NonNull EditText etDriverBus, @NonNull EditText etDriverPlate, @NonNull EditText etFaculty,
+      @NonNull EditText etName, @NonNull EditText etProgram, @NonNull EditText etSearchUsers,
+      @NonNull EditText etStaffNo, @NonNull TextView filterAdmin, @NonNull TextView filterAll,
+      @NonNull TextView filterDriver, @NonNull TextView filterStudent,
+      @NonNull LinearLayout llCreateForm, @NonNull LinearLayout llDriverFields,
+      @NonNull LinearLayout llStudentFields, @NonNull RecyclerView rvUsers,
+      @NonNull Spinner spinnerDriverRoute, @NonNull Spinner spinnerRole,
+      @NonNull Spinner spinnerUserFilter, @NonNull TextView tvCountAdmin,
+      @NonNull TextView tvCountDriver, @NonNull TextView tvCountStudent,
+      @NonNull TextView tvEmptyUsers, @NonNull TextView tvSyncStatus,
+      @NonNull TextView tvTotalAccounts, @NonNull TextView tvUserCount) {
     this.rootView = rootView;
     this.btnCreateAccount = btnCreateAccount;
+    this.btnSyncOfficial = btnSyncOfficial;
+    this.btnToggleCreate = btnToggleCreate;
+    this.chipAdmin = chipAdmin;
+    this.chipDriver = chipDriver;
+    this.chipStudent = chipStudent;
     this.etAdminPassword = etAdminPassword;
     this.etAdminUsername = etAdminUsername;
-    this.etDriverRoute = etDriverRoute;
+    this.etDriverBus = etDriverBus;
+    this.etDriverPlate = etDriverPlate;
+    this.etFaculty = etFaculty;
     this.etName = etName;
+    this.etProgram = etProgram;
+    this.etSearchUsers = etSearchUsers;
     this.etStaffNo = etStaffNo;
+    this.filterAdmin = filterAdmin;
+    this.filterAll = filterAll;
+    this.filterDriver = filterDriver;
+    this.filterStudent = filterStudent;
+    this.llCreateForm = llCreateForm;
+    this.llDriverFields = llDriverFields;
+    this.llStudentFields = llStudentFields;
     this.rvUsers = rvUsers;
+    this.spinnerDriverRoute = spinnerDriverRoute;
     this.spinnerRole = spinnerRole;
+    this.spinnerUserFilter = spinnerUserFilter;
+    this.tvCountAdmin = tvCountAdmin;
+    this.tvCountDriver = tvCountDriver;
+    this.tvCountStudent = tvCountStudent;
+    this.tvEmptyUsers = tvEmptyUsers;
+    this.tvSyncStatus = tvSyncStatus;
+    this.tvTotalAccounts = tvTotalAccounts;
+    this.tvUserCount = tvUserCount;
   }
 
   @Override
   @NonNull
-  public ScrollView getRoot() {
+  public CoordinatorLayout getRoot() {
     return rootView;
   }
 
@@ -94,6 +207,36 @@ public final class FragmentAdminAccountsBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.btnSyncOfficial;
+      TextView btnSyncOfficial = ViewBindings.findChildViewById(rootView, id);
+      if (btnSyncOfficial == null) {
+        break missingId;
+      }
+
+      id = R.id.btnToggleCreate;
+      TextView btnToggleCreate = ViewBindings.findChildViewById(rootView, id);
+      if (btnToggleCreate == null) {
+        break missingId;
+      }
+
+      id = R.id.chipAdmin;
+      LinearLayout chipAdmin = ViewBindings.findChildViewById(rootView, id);
+      if (chipAdmin == null) {
+        break missingId;
+      }
+
+      id = R.id.chipDriver;
+      LinearLayout chipDriver = ViewBindings.findChildViewById(rootView, id);
+      if (chipDriver == null) {
+        break missingId;
+      }
+
+      id = R.id.chipStudent;
+      LinearLayout chipStudent = ViewBindings.findChildViewById(rootView, id);
+      if (chipStudent == null) {
+        break missingId;
+      }
+
       id = R.id.etAdminPassword;
       EditText etAdminPassword = ViewBindings.findChildViewById(rootView, id);
       if (etAdminPassword == null) {
@@ -106,9 +249,21 @@ public final class FragmentAdminAccountsBinding implements ViewBinding {
         break missingId;
       }
 
-      id = R.id.etDriverRoute;
-      EditText etDriverRoute = ViewBindings.findChildViewById(rootView, id);
-      if (etDriverRoute == null) {
+      id = R.id.etDriverBus;
+      EditText etDriverBus = ViewBindings.findChildViewById(rootView, id);
+      if (etDriverBus == null) {
+        break missingId;
+      }
+
+      id = R.id.etDriverPlate;
+      EditText etDriverPlate = ViewBindings.findChildViewById(rootView, id);
+      if (etDriverPlate == null) {
+        break missingId;
+      }
+
+      id = R.id.etFaculty;
+      EditText etFaculty = ViewBindings.findChildViewById(rootView, id);
+      if (etFaculty == null) {
         break missingId;
       }
 
@@ -118,9 +273,63 @@ public final class FragmentAdminAccountsBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.etProgram;
+      EditText etProgram = ViewBindings.findChildViewById(rootView, id);
+      if (etProgram == null) {
+        break missingId;
+      }
+
+      id = R.id.etSearchUsers;
+      EditText etSearchUsers = ViewBindings.findChildViewById(rootView, id);
+      if (etSearchUsers == null) {
+        break missingId;
+      }
+
       id = R.id.etStaffNo;
       EditText etStaffNo = ViewBindings.findChildViewById(rootView, id);
       if (etStaffNo == null) {
+        break missingId;
+      }
+
+      id = R.id.filterAdmin;
+      TextView filterAdmin = ViewBindings.findChildViewById(rootView, id);
+      if (filterAdmin == null) {
+        break missingId;
+      }
+
+      id = R.id.filterAll;
+      TextView filterAll = ViewBindings.findChildViewById(rootView, id);
+      if (filterAll == null) {
+        break missingId;
+      }
+
+      id = R.id.filterDriver;
+      TextView filterDriver = ViewBindings.findChildViewById(rootView, id);
+      if (filterDriver == null) {
+        break missingId;
+      }
+
+      id = R.id.filterStudent;
+      TextView filterStudent = ViewBindings.findChildViewById(rootView, id);
+      if (filterStudent == null) {
+        break missingId;
+      }
+
+      id = R.id.llCreateForm;
+      LinearLayout llCreateForm = ViewBindings.findChildViewById(rootView, id);
+      if (llCreateForm == null) {
+        break missingId;
+      }
+
+      id = R.id.llDriverFields;
+      LinearLayout llDriverFields = ViewBindings.findChildViewById(rootView, id);
+      if (llDriverFields == null) {
+        break missingId;
+      }
+
+      id = R.id.llStudentFields;
+      LinearLayout llStudentFields = ViewBindings.findChildViewById(rootView, id);
+      if (llStudentFields == null) {
         break missingId;
       }
 
@@ -130,14 +339,73 @@ public final class FragmentAdminAccountsBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.spinnerDriverRoute;
+      Spinner spinnerDriverRoute = ViewBindings.findChildViewById(rootView, id);
+      if (spinnerDriverRoute == null) {
+        break missingId;
+      }
+
       id = R.id.spinnerRole;
       Spinner spinnerRole = ViewBindings.findChildViewById(rootView, id);
       if (spinnerRole == null) {
         break missingId;
       }
 
-      return new FragmentAdminAccountsBinding((ScrollView) rootView, btnCreateAccount,
-          etAdminPassword, etAdminUsername, etDriverRoute, etName, etStaffNo, rvUsers, spinnerRole);
+      id = R.id.spinnerUserFilter;
+      Spinner spinnerUserFilter = ViewBindings.findChildViewById(rootView, id);
+      if (spinnerUserFilter == null) {
+        break missingId;
+      }
+
+      id = R.id.tvCountAdmin;
+      TextView tvCountAdmin = ViewBindings.findChildViewById(rootView, id);
+      if (tvCountAdmin == null) {
+        break missingId;
+      }
+
+      id = R.id.tvCountDriver;
+      TextView tvCountDriver = ViewBindings.findChildViewById(rootView, id);
+      if (tvCountDriver == null) {
+        break missingId;
+      }
+
+      id = R.id.tvCountStudent;
+      TextView tvCountStudent = ViewBindings.findChildViewById(rootView, id);
+      if (tvCountStudent == null) {
+        break missingId;
+      }
+
+      id = R.id.tvEmptyUsers;
+      TextView tvEmptyUsers = ViewBindings.findChildViewById(rootView, id);
+      if (tvEmptyUsers == null) {
+        break missingId;
+      }
+
+      id = R.id.tvSyncStatus;
+      TextView tvSyncStatus = ViewBindings.findChildViewById(rootView, id);
+      if (tvSyncStatus == null) {
+        break missingId;
+      }
+
+      id = R.id.tvTotalAccounts;
+      TextView tvTotalAccounts = ViewBindings.findChildViewById(rootView, id);
+      if (tvTotalAccounts == null) {
+        break missingId;
+      }
+
+      id = R.id.tvUserCount;
+      TextView tvUserCount = ViewBindings.findChildViewById(rootView, id);
+      if (tvUserCount == null) {
+        break missingId;
+      }
+
+      return new FragmentAdminAccountsBinding((CoordinatorLayout) rootView, btnCreateAccount,
+          btnSyncOfficial, btnToggleCreate, chipAdmin, chipDriver, chipStudent, etAdminPassword,
+          etAdminUsername, etDriverBus, etDriverPlate, etFaculty, etName, etProgram, etSearchUsers,
+          etStaffNo, filterAdmin, filterAll, filterDriver, filterStudent, llCreateForm,
+          llDriverFields, llStudentFields, rvUsers, spinnerDriverRoute, spinnerRole,
+          spinnerUserFilter, tvCountAdmin, tvCountDriver, tvCountStudent, tvEmptyUsers,
+          tvSyncStatus, tvTotalAccounts, tvUserCount);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

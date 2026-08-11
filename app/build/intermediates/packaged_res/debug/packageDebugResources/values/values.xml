@@ -43,6 +43,14 @@
     <string name="account_details">ACCOUNT DETAILS</string>
     <string name="active_portal_access">Active Portal Access</string>
     <string name="add_stop">Add Stop</string>
+    <string name="admin_console_label">Admin Console</string>
+    <string name="admin_existing_fleet">Active Fleet</string>
+    <string name="admin_existing_routes">Configured Routes</string>
+    <string name="admin_existing_users">Registered Users</string>
+    <string name="admin_fleet_overview">Fleet Overview</string>
+    <string name="admin_form_hint">Fill in the details below</string>
+    <string name="admin_portal_subtitle">SmartBus Management Portal</string>
+    <string name="admin_today_schedule">Today\'s Route Schedule</string>
     <string name="ai_eta">AI ETA</string>
     <string name="ai_predicted_eta">🤖 AI Predicted ETA</string>
     <string name="ai_prediction">AI Prediction</string>

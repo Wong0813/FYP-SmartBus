@@ -1,9 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/nav_dashboard" android:icon="@android:drawable/ic_menu_today" android:title="@string/nav_dashboard" />
-    <item android:id="@+id/nav_manage_accounts" android:icon="@android:drawable/ic_menu_my_calendar" android:title="@string/nav_manage_accounts" />
-    <item android:id="@+id/nav_bus_fleet" android:icon="@android:drawable/ic_menu_directions" android:title="@string/nav_bus_fleet" />
-    <item android:id="@+id/nav_route_config" android:icon="@android:drawable/ic_menu_mapmode" android:title="@string/nav_route_config" />
-    <item android:id="@+id/nav_profile" android:icon="@android:drawable/ic_menu_myplaces" android:title="@string/nav_profile" />
-    <item android:id="@+id/nav_sign_out" android:icon="@android:drawable/ic_lock_power_off" android:title="@string/nav_sign_out" />
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_dashboard"
+            android:icon="@drawable/ic_admin_dashboard"
+            android:title="@string/nav_dashboard" />
+        <item
+            android:id="@+id/nav_manage_accounts"
+            android:icon="@drawable/ic_admin_accounts"
+            android:title="@string/nav_manage_accounts" />
+        <item
+            android:id="@+id/nav_bus_fleet"
+            android:icon="@drawable/ic_admin_fleet"
+            android:title="@string/nav_bus_fleet" />
+        <item
+            android:id="@+id/nav_route_config"
+            android:icon="@drawable/ic_admin_routes"
+            android:title="@string/nav_route_config" />
+    </group>
+    <group android:id="@+id/nav_group_secondary">
+        <item
+            android:id="@+id/nav_profile"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="@string/nav_profile" />
+        <item
+            android:id="@+id/nav_sign_out"
+            android:icon="@android:drawable/ic_lock_power_off"
+            android:title="@string/nav_sign_out" />
+    </group>
 </menu>

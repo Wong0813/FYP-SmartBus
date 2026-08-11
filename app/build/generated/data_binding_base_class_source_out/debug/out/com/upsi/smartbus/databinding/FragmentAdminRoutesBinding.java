@@ -6,11 +6,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
@@ -21,7 +21,7 @@ import java.lang.String;
 
 public final class FragmentAdminRoutesBinding implements ViewBinding {
   @NonNull
-  private final ScrollView rootView;
+  private final NestedScrollView rootView;
 
   @NonNull
   public final TextView btnAddStop;
@@ -30,7 +30,16 @@ public final class FragmentAdminRoutesBinding implements ViewBinding {
   public final TextView btnSaveRoute;
 
   @NonNull
+  public final TextView btnSyncRoutes;
+
+  @NonNull
+  public final TextView btnToggleRouteForm;
+
+  @NonNull
   public final EditText etRouteName;
+
+  @NonNull
+  public final LinearLayout llRouteForm;
 
   @NonNull
   public final LinearLayout llStopChips;
@@ -41,22 +50,48 @@ public final class FragmentAdminRoutesBinding implements ViewBinding {
   @NonNull
   public final Spinner spinnerStops;
 
-  private FragmentAdminRoutesBinding(@NonNull ScrollView rootView, @NonNull TextView btnAddStop,
-      @NonNull TextView btnSaveRoute, @NonNull EditText etRouteName,
-      @NonNull LinearLayout llStopChips, @NonNull RecyclerView rvRoutes,
-      @NonNull Spinner spinnerStops) {
+  @NonNull
+  public final TextView tabAllRoutes;
+
+  @NonNull
+  public final TextView tabSaturday;
+
+  @NonNull
+  public final TextView tabWeekday;
+
+  @NonNull
+  public final TextView tvEmptyRoutes;
+
+  @NonNull
+  public final TextView tvRouteTotal;
+
+  private FragmentAdminRoutesBinding(@NonNull NestedScrollView rootView,
+      @NonNull TextView btnAddStop, @NonNull TextView btnSaveRoute, @NonNull TextView btnSyncRoutes,
+      @NonNull TextView btnToggleRouteForm, @NonNull EditText etRouteName,
+      @NonNull LinearLayout llRouteForm, @NonNull LinearLayout llStopChips,
+      @NonNull RecyclerView rvRoutes, @NonNull Spinner spinnerStops, @NonNull TextView tabAllRoutes,
+      @NonNull TextView tabSaturday, @NonNull TextView tabWeekday, @NonNull TextView tvEmptyRoutes,
+      @NonNull TextView tvRouteTotal) {
     this.rootView = rootView;
     this.btnAddStop = btnAddStop;
     this.btnSaveRoute = btnSaveRoute;
+    this.btnSyncRoutes = btnSyncRoutes;
+    this.btnToggleRouteForm = btnToggleRouteForm;
     this.etRouteName = etRouteName;
+    this.llRouteForm = llRouteForm;
     this.llStopChips = llStopChips;
     this.rvRoutes = rvRoutes;
     this.spinnerStops = spinnerStops;
+    this.tabAllRoutes = tabAllRoutes;
+    this.tabSaturday = tabSaturday;
+    this.tabWeekday = tabWeekday;
+    this.tvEmptyRoutes = tvEmptyRoutes;
+    this.tvRouteTotal = tvRouteTotal;
   }
 
   @Override
   @NonNull
-  public ScrollView getRoot() {
+  public NestedScrollView getRoot() {
     return rootView;
   }
 
@@ -93,9 +128,27 @@ public final class FragmentAdminRoutesBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.btnSyncRoutes;
+      TextView btnSyncRoutes = ViewBindings.findChildViewById(rootView, id);
+      if (btnSyncRoutes == null) {
+        break missingId;
+      }
+
+      id = R.id.btnToggleRouteForm;
+      TextView btnToggleRouteForm = ViewBindings.findChildViewById(rootView, id);
+      if (btnToggleRouteForm == null) {
+        break missingId;
+      }
+
       id = R.id.etRouteName;
       EditText etRouteName = ViewBindings.findChildViewById(rootView, id);
       if (etRouteName == null) {
+        break missingId;
+      }
+
+      id = R.id.llRouteForm;
+      LinearLayout llRouteForm = ViewBindings.findChildViewById(rootView, id);
+      if (llRouteForm == null) {
         break missingId;
       }
 
@@ -117,8 +170,39 @@ public final class FragmentAdminRoutesBinding implements ViewBinding {
         break missingId;
       }
 
-      return new FragmentAdminRoutesBinding((ScrollView) rootView, btnAddStop, btnSaveRoute,
-          etRouteName, llStopChips, rvRoutes, spinnerStops);
+      id = R.id.tabAllRoutes;
+      TextView tabAllRoutes = ViewBindings.findChildViewById(rootView, id);
+      if (tabAllRoutes == null) {
+        break missingId;
+      }
+
+      id = R.id.tabSaturday;
+      TextView tabSaturday = ViewBindings.findChildViewById(rootView, id);
+      if (tabSaturday == null) {
+        break missingId;
+      }
+
+      id = R.id.tabWeekday;
+      TextView tabWeekday = ViewBindings.findChildViewById(rootView, id);
+      if (tabWeekday == null) {
+        break missingId;
+      }
+
+      id = R.id.tvEmptyRoutes;
+      TextView tvEmptyRoutes = ViewBindings.findChildViewById(rootView, id);
+      if (tvEmptyRoutes == null) {
+        break missingId;
+      }
+
+      id = R.id.tvRouteTotal;
+      TextView tvRouteTotal = ViewBindings.findChildViewById(rootView, id);
+      if (tvRouteTotal == null) {
+        break missingId;
+      }
+
+      return new FragmentAdminRoutesBinding((NestedScrollView) rootView, btnAddStop, btnSaveRoute,
+          btnSyncRoutes, btnToggleRouteForm, etRouteName, llRouteForm, llStopChips, rvRoutes,
+          spinnerStops, tabAllRoutes, tabSaturday, tabWeekday, tvEmptyRoutes, tvRouteTotal);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

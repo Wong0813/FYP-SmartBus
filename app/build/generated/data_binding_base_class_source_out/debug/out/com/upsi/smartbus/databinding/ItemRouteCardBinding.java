@@ -27,16 +27,21 @@ public final class ItemRouteCardBinding implements ViewBinding {
   public final TextView tvRouteName;
 
   @NonNull
+  public final TextView tvRouteOrder;
+
+  @NonNull
   public final TextView tvShortName;
 
   @NonNull
   public final TextView tvStopChain;
 
   private ItemRouteCardBinding(@NonNull LinearLayout rootView, @NonNull ImageButton btnEditRoute,
-      @NonNull TextView tvRouteName, @NonNull TextView tvShortName, @NonNull TextView tvStopChain) {
+      @NonNull TextView tvRouteName, @NonNull TextView tvRouteOrder, @NonNull TextView tvShortName,
+      @NonNull TextView tvStopChain) {
     this.rootView = rootView;
     this.btnEditRoute = btnEditRoute;
     this.tvRouteName = tvRouteName;
+    this.tvRouteOrder = tvRouteOrder;
     this.tvShortName = tvShortName;
     this.tvStopChain = tvStopChain;
   }
@@ -80,6 +85,12 @@ public final class ItemRouteCardBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.tvRouteOrder;
+      TextView tvRouteOrder = ViewBindings.findChildViewById(rootView, id);
+      if (tvRouteOrder == null) {
+        break missingId;
+      }
+
       id = R.id.tvShortName;
       TextView tvShortName = ViewBindings.findChildViewById(rootView, id);
       if (tvShortName == null) {
@@ -93,7 +104,7 @@ public final class ItemRouteCardBinding implements ViewBinding {
       }
 
       return new ItemRouteCardBinding((LinearLayout) rootView, btnEditRoute, tvRouteName,
-          tvShortName, tvStopChain);
+          tvRouteOrder, tvShortName, tvStopChain);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

@@ -1,29 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    android:background="@drawable/bg_card"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/bg_form_card"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="12dp">
+    android:padding="14dp">
 
-    <!-- Bus icon -->
     <FrameLayout
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="@drawable/bg_route_chip">
+        android:layout_width="46dp"
+        android:layout_height="46dp"
+        android:background="@drawable/bg_admin_badge">
 
-        <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+        <TextView
+            android:id="@+id/tvBusOrder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:src="@android:drawable/ic_menu_directions"
-            android:contentDescription="Bus" />
+            android:text="#01"
+            android:textColor="@color/crimson_primary"
+            android:textSize="11sp"
+            android:textStyle="bold" />
 
     </FrameLayout>
 
-    <!-- Bus info -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -31,14 +33,29 @@
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvBusName"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Bus A"
-            android:textColor="@color/text_primary"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvBusName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Bus A"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <View
+                android:id="@+id/statusDot"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:background="@drawable/dot_green" />
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvBusPlate"
@@ -53,30 +70,26 @@
             android:id="@+id/tvBusRoute"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_role_badge"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="3dp"
             android:text="Route A"
             android:textColor="@color/crimson_primary"
-            android:textSize="11sp"
+            android:textSize="10sp"
             android:textStyle="bold" />
 
     </LinearLayout>
 
-    <!-- Status dot -->
-    <View
-        android:id="@+id/statusDot"
-        android:layout_width="10dp"
-        android:layout_height="10dp"
-        android:background="@drawable/dot_green" />
-
-    <!-- Delete button -->
     <ImageButton
         android:id="@+id/btnDeleteBus"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
         android:layout_marginStart="8dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@android:drawable/ic_menu_delete"
+        android:background="@drawable/bg_icon_btn_delete"
         android:contentDescription="Delete"
-        android:padding="6dp" />
+        android:padding="8dp"
+        android:src="@android:drawable/ic_menu_delete"
+        app:tint="@color/signout_text" />
 
 </LinearLayout>

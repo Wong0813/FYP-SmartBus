@@ -23,7 +23,7 @@
             android:value="AIzaSyDRVwaZBYeb9Fe7jcNQpVORBTCfWLxxylc" />
 
         <activity
-            android:name=".LoginActivity"
+            android:name="com.upsi.smartbus.feature.auth.LoginActivity"
             android:exported="true"
             android:theme="@style/Theme.SmartBus.Login">
             <intent-filter>
@@ -32,14 +32,14 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".MainActivity" android:exported="false" />
-        <activity android:name=".StudentActivity" android:exported="false" />
-        <activity android:name=".DriverActivity" android:exported="false" />
-        <activity android:name=".AdminActivity" android:exported="false" />
-        <activity android:name=".BusDetailActivity" android:exported="false" />
-        <activity android:name=".ProfileActivity" android:exported="false" />
+        <activity android:name="com.upsi.smartbus.feature.MainActivity" android:exported="false" />
+        <activity android:name="com.upsi.smartbus.feature.student.StudentActivity" android:exported="false" />
+        <activity android:name="com.upsi.smartbus.feature.driver.DriverActivity" android:exported="false" />
+        <activity android:name="com.upsi.smartbus.feature.admin.AdminActivity" android:exported="false" />
+        <activity android:name="com.upsi.smartbus.feature.student.buses.BusDetailActivity" android:exported="false" />
+        <activity android:name="com.upsi.smartbus.feature.profile.ProfileActivity" android:exported="false" />
 
-        <service android:name=".service.GpsTrackingService" android:exported="false" />
+        <service android:name="com.upsi.smartbus.core.service.GpsTrackingService" android:exported="false" />
 
     </application>
 </manifest>

@@ -216,14 +216,14 @@ ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main
 		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:23:13-68
 	android:name
 		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:22:13-58
-activity#com.upsi.smartbus.LoginActivity
+activity#com.upsi.smartbus.feature.auth.LoginActivity
 ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:25:9-33:20
 	android:exported
 		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:27:13-36
 	android:theme
 		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:28:13-56
 	android:name
-		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:26:13-42
+		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:26:13-72
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
 ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:29:13-32:29
 action#android.intent.action.MAIN
@@ -234,48 +234,48 @@ category#android.intent.category.LAUNCHER
 ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:31:17-77
 	android:name
 		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:31:27-74
-activity#com.upsi.smartbus.MainActivity
-ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:35:9-75
+activity#com.upsi.smartbus.feature.MainActivity
+ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:35:9-100
 	android:exported
-		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:35:48-72
+		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:35:73-97
 	android:name
-		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:35:19-47
-activity#com.upsi.smartbus.StudentActivity
-ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:36:9-78
+		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:35:19-72
+activity#com.upsi.smartbus.feature.student.StudentActivity
+ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:36:9-111
 	android:exported
-		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:36:51-75
+		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:36:84-108
 	android:name
-		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:36:19-50
-activity#com.upsi.smartbus.DriverActivity
-ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:37:9-77
+		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:36:19-83
+activity#com.upsi.smartbus.feature.driver.DriverActivity
+ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:37:9-109
 	android:exported
-		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:37:50-74
+		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:37:82-106
 	android:name
-		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:37:19-49
-activity#com.upsi.smartbus.AdminActivity
-ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:38:9-76
+		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:37:19-81
+activity#com.upsi.smartbus.feature.admin.AdminActivity
+ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:38:9-107
 	android:exported
-		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:38:49-73
+		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:38:80-104
 	android:name
-		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:38:19-48
-activity#com.upsi.smartbus.BusDetailActivity
-ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:39:9-80
+		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:38:19-79
+activity#com.upsi.smartbus.feature.student.buses.BusDetailActivity
+ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:39:9-119
 	android:exported
-		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:39:53-77
+		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:39:92-116
 	android:name
-		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:39:19-52
-activity#com.upsi.smartbus.ProfileActivity
-ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:40:9-78
+		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:39:19-91
+activity#com.upsi.smartbus.feature.profile.ProfileActivity
+ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:40:9-111
 	android:exported
-		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:40:51-75
+		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:40:84-108
 	android:name
-		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:40:19-50
-service#com.upsi.smartbus.service.GpsTrackingService
-ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:42:9-88
+		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:40:19-83
+service#com.upsi.smartbus.core.service.GpsTrackingService
+ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:42:9-110
 	android:exported
-		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:42:61-85
+		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:42:83-107
 	android:name
-		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:42:18-60
+		ADDED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml:42:18-82
 uses-sdk
 INJECTED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\wxuef\Downloads\login but problem\smartbus-upsi\app\src\main\AndroidManifest.xml

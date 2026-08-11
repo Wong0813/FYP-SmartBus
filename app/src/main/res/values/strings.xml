@@ -81,6 +81,14 @@
     <string name="speed_unit">km/h</string>
 
     <!-- Admin -->
+    <string name="admin_console_label">Admin Console</string>
+    <string name="admin_portal_subtitle">SmartBus Management Portal</string>
+    <string name="admin_fleet_overview">Fleet Overview</string>
+    <string name="admin_today_schedule">Today\'s Route Schedule</string>
+    <string name="admin_existing_users">Registered Users</string>
+    <string name="admin_existing_fleet">Active Fleet</string>
+    <string name="admin_existing_routes">Configured Routes</string>
+    <string name="admin_form_hint">Fill in the details below</string>
     <string name="create_account">Create Account</string>
     <string name="name_label">Full Name</string>
     <string name="username_label">Username</string>
