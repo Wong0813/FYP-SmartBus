@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_marginBottom="6dp"
+    android:background="@drawable/bg_schedule_card_active"
+    android:clipChildren="false">
+
+    <!-- Left status color bar -->
+    <View
+        android:id="@+id/statusBar"
+        android:layout_width="4dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_status_bar_green" />
+
+    <!-- Content area -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <!-- Top row: route name + status dot -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvScheduleRouteName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary" />
+
+            <View
+                android:id="@+id/statusDot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/dot_green" />
+        </LinearLayout>
+
+        <!-- Route description -->
+        <TextView
+            android:id="@+id/tvScheduleRouteDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="11sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="2dp" />
+
+        <!-- Divider line -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/border_light"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp" />
+
+        <!-- Driver name -->
+        <TextView
+            android:id="@+id/tvScheduleDriverName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="11sp"
+            android:textColor="@color/text_primary"
+            android:text="🚌 Driver Name" />
+
+        <!-- Bus ID + Plate -->
+        <TextView
+            android:id="@+id/tvScheduleBusInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="10sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="2dp" />
+
+        <!-- Stop chain -->
+        <TextView
+            android:id="@+id/tvScheduleStops"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="9sp"
+            android:textColor="@color/crimson_primary"
+            android:layout_marginTop="4dp"
+            android:singleLine="true"
+            android:ellipsize="end" />
+
+    </LinearLayout>
+</LinearLayout>

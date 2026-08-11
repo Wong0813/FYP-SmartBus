@@ -1,0 +1,119 @@
+<resources>
+    <string name="app_name">SmartBus</string>
+    <string name="app_title">SMARTBUS</string>
+    <string name="app_subtitle">AI ARRIVAL PREDICTION</string>
+
+    <!-- Login -->
+    <string name="welcome_back">Welcome Back</string>
+    <string name="sign_in_subtitle">Sign in to access SmartBus</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_password">Password</string>
+    <string name="btn_sign_in">Sign In</string>
+    <string name="how_to_get_access">How to get access?</string>
+    <string name="login_error_empty">Please enter your credentials</string>
+    <string name="login_error_failed">Login failed. Please check your credentials.</string>
+    <string name="demo_title">Demo Account Credentials</string>
+    <string name="demo_student">Student: student@upsi.edu.my / student123</string>
+    <string name="demo_driver">Driver: driver@upsi.edu.my / driver123</string>
+    <string name="demo_admin">Admin: admin@upsi.edu.my / admin123</string>
+
+    <!-- Navigation Drawer -->
+    <string name="nav_home_map">Home Map</string>
+    <string name="nav_active_buses">Active Buses</string>
+    <string name="nav_route_schedules">Route Schedules</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_control_desk">Control Desk</string>
+    <string name="nav_dashboard">Schedule Dashboard</string>
+    <string name="nav_manage_accounts">Manage Accounts</string>
+    <string name="nav_bus_fleet">Bus Fleet</string>
+    <string name="nav_route_config">Route Config</string>
+    <string name="nav_sign_out">Sign Out</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- Student Map -->
+    <string name="weather_sunny">☀️ SUNNY</string>
+    <string name="next_stop_label">NEXT STOP:</string>
+    <string name="eta_label">ETA:</string>
+    <string name="ai_prediction">AI Prediction</string>
+    <string name="speed_format">%d km/h</string>
+    <string name="eta_format">%dm</string>
+
+    <!-- Active Buses -->
+    <string name="search_buses">Search buses…</string>
+    <string name="env_banner">Environment: Weather: SUNNY | Traffic: NORMAL</string>
+    <string name="ai_eta">AI ETA</string>
+    <string name="start_label">Start:</string>
+
+    <!-- Bus Detail -->
+    <string name="route_info">Route Info</string>
+    <string name="live_status">Live Status</string>
+    <string name="eta_comparison">ETA Comparison</string>
+    <string name="standard_eta">Standard ETA</string>
+    <string name="ai_predicted_eta">🤖 AI Predicted ETA</string>
+    <string name="data_feeds">Data Feeds</string>
+    <string name="speed">Speed</string>
+    <string name="distance_left">Distance Left</string>
+
+    <!-- Route Schedules -->
+    <string name="tab_weekdays">Weekdays (Mon-Fri)</string>
+    <string name="tab_saturdays">Saturdays</string>
+    <string name="abbreviation_legend">Abbreviation Legend</string>
+
+    <!-- Profile -->
+    <string name="active_portal_access">Active Portal Access</string>
+    <string name="account_details">ACCOUNT DETAILS</string>
+    <string name="campus_info">CAMPUS &amp; SYSTEM INFO</string>
+    <string name="campus_region">Tanjong Malim, Perak</string>
+    <string name="system_health">System Health</string>
+    <string name="system_online">Online</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="fleet_count_format">%d Buses Tracked</string>
+
+    <!-- Driver -->
+    <string name="welcome_driver">Welcome, %s</string>
+    <string name="duty_status">Duty Status</string>
+    <string name="working">Working</string>
+    <string name="resting">Resting</string>
+    <string name="off_duty">Off Duty</string>
+    <string name="gps_speed">GPS Speed</string>
+    <string name="uplink_terminal">Uplink Terminal Log</string>
+    <string name="speed_unit">km/h</string>
+
+    <!-- Admin -->
+    <string name="create_account">Create Account</string>
+    <string name="name_label">Full Name</string>
+    <string name="username_label">Username</string>
+    <string name="staff_no_label">Staff No.</string>
+    <string name="password_label">Password</string>
+    <string name="role_label">Role</string>
+    <string name="driver_route_label">Driver Route</string>
+    <string name="register_bus">Register Bus</string>
+    <string name="bus_id_label">Bus ID</string>
+    <string name="bus_name_label">Bus Name</string>
+    <string name="license_plate_label">License Plate</string>
+    <string name="route_selection_label">Route</string>
+    <string name="add_stop">Add Stop</string>
+    <string name="save_route">Save Route</string>
+
+    <!-- Stop Abbreviations -->
+    <string name="stop_kab">KAB</string>
+    <string name="stop_khar">KHAR</string>
+    <string name="stop_kuo">KUO</string>
+    <string name="stop_ss">SS</string>
+    <string name="stop_ka">KA</string>
+    <string name="stop_dkp">DKP</string>
+    <string name="stop_pt">PT</string>
+    <string name="stop_tb">TB</string>
+    <string name="stop_pc">PC</string>
+
+    <string name="stop_kab_full">Kolej Aminuddin Baki</string>
+    <string name="stop_khar_full">Kolej Harun Aminurrashid</string>
+    <string name="stop_kuo_full">Kolej Ungku Omar</string>
+    <string name="stop_ss_full">Scholar Suites</string>
+    <string name="stop_ka_full">Kompleks Akademik</string>
+    <string name="stop_dkp_full">Dewan Kuliah Pusat</string>
+    <string name="stop_pt_full">Pintu Timur</string>
+    <string name="stop_tb_full">Taman Bahtera (Artisan)</string>
+    <string name="stop_pc_full">Proton City</string>
+</resources>

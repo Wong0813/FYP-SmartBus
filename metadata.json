@@ -1,0 +1,6 @@
+{
+  "name": "SmartBus UPSI",
+  "description": "SmartBus is a campus bus tracking and AI-based prediction system for UPSI, featuring real-time tracking, ETA calculation, and driver GPS sharing.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": []
+}

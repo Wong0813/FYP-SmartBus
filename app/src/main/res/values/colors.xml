@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary / Theme -->
+    <color name="crimson_primary">#FF990000</color>
+    <color name="crimson_dark">#FF6D0000</color>
+    <color name="crimson_light">#FFFCE4EC</color>
+    <color name="crimson_alpha_06">#0F990000</color>
+
+    <!-- Secondary / Accent -->
+    <color name="amber_accent">#FFFFB300</color>
+    <color name="amber_banner_bg">#FFFFFBEB</color>
+
+    <!-- Backgrounds -->
+    <color name="bg_screen">#FFF5F6FA</color>
+    <color name="card_bg">#FFFFFFFF</color>
+    <color name="input_fill">#FFF9FAFB</color>
+
+    <!-- Text -->
+    <color name="text_primary">#FF1A1A2E</color>
+    <color name="text_secondary">#FF6B7280</color>
+    <color name="text_white">#FFFFFFFF</color>
+    <color name="text_hint">#FF9CA3AF</color>
+
+    <!-- Status Colors -->
+    <color name="status_moving">#FF10B981</color>
+    <color name="status_moving_tint">#FFE6F4EA</color>
+    <color name="status_resting">#FFF97316</color>
+    <color name="status_resting_tint">#FFFFF3E0</color>
+    <color name="status_offline">#FF9CA3AF</color>
+    <color name="status_offline_tint">#FFF3F4F6</color>
+
+    <!-- Borders & Dividers -->
+    <color name="border_light">#FFE5E7EB</color>
+    <color name="divider">#FFF1F5F9</color>
+
+    <!-- Sign Out Button -->
+    <color name="signout_bg">#FFFEF2F2</color>
+    <color name="signout_text">#FFDC2626</color>
+
+    <!-- Error -->
+    <color name="error_red">#FFEF4444</color>
+    <color name="error_bg">#FFFEE2E2</color>
+    <color name="error_border">#FFFCA5A5</color>
+
+    <!-- Map Colors -->
+    <color name="map_grass">#FFE8F5E9</color>
+    <color name="map_lake">#FFB3E5FC</color>
+    <color name="map_road_inactive">#FFCFD8DC</color>
+    <color name="map_stop_border">#FF2196F3</color>
+
+    <!-- Terminal -->
+    <color name="terminal_bg">#FF1A1A2E</color>
+    <color name="terminal_text">#FF10B981</color>
+
+    <!-- Active Portal -->
+    <color name="active_portal_bg">#FFE6F4EA</color>
+    <color name="active_portal_text">#FF10B981</color>
+
+    <!-- Capsule semi-transparent white -->
+    <color name="white_alpha_20">#33FFFFFF</color>
+    <color name="white_alpha_80">#CCFFFFFF</color>
+
+    <!-- Legacy (kept for ic_launcher) -->
+    <color name="ic_launcher_background">#FF990000</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

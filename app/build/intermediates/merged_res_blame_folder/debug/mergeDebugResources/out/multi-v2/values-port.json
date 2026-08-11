@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.upsi.smartbus.app-mergeDebugResources-34:/values-port/values-port.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\wxuef\\.gradle\\caches\\9.0.0\\transforms\\c3f3c622c79b53df1fc11173b8c204fe\\transformed\\appcompat-1.6.1\\res\\values-port\\values-port.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "55",
+                        "endOffsets": "106"
+                    }
+                }
+            ]
+        }
+    ]
+}

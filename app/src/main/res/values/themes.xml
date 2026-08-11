@@ -1,0 +1,36 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.SmartBus" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/crimson_primary</item>
+        <item name="colorPrimaryDark">@color/crimson_dark</item>
+        <item name="colorAccent">@color/amber_accent</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:colorBackground">@color/bg_screen</item>
+        <item name="android:windowBackground">@color/bg_screen</item>
+        <item name="android:statusBarColor">@color/bg_screen</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="Theme.SmartBus.Login" parent="Theme.SmartBus">
+        <item name="android:statusBarColor">@color/crimson_primary</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowBackground">@color/bg_screen</item>
+    </style>
+
+    <style name="Theme.SmartBus.TextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundColor">@color/input_fill</item>
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+        <item name="boxStrokeColor">@color/border_light</item>
+    </style>
+
+    <style name="SmartBus.TabLayout" parent="Widget.Material3.TabLayout">
+        <item name="tabIndicatorColor">@color/crimson_primary</item>
+        <item name="tabSelectedTextColor">@color/crimson_primary</item>
+        <item name="tabTextColor">@color/text_secondary</item>
+    </style>
+
+</resources>

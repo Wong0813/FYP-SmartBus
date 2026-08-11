@@ -1,0 +1,126 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function getUserData(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && getUserData(request.auth.uid).role == 'admin';
+    }
+
+    function isDriver() {
+      return isSignedIn() && getUserData(request.auth.uid).role == 'driver';
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Validation Helpers ---
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'name', 'email', 'role', 'createdAt']) &&
+             data.keys().size() == 5 &&
+             data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.email is string && data.email.size() <= 100 &&
+             data.role in ['student', 'driver', 'admin'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidBus(data) {
+      return data.keys().hasAll(['id', 'name', 'status', 'driverId', 'currentLocation', 'speed', 'nextStop', 'lastUpdate']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.status in ['moving', 'arrived', 'delayed', 'inactive'] &&
+             data.driverId is string &&
+             data.currentLocation is map &&
+             data.currentLocation.lat is number && data.currentLocation.lng is number &&
+             data.speed is number && data.speed >= 0 && data.speed <= 150 &&
+             data.nextStop is string &&
+             data.lastUpdate is timestamp;
+    }
+
+    // --- Collections ---
+
+    // 1. Users Collection
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      
+      // Only Admin can create users (as per prompt: Admin creates accounts)
+      allow create: if isAdmin() && isValidUser(incoming()) && userId == incoming().id;
+      
+      // Users can update their own name, but not role or email (managed by Admin)
+      allow update: if (
+        isAdmin() || 
+        (isSignedIn() && request.auth.uid == userId && 
+         incoming().diff(existing()).affectedKeys().hasOnly(['name']) &&
+         isValidUser(incoming()))
+      );
+      
+      allow delete: if isAdmin();
+    }
+
+    // 2. Buses Collection
+    match /buses/{busId} {
+      allow read: if isSignedIn();
+      
+      // Admin creates buses
+      allow create: if isAdmin() && isValidBus(incoming()) && busId == incoming().id;
+      
+      // Driver updates their own bus tracking data
+      // Admin can update anything
+      allow update: if (
+        isAdmin() || 
+        (isSignedIn() && isDriver() && existing().driverId == request.auth.uid && 
+         incoming().diff(existing()).affectedKeys().hasOnly(['currentLocation', 'speed', 'nextStop', 'status', 'lastUpdate']) &&
+         isValidBus(incoming()) &&
+         incoming().lastUpdate == request.time)
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // 3. Routes Collection
+    match /routes/{routeId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // 4. Stops Collection
+    match /stops/{stopId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // 5. AI History (for tracking predictions)
+    match /ai_history/{historyId} {
+      allow read: if isSignedIn();
+      allow create: if (isAdmin() || isDriver()) && incoming().busId != null;
+    }
+  }
+}

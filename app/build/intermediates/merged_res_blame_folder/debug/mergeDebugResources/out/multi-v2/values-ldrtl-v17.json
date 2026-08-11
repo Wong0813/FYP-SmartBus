@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.upsi.smartbus.app-mergeDebugResources-34:/values-ldrtl-v17/values-ldrtl-v17.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\wxuef\\.gradle\\caches\\9.0.0\\transforms\\45bc03c16cd1f1d50a0697df302df1ea\\transformed\\material-1.9.0\\res\\values-ldrtl-v17\\values-ldrtl-v17.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,191",
+                        "endColumns": "135,140",
+                        "endOffsets": "186,327"
+                    }
+                }
+            ]
+        }
+    ]
+}

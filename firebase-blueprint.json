@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a user in the SmartBus system.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "driver", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "email", "role"]
+    },
+    "Bus": {
+      "title": "Bus",
+      "description": "Represents a bus being tracked in real-time.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "status": { "type": "string", "enum": ["moving", "arrived", "delayed", "inactive"] },
+        "driverId": { "type": "string" },
+        "currentLocation": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        },
+        "speed": { "type": "number" },
+        "nextStop": { "type": "string" },
+        "lastUpdate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "status"]
+    },
+    "Route": {
+      "title": "Route",
+      "description": "Represents a bus route.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "stops": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and roles."
+    },
+    "buses/{busId}": {
+      "schema": "Bus",
+      "description": "Real-time bus data."
+    },
+    "routes/{routeId}": {
+      "schema": "Route",
+      "description": "Bus route definitions."
+    }
+  }
+}
