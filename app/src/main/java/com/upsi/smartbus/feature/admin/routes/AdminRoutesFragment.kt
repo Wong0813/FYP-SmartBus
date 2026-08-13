@@ -251,7 +251,7 @@ class AdminRoutesFragment : Fragment() {
 
         fun buildStopSummary() = editStops.joinToString(" → ")
 
-        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
             .setTitle("Edit Stops: ${route.name}")
             .setMessage(buildStopSummary())
             .setNeutralButton("Add Stop") { dlg, _ ->

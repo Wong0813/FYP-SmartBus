@@ -33,8 +33,7 @@
                 android:contentDescription="@string/navigation_drawer_open"
                 android:padding="10dp"
                 android:scaleType="centerInside"
-                android:src="@android:drawable/ic_menu_sort_by_size"
-                app:tint="@color/crimson_primary" />
+                android:src="@drawable/ic_menu_burger" />
 
             <LinearLayout
                 android:layout_width="0dp"

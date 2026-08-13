@@ -107,6 +107,7 @@ drawable ic_add_white
 drawable ic_admin_accounts
 drawable ic_admin_dashboard
 drawable ic_admin_fleet
+drawable ic_admin_map
 drawable ic_admin_routes
 drawable ic_admin_shield
 drawable ic_bus_white
@@ -119,7 +120,10 @@ drawable ic_map_bus_marker
 drawable ic_map_stop_default
 drawable ic_map_stop_next
 drawable ic_map_stop_start
+drawable ic_menu_burger
 drawable ic_nav_arrive
+drawable ic_nav_profile
+drawable ic_nav_signout
 drawable ic_nav_straight
 drawable ic_nav_turn_left
 drawable ic_nav_turn_right
@@ -131,6 +135,7 @@ drawable ic_status_offline
 drawable ic_status_resting
 drawable ic_sync_white
 id accentStrip
+id adminMapView
 id btnAddStop
 id btnBack
 id btnCreateAccount
@@ -146,6 +151,7 @@ id btnMoveLeft
 id btnMoveRight
 id btnMoveUp
 id btnOffDuty
+id btnRefreshMap
 id btnRegisterBus
 id btnResting
 id btnSaveRoute
@@ -203,6 +209,8 @@ id ivBusMarker
 id ivDrawerAvatar
 id ivNavTurnIcon
 id ivRoleIcon
+id livePulseDot
+id llBusStatusRow
 id llCreateForm
 id llDriverFields
 id llDriverStopTimeline
@@ -222,11 +230,13 @@ id nav_control_desk
 id nav_dashboard
 id nav_group_secondary
 id nav_home_map
+id nav_live_map
 id nav_manage_accounts
 id nav_profile
 id nav_route_config
 id nav_route_schedules
 id nav_sign_out
+id pillLiveCount
 id profileImageCard
 id progressFill
 id pulseDot
@@ -295,6 +305,11 @@ id tvFleetCount
 id tvFleetTotal
 id tvFullName
 id tvInsight
+id tvLiveBusCount
+id tvMapEmpty
+id tvMapStatActive
+id tvMapStatOffline
+id tvMapStatResting
 id tvNavDistance
 id tvNavEta
 id tvNavInstruction
@@ -357,6 +372,7 @@ layout fragment_active_buses
 layout fragment_admin_accounts
 layout fragment_admin_dashboard
 layout fragment_admin_fleet
+layout fragment_admin_live_map
 layout fragment_admin_routes
 layout fragment_driver_control
 layout fragment_profile

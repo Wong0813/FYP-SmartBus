@@ -3093,6 +3093,7 @@ drawable ic_add_white
 drawable ic_admin_accounts
 drawable ic_admin_dashboard
 drawable ic_admin_fleet
+drawable ic_admin_map
 drawable ic_admin_routes
 drawable ic_admin_shield
 drawable ic_arrow_back_black_24
@@ -3118,6 +3119,7 @@ drawable ic_map_bus_marker
 drawable ic_map_stop_default
 drawable ic_map_stop_next
 drawable ic_map_stop_start
+drawable ic_menu_burger
 drawable ic_menu_compass
 drawable ic_menu_mapmode
 drawable ic_menu_mylocation
@@ -3127,6 +3129,8 @@ drawable ic_mtrl_chip_checked_black
 drawable ic_mtrl_chip_checked_circle
 drawable ic_mtrl_chip_close_circle
 drawable ic_nav_arrive
+drawable ic_nav_profile
+drawable ic_nav_signout
 drawable ic_nav_straight
 drawable ic_nav_turn_left
 drawable ic_nav_turn_right
@@ -3304,6 +3308,7 @@ id activity_chooser_view_content
 id add
 id adjust_height
 id adjust_width
+id adminMapView
 id alertTitle
 id aligned
 id all
@@ -3351,6 +3356,7 @@ id btnMoveLeft
 id btnMoveRight
 id btnMoveUp
 id btnOffDuty
+id btnRefreshMap
 id btnRegisterBus
 id btnResting
 id btnSaveRoute
@@ -3558,6 +3564,8 @@ id line3
 id linear
 id listMode
 id list_item
+id livePulseDot
+id llBusStatusRow
 id llCreateForm
 id llDriverFields
 id llDriverStopTimeline
@@ -3637,6 +3645,7 @@ id nav_control_desk
 id nav_dashboard
 id nav_group_secondary
 id nav_home_map
+id nav_live_map
 id nav_manage_accounts
 id nav_profile
 id nav_route_config
@@ -3677,6 +3686,7 @@ id path
 id pathRelative
 id peekHeight
 id percent
+id pillLiveCount
 id pin
 id pooling_container_listener_holder_tag
 id position
@@ -3885,6 +3895,11 @@ id tvFleetCount
 id tvFleetTotal
 id tvFullName
 id tvInsight
+id tvLiveBusCount
+id tvMapEmpty
+id tvMapStatActive
+id tvMapStatOffline
+id tvMapStatResting
 id tvNavDistance
 id tvNavEta
 id tvNavInstruction
@@ -4104,6 +4119,7 @@ layout fragment_active_buses
 layout fragment_admin_accounts
 layout fragment_admin_dashboard
 layout fragment_admin_fleet
+layout fragment_admin_live_map
 layout fragment_admin_routes
 layout fragment_driver_control
 layout fragment_profile

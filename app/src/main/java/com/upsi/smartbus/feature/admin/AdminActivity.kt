@@ -17,6 +17,7 @@ import com.upsi.smartbus.databinding.ActivityAdminBinding
 import com.upsi.smartbus.feature.admin.accounts.AdminAccountsFragment
 import com.upsi.smartbus.feature.admin.dashboard.AdminDashboardFragment
 import com.upsi.smartbus.feature.admin.fleet.AdminFleetFragment
+import com.upsi.smartbus.feature.admin.map.AdminLiveMapFragment
 import com.upsi.smartbus.feature.admin.routes.AdminRoutesFragment
 import com.upsi.smartbus.feature.admin.seeder.AccountSeeder
 import com.upsi.smartbus.feature.admin.seeder.AdminDataSeeder
@@ -82,6 +83,10 @@ class AdminActivity : AppCompatActivity() {
             when (menuItem.itemId) {
                 R.id.nav_dashboard -> {
                     loadFragment(AdminDashboardFragment(), getString(R.string.nav_dashboard))
+                    true
+                }
+                R.id.nav_live_map -> {
+                    loadFragment(AdminLiveMapFragment(), "Live Map")
                     true
                 }
                 R.id.nav_manage_accounts -> {
