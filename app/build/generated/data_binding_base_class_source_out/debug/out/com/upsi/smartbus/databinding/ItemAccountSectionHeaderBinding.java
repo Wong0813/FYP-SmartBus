@@ -25,11 +25,16 @@ public final class ItemAccountSectionHeaderBinding implements ViewBinding {
   @NonNull
   public final TextView tvSectionTitle;
 
+  @NonNull
+  public final View viewSectionAccent;
+
   private ItemAccountSectionHeaderBinding(@NonNull LinearLayout rootView,
-      @NonNull TextView tvSectionCount, @NonNull TextView tvSectionTitle) {
+      @NonNull TextView tvSectionCount, @NonNull TextView tvSectionTitle,
+      @NonNull View viewSectionAccent) {
     this.rootView = rootView;
     this.tvSectionCount = tvSectionCount;
     this.tvSectionTitle = tvSectionTitle;
+    this.viewSectionAccent = viewSectionAccent;
   }
 
   @Override
@@ -71,8 +76,14 @@ public final class ItemAccountSectionHeaderBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.viewSectionAccent;
+      View viewSectionAccent = ViewBindings.findChildViewById(rootView, id);
+      if (viewSectionAccent == null) {
+        break missingId;
+      }
+
       return new ItemAccountSectionHeaderBinding((LinearLayout) rootView, tvSectionCount,
-          tvSectionTitle);
+          tvSectionTitle, viewSectionAccent);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

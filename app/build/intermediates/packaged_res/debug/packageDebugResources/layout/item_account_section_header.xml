@@ -2,11 +2,19 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="16dp"
+    android:layout_marginTop="20dp"
     android:layout_marginBottom="6dp"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingHorizontal="4dp">
+    android:paddingHorizontal="2dp">
+
+    <!-- Coloured accent bar -->
+    <View
+        android:id="@+id/viewSectionAccent"
+        android:layout_width="4dp"
+        android:layout_height="18dp"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/bg_status_bar_green" />
 
     <TextView
         android:id="@+id/tvSectionTitle"
@@ -15,7 +23,8 @@
         android:layout_weight="1"
         android:text="Drivers"
         android:textColor="@color/text_primary"
-        android:textSize="14sp"
+        android:textSize="13sp"
+        android:letterSpacing="0.05"
         android:textStyle="bold" />
 
     <TextView

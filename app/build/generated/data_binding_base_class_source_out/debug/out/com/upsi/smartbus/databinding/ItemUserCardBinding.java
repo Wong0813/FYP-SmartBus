@@ -6,10 +6,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
 import com.upsi.smartbus.R;
@@ -19,7 +19,7 @@ import java.lang.String;
 
 public final class ItemUserCardBinding implements ViewBinding {
   @NonNull
-  private final LinearLayout rootView;
+  private final CardView rootView;
 
   @NonNull
   public final ImageButton btnDeleteUser;
@@ -51,7 +51,7 @@ public final class ItemUserCardBinding implements ViewBinding {
   @NonNull
   public final TextView tvUserRole;
 
-  private ItemUserCardBinding(@NonNull LinearLayout rootView, @NonNull ImageButton btnDeleteUser,
+  private ItemUserCardBinding(@NonNull CardView rootView, @NonNull ImageButton btnDeleteUser,
       @NonNull ImageButton btnEditUser, @NonNull FrameLayout flAvatarContainer,
       @NonNull TextView tvAccountType, @NonNull TextView tvAssignedRoute,
       @NonNull TextView tvDriverNumber, @NonNull TextView tvUserEmail,
@@ -71,7 +71,7 @@ public final class ItemUserCardBinding implements ViewBinding {
 
   @Override
   @NonNull
-  public LinearLayout getRoot() {
+  public CardView getRoot() {
     return rootView;
   }
 
@@ -156,7 +156,7 @@ public final class ItemUserCardBinding implements ViewBinding {
         break missingId;
       }
 
-      return new ItemUserCardBinding((LinearLayout) rootView, btnDeleteUser, btnEditUser,
+      return new ItemUserCardBinding((CardView) rootView, btnDeleteUser, btnEditUser,
           flAvatarContainer, tvAccountType, tvAssignedRoute, tvDriverNumber, tvUserEmail,
           tvUserInitial, tvUserName, tvUserRole);
     }

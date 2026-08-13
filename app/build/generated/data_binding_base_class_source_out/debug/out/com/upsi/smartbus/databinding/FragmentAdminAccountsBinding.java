@@ -87,6 +87,9 @@ public final class FragmentAdminAccountsBinding implements ViewBinding {
   public final LinearLayout llDriverFields;
 
   @NonNull
+  public final LinearLayout llEmptyUsers;
+
+  @NonNull
   public final LinearLayout llStudentFields;
 
   @NonNull
@@ -132,12 +135,13 @@ public final class FragmentAdminAccountsBinding implements ViewBinding {
       @NonNull EditText etStaffNo, @NonNull TextView filterAdmin, @NonNull TextView filterAll,
       @NonNull TextView filterDriver, @NonNull TextView filterStudent,
       @NonNull LinearLayout llCreateForm, @NonNull LinearLayout llDriverFields,
-      @NonNull LinearLayout llStudentFields, @NonNull RecyclerView rvUsers,
-      @NonNull Spinner spinnerDriverRoute, @NonNull Spinner spinnerRole,
-      @NonNull Spinner spinnerUserFilter, @NonNull TextView tvCountAdmin,
-      @NonNull TextView tvCountDriver, @NonNull TextView tvCountStudent,
-      @NonNull TextView tvEmptyUsers, @NonNull TextView tvSyncStatus,
-      @NonNull TextView tvTotalAccounts, @NonNull TextView tvUserCount) {
+      @NonNull LinearLayout llEmptyUsers, @NonNull LinearLayout llStudentFields,
+      @NonNull RecyclerView rvUsers, @NonNull Spinner spinnerDriverRoute,
+      @NonNull Spinner spinnerRole, @NonNull Spinner spinnerUserFilter,
+      @NonNull TextView tvCountAdmin, @NonNull TextView tvCountDriver,
+      @NonNull TextView tvCountStudent, @NonNull TextView tvEmptyUsers,
+      @NonNull TextView tvSyncStatus, @NonNull TextView tvTotalAccounts,
+      @NonNull TextView tvUserCount) {
     this.rootView = rootView;
     this.btnCreateAccount = btnCreateAccount;
     this.btnSyncOfficial = btnSyncOfficial;
@@ -160,6 +164,7 @@ public final class FragmentAdminAccountsBinding implements ViewBinding {
     this.filterStudent = filterStudent;
     this.llCreateForm = llCreateForm;
     this.llDriverFields = llDriverFields;
+    this.llEmptyUsers = llEmptyUsers;
     this.llStudentFields = llStudentFields;
     this.rvUsers = rvUsers;
     this.spinnerDriverRoute = spinnerDriverRoute;
@@ -327,6 +332,12 @@ public final class FragmentAdminAccountsBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.llEmptyUsers;
+      LinearLayout llEmptyUsers = ViewBindings.findChildViewById(rootView, id);
+      if (llEmptyUsers == null) {
+        break missingId;
+      }
+
       id = R.id.llStudentFields;
       LinearLayout llStudentFields = ViewBindings.findChildViewById(rootView, id);
       if (llStudentFields == null) {
@@ -403,7 +414,7 @@ public final class FragmentAdminAccountsBinding implements ViewBinding {
           btnSyncOfficial, btnToggleCreate, chipAdmin, chipDriver, chipStudent, etAdminPassword,
           etAdminUsername, etDriverBus, etDriverPlate, etFaculty, etName, etProgram, etSearchUsers,
           etStaffNo, filterAdmin, filterAll, filterDriver, filterStudent, llCreateForm,
-          llDriverFields, llStudentFields, rvUsers, spinnerDriverRoute, spinnerRole,
+          llDriverFields, llEmptyUsers, llStudentFields, rvUsers, spinnerDriverRoute, spinnerRole,
           spinnerUserFilter, tvCountAdmin, tvCountDriver, tvCountStudent, tvEmptyUsers,
           tvSyncStatus, tvTotalAccounts, tvUserCount);
     }

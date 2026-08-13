@@ -34,10 +34,16 @@ public final class FragmentAdminDashboardBinding implements ViewBinding {
   public final LinearLayout cardStatResting;
 
   @NonNull
+  public final View pulseDot;
+
+  @NonNull
   public final RecyclerView rvScheduleGrid;
 
   @NonNull
   public final TextView tvCurrentDate;
+
+  @NonNull
+  public final TextView tvDaySubtitle;
 
   @NonNull
   public final TextView tvDayType;
@@ -54,16 +60,19 @@ public final class FragmentAdminDashboardBinding implements ViewBinding {
   private FragmentAdminDashboardBinding(@NonNull ScrollView rootView,
       @NonNull LinearLayout cardDateHeader, @NonNull LinearLayout cardStatOffline,
       @NonNull LinearLayout cardStatOnline, @NonNull LinearLayout cardStatResting,
-      @NonNull RecyclerView rvScheduleGrid, @NonNull TextView tvCurrentDate,
-      @NonNull TextView tvDayType, @NonNull TextView tvStatOfflineCount,
-      @NonNull TextView tvStatOnlineCount, @NonNull TextView tvStatRestingCount) {
+      @NonNull View pulseDot, @NonNull RecyclerView rvScheduleGrid, @NonNull TextView tvCurrentDate,
+      @NonNull TextView tvDaySubtitle, @NonNull TextView tvDayType,
+      @NonNull TextView tvStatOfflineCount, @NonNull TextView tvStatOnlineCount,
+      @NonNull TextView tvStatRestingCount) {
     this.rootView = rootView;
     this.cardDateHeader = cardDateHeader;
     this.cardStatOffline = cardStatOffline;
     this.cardStatOnline = cardStatOnline;
     this.cardStatResting = cardStatResting;
+    this.pulseDot = pulseDot;
     this.rvScheduleGrid = rvScheduleGrid;
     this.tvCurrentDate = tvCurrentDate;
+    this.tvDaySubtitle = tvDaySubtitle;
     this.tvDayType = tvDayType;
     this.tvStatOfflineCount = tvStatOfflineCount;
     this.tvStatOnlineCount = tvStatOnlineCount;
@@ -121,6 +130,12 @@ public final class FragmentAdminDashboardBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.pulseDot;
+      View pulseDot = ViewBindings.findChildViewById(rootView, id);
+      if (pulseDot == null) {
+        break missingId;
+      }
+
       id = R.id.rvScheduleGrid;
       RecyclerView rvScheduleGrid = ViewBindings.findChildViewById(rootView, id);
       if (rvScheduleGrid == null) {
@@ -130,6 +145,12 @@ public final class FragmentAdminDashboardBinding implements ViewBinding {
       id = R.id.tvCurrentDate;
       TextView tvCurrentDate = ViewBindings.findChildViewById(rootView, id);
       if (tvCurrentDate == null) {
+        break missingId;
+      }
+
+      id = R.id.tvDaySubtitle;
+      TextView tvDaySubtitle = ViewBindings.findChildViewById(rootView, id);
+      if (tvDaySubtitle == null) {
         break missingId;
       }
 
@@ -158,8 +179,8 @@ public final class FragmentAdminDashboardBinding implements ViewBinding {
       }
 
       return new FragmentAdminDashboardBinding((ScrollView) rootView, cardDateHeader,
-          cardStatOffline, cardStatOnline, cardStatResting, rvScheduleGrid, tvCurrentDate,
-          tvDayType, tvStatOfflineCount, tvStatOnlineCount, tvStatRestingCount);
+          cardStatOffline, cardStatOnline, cardStatResting, pulseDot, rvScheduleGrid, tvCurrentDate,
+          tvDaySubtitle, tvDayType, tvStatOfflineCount, tvStatOnlineCount, tvStatRestingCount);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

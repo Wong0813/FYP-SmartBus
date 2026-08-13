@@ -8,6 +8,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
 import com.upsi.smartbus.R;
@@ -17,7 +18,10 @@ import java.lang.String;
 
 public final class ItemScheduleCardBinding implements ViewBinding {
   @NonNull
-  private final LinearLayout rootView;
+  private final CardView rootView;
+
+  @NonNull
+  public final LinearLayout llStatusPill;
 
   @NonNull
   public final View statusBar;
@@ -40,11 +44,16 @@ public final class ItemScheduleCardBinding implements ViewBinding {
   @NonNull
   public final TextView tvScheduleStops;
 
-  private ItemScheduleCardBinding(@NonNull LinearLayout rootView, @NonNull View statusBar,
-      @NonNull View statusDot, @NonNull TextView tvScheduleBusInfo,
+  @NonNull
+  public final TextView tvStatusLabel;
+
+  private ItemScheduleCardBinding(@NonNull CardView rootView, @NonNull LinearLayout llStatusPill,
+      @NonNull View statusBar, @NonNull View statusDot, @NonNull TextView tvScheduleBusInfo,
       @NonNull TextView tvScheduleDriverName, @NonNull TextView tvScheduleRouteDesc,
-      @NonNull TextView tvScheduleRouteName, @NonNull TextView tvScheduleStops) {
+      @NonNull TextView tvScheduleRouteName, @NonNull TextView tvScheduleStops,
+      @NonNull TextView tvStatusLabel) {
     this.rootView = rootView;
+    this.llStatusPill = llStatusPill;
     this.statusBar = statusBar;
     this.statusDot = statusDot;
     this.tvScheduleBusInfo = tvScheduleBusInfo;
@@ -52,11 +61,12 @@ public final class ItemScheduleCardBinding implements ViewBinding {
     this.tvScheduleRouteDesc = tvScheduleRouteDesc;
     this.tvScheduleRouteName = tvScheduleRouteName;
     this.tvScheduleStops = tvScheduleStops;
+    this.tvStatusLabel = tvStatusLabel;
   }
 
   @Override
   @NonNull
-  public LinearLayout getRoot() {
+  public CardView getRoot() {
     return rootView;
   }
 
@@ -81,6 +91,12 @@ public final class ItemScheduleCardBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.llStatusPill;
+      LinearLayout llStatusPill = ViewBindings.findChildViewById(rootView, id);
+      if (llStatusPill == null) {
+        break missingId;
+      }
+
       id = R.id.statusBar;
       View statusBar = ViewBindings.findChildViewById(rootView, id);
       if (statusBar == null) {
@@ -123,9 +139,15 @@ public final class ItemScheduleCardBinding implements ViewBinding {
         break missingId;
       }
 
-      return new ItemScheduleCardBinding((LinearLayout) rootView, statusBar, statusDot,
+      id = R.id.tvStatusLabel;
+      TextView tvStatusLabel = ViewBindings.findChildViewById(rootView, id);
+      if (tvStatusLabel == null) {
+        break missingId;
+      }
+
+      return new ItemScheduleCardBinding((CardView) rootView, llStatusPill, statusBar, statusDot,
           tvScheduleBusInfo, tvScheduleDriverName, tvScheduleRouteDesc, tvScheduleRouteName,
-          tvScheduleStops);
+          tvScheduleStops, tvStatusLabel);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

@@ -47,7 +47,7 @@ class AdminAccountsFragment : Fragment() {
     private val routeNames = mutableListOf<String>()
 
     sealed class AccountListItem {
-        data class Header(val title: String, val count: Int, val emoji: String) : AccountListItem()
+        data class Header(val title: String, val count: Int, val icon: String) : AccountListItem()
         data class User(val profile: UserProfile) : AccountListItem()
     }
 
@@ -212,8 +212,9 @@ class AdminAccountsFragment : Fragment() {
             .addSnapshotListener { snapshot, error ->
                 if (_binding == null) return@addSnapshotListener
                 if (error != null) {
-                    binding.tvEmptyUsers.visibility = View.VISIBLE
-                    binding.tvEmptyUsers.text = "Failed to load: ${error.message}"
+                    com.google.android.material.snackbar.Snackbar
+                        .make(binding.root, "Gagal memuatkan data: ${error.message}", 4000)
+                        .show()
                     return@addSnapshotListener
                 }
                 allUsers.clear()
@@ -258,9 +259,9 @@ class AdminAccountsFragment : Fragment() {
 
         if (roleFilter == "ALL" && searchQuery.isEmpty()) {
             listOf(
-                Triple("ADMIN", "🛡️ Administrators", allUsers.filter { it.role.equals("ADMIN", true) }),
-                Triple("DRIVER", "🚌 Drivers (Driver 01 → Laluan 1)", AdminSortHelper.sortDrivers(allUsers.filter { it.role.equals("DRIVER", true) })),
-                Triple("STUDENT", "🎓 Students", allUsers.filter { it.role.equals("STUDENT", true) })
+                Triple("ADMIN", "Administrators", allUsers.filter { it.role.equals("ADMIN", true) }),
+                Triple("DRIVER", "Drivers", AdminSortHelper.sortDrivers(allUsers.filter { it.role.equals("DRIVER", true) })),
+                Triple("STUDENT", "Students", allUsers.filter { it.role.equals("STUDENT", true) })
             ).forEach { (_, title, users) ->
                 if (users.isNotEmpty()) {
                     displayItems.add(AccountListItem.Header(title, users.size, ""))
@@ -272,8 +273,8 @@ class AdminAccountsFragment : Fragment() {
             sorted.forEach { displayItems.add(AccountListItem.User(it)) }
         }
 
-        binding.tvEmptyUsers.visibility =
-            if (displayItems.none { it is AccountListItem.User }) View.VISIBLE else View.GONE
+        val isEmpty = displayItems.none { it is AccountListItem.User }
+        binding.llEmptyUsers.visibility = if (isEmpty) View.VISIBLE else View.GONE
         listAdapter.notifyDataSetChanged()
         AdminUiHelper.expandRecyclerView(binding.rvUsers)
     }
@@ -396,16 +397,29 @@ class AdminAccountsFragment : Fragment() {
 
     private fun deleteUser(user: UserProfile) {
         if (user.uid == auth.currentUser?.uid) {
-            Toast.makeText(requireContext(), "Cannot delete your own admin account", Toast.LENGTH_SHORT).show()
+            com.google.android.material.snackbar.Snackbar
+                .make(binding.root, "Cannot delete your own admin account", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
+                .show()
             return
         }
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Delete ${user.name}?")
-            .setMessage("Remove this account from Firestore?")
-            .setPositiveButton("Delete") { _, _ ->
-                db.collection("users").document(user.uid).delete()
-            }
-            .setNegativeButton("Cancel", null).show()
+        // Soft-delete with UNDO window
+        val deletedRef = db.collection("users").document(user.uid)
+        deletedRef.get().addOnSuccessListener { snapshot ->
+            val backup = snapshot.data ?: return@addOnSuccessListener
+            deletedRef.delete()
+            com.google.android.material.snackbar.Snackbar
+                .make(binding.root, "${user.name} deleted", 5000)
+                .setAction("UNDO") {
+                    deletedRef.set(backup)
+                        .addOnSuccessListener {
+                            com.google.android.material.snackbar.Snackbar
+                                .make(binding.root, "${user.name} restored", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
+                                .show()
+                        }
+                }
+                .setActionTextColor(ContextCompat.getColor(requireContext(), R.color.status_moving))
+                .show()
+        }
     }
 
     override fun onDestroyView() {
@@ -453,7 +467,7 @@ class AdminAccountsFragment : Fragment() {
             b.tvUserName.text = user.name
             b.tvUserEmail.text = buildString {
                 append(user.email)
-                if (user.staffNo.isNotEmpty()) append(" • ${user.staffNo}")
+                if (user.staffNo.isNotEmpty()) append(" \u2022 ${user.staffNo}")
             }
             b.tvUserRole.text = user.role.uppercase()
             b.tvUserInitial.text = user.name.firstOrNull()?.uppercase() ?: "?"
@@ -468,25 +482,62 @@ class AdminAccountsFragment : Fragment() {
                     val num = if (user.driverNumber > 0) user.driverNumber else AdminSortHelper.driverOrderKey(user)
                     b.tvDriverNumber.visibility = View.VISIBLE
                     b.tvDriverNumber.text = String.format("%02d", num)
-                    b.tvAssignedRoute.text = "→ ${user.assignedRoute} • 🚌 ${user.assignedBus}"
+                    val routeText = user.assignedRoute.ifEmpty { "Belum ditetapkan" }
+                    val busText = user.assignedBus.ifEmpty { "—" }
+                    b.tvAssignedRoute.text = "$routeText  |  $busText"
                 }
                 "STUDENT" -> {
+                    b.tvDriverNumber.visibility = View.GONE
                     if (user.faculty.isNotEmpty() || user.program.isNotEmpty()) {
                         b.tvAssignedRoute.visibility = View.VISIBLE
-                        b.tvAssignedRoute.text = "${user.faculty} • ${user.program}"
+                        b.tvAssignedRoute.text = listOfNotNull(
+                            user.faculty.ifEmpty { null },
+                            user.program.ifEmpty { null }
+                        ).joinToString(" \u2022 ")
                     } else b.tvAssignedRoute.visibility = View.GONE
                 }
-                else -> b.tvAssignedRoute.visibility = View.GONE
+                else -> {
+                    b.tvAssignedRoute.visibility = View.GONE
+                    b.tvDriverNumber.visibility = View.GONE
+                }
             }
 
-            val (avatarBg, textColor) = when (user.role.uppercase()) {
-                "STUDENT" -> R.drawable.bg_avatar_student to R.color.status_moving
-                "DRIVER" -> R.drawable.bg_avatar_driver to R.color.status_resting
-                "ADMIN" -> R.drawable.bg_avatar_admin to R.color.crimson_primary
-                else -> R.drawable.bg_avatar_student to R.color.status_offline
+            // Multi-color avatar by role + name hash
+            val ctx = b.root.context
+            when (user.role.uppercase()) {
+                "DRIVER" -> {
+                    val driverColors = intArrayOf(
+                        R.drawable.bg_avatar_driver,
+                        R.drawable.bg_avatar_amber,
+                        R.drawable.bg_avatar_rose,
+                        R.drawable.bg_avatar_pink
+                    )
+                    val idx = Math.abs(user.name.hashCode()) % driverColors.size
+                    b.flAvatarContainer.setBackgroundResource(driverColors[idx])
+                    b.tvUserInitial.setTextColor(ContextCompat.getColor(ctx, R.color.text_white))
+                }
+                "STUDENT" -> {
+                    val studentColors = intArrayOf(
+                        R.drawable.bg_avatar_sky,
+                        R.drawable.bg_avatar_teal,
+                        R.drawable.bg_avatar_indigo,
+                        R.drawable.bg_avatar_violet,
+                        R.drawable.bg_avatar_lime
+                    )
+                    val idx = Math.abs(user.name.hashCode()) % studentColors.size
+                    b.flAvatarContainer.setBackgroundResource(studentColors[idx])
+                    b.tvUserInitial.setTextColor(ContextCompat.getColor(ctx, R.color.text_white))
+                }
+                "ADMIN" -> {
+                    b.flAvatarContainer.setBackgroundResource(R.drawable.bg_avatar_admin)
+                    b.tvUserInitial.setTextColor(ContextCompat.getColor(ctx, R.color.text_white))
+                }
+                else -> {
+                    b.flAvatarContainer.setBackgroundResource(R.drawable.bg_avatar_student)
+                    b.tvUserInitial.setTextColor(ContextCompat.getColor(ctx, R.color.text_white))
+                }
             }
-            b.flAvatarContainer.setBackgroundResource(avatarBg)
-            b.tvUserInitial.setTextColor(ContextCompat.getColor(b.root.context, textColor))
+
             b.btnDeleteUser.setOnClickListener { onDelete(user) }
             b.btnEditUser.setOnClickListener { onEdit(user) }
         }

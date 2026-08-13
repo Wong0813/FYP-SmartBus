@@ -1,0 +1,25 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    <!-- Background circle -->
+    <path
+        android:fillColor="#FFF5F6FA"
+        android:pathData="M60,10 A50,50 0 1,1 59.99,10 Z"/>
+    <!-- Folder body -->
+    <path
+        android:fillColor="#FFE5E7EB"
+        android:pathData="M35,48 L35,80 a4,4 0 0,0 4,4 L81,84 a4,4 0 0,0 4,-4 L85,52 a4,4 0 0,0 -4,-4 L58,48 L54,42 L39,42 a4,4 0 0,0 -4,4 Z"/>
+    <!-- Folder tab -->
+    <path
+        android:fillColor="#FFD1D5DB"
+        android:pathData="M39,42 L54,42 L58,48 L39,48 Z"/>
+    <!-- Question mark -->
+    <path
+        android:fillColor="#FF9CA3AF"
+        android:pathData="M57,63 a3,3 0 1,1 6,0 c0,2 -2,3 -3,4 L60,69 M60,71 L60,73"
+        android:strokeColor="#FF9CA3AF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"/>
+</vector>

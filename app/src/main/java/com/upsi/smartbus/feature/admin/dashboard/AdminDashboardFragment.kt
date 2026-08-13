@@ -54,8 +54,37 @@ class AdminDashboardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupDateHeader()
         setupScheduleGrid()
+        setupStatCardClicks()
         loadScheduleData()
         listenToBusStatuses()
+    }
+
+    private fun setupStatCardClicks() {
+        binding.cardStatOnline.setOnClickListener {
+            filterAndShowStatus("working", "Bas Dalam Tugas")
+        }
+        binding.cardStatResting.setOnClickListener {
+            filterAndShowStatus("resting", "Bas Sedang Rehat")
+        }
+        binding.cardStatOffline.setOnClickListener {
+            filterAndShowStatus("idle", "Bas Tidak Aktif")
+        }
+    }
+
+    private fun filterAndShowStatus(status: String, title: String) {
+        val filtered = scheduleItems.filter {
+            it.status.lowercase() == status.lowercase()
+        }
+        val names = filtered.map { "${it.route.name} — ${it.driverName}" }
+        if (names.isEmpty()) {
+            android.widget.Toast.makeText(requireContext(), "Tiada bas dalam status ini.", android.widget.Toast.LENGTH_SHORT).show()
+            return
+        }
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle(title)
+            .setItems(names.toTypedArray(), null)
+            .setPositiveButton("Tutup", null)
+            .show()
     }
 
     private fun setupDateHeader() {
@@ -71,14 +100,17 @@ class AdminDashboardFragment : Fragment() {
             Calendar.SUNDAY -> {
                 binding.tvDayType.text = "TIADA PERKHIDMATAN"
                 binding.tvDayType.setTextColor(ContextCompat.getColor(requireContext(), R.color.status_offline))
+                binding.tvDaySubtitle.text = "Tiada perkhidmatan bas hari ini"
             }
             Calendar.SATURDAY -> {
                 binding.tvDayType.text = "SABTU"
                 binding.tvDayType.setTextColor(ContextCompat.getColor(requireContext(), R.color.status_resting))
+                binding.tvDaySubtitle.text = "Jadual Sabtu aktif — Laluan 9–18"
             }
             else -> {
                 binding.tvDayType.text = "HARI BEKERJA"
                 binding.tvDayType.setTextColor(ContextCompat.getColor(requireContext(), R.color.crimson_primary))
+                binding.tvDaySubtitle.text = "Jadual perkhidmatan aktif — Laluan 1–8 & Shuttle"
             }
         }
     }
@@ -225,19 +257,39 @@ class AdminDashboardFragment : Fragment() {
             val b = holder.binding
             b.tvScheduleRouteName.text = item.route.name
             b.tvScheduleRouteDesc.text = "${AdminSortHelper.routeNumberLabel(item.route)} • Driver ${String.format("%02d", item.driverNumber.coerceAtLeast(item.routeOrder))}"
-            b.tvScheduleDriverName.text = "🚌 ${item.driverName}"
-            b.tvScheduleBusInfo.text = "${item.busId} • ${item.plateNumber}"
-            b.tvScheduleStops.text = item.route.stops.joinToString(" ➔ ")
+            b.tvScheduleDriverName.text = item.driverName.ifEmpty { "Belum ditetapkan" }
+            b.tvScheduleBusInfo.text = if (item.busId == "—") "Tiada bas ditetapkan" else "${item.busId}  •  ${item.plateNumber}"
+            b.tvScheduleStops.text = item.route.stops.joinToString(" → ")
+
             if (!item.isActiveDay) {
-                holder.itemView.setBackgroundResource(R.drawable.bg_schedule_card_inactive)
                 b.statusBar.setBackgroundResource(R.drawable.bg_status_bar_gray)
                 b.statusDot.setBackgroundResource(R.drawable.dot_gray)
+                b.tvStatusLabel.text = "REHAT"
+                b.tvStatusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.status_offline))
+                b.llStatusPill.setBackgroundResource(R.drawable.bg_status_offline)
             } else {
-                holder.itemView.setBackgroundResource(R.drawable.bg_schedule_card_active)
                 when (item.status.lowercase()) {
-                    "working" -> { b.statusBar.setBackgroundResource(R.drawable.bg_status_bar_green); b.statusDot.setBackgroundResource(R.drawable.dot_green) }
-                    "resting" -> { b.statusBar.setBackgroundResource(R.drawable.bg_status_bar_orange); b.statusDot.setBackgroundResource(R.drawable.dot_orange) }
-                    else -> { b.statusBar.setBackgroundResource(R.drawable.bg_status_bar_gray); b.statusDot.setBackgroundResource(R.drawable.dot_gray) }
+                    "working" -> {
+                        b.statusBar.setBackgroundResource(R.drawable.bg_status_bar_green)
+                        b.statusDot.setBackgroundResource(R.drawable.dot_green)
+                        b.tvStatusLabel.text = "AKTIF"
+                        b.tvStatusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.status_moving))
+                        b.llStatusPill.setBackgroundResource(R.drawable.bg_status_moving)
+                    }
+                    "resting" -> {
+                        b.statusBar.setBackgroundResource(R.drawable.bg_status_bar_orange)
+                        b.statusDot.setBackgroundResource(R.drawable.dot_orange)
+                        b.tvStatusLabel.text = "REHAT"
+                        b.tvStatusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.status_resting))
+                        b.llStatusPill.setBackgroundResource(R.drawable.bg_status_resting)
+                    }
+                    else -> {
+                        b.statusBar.setBackgroundResource(R.drawable.bg_status_bar_gray)
+                        b.statusDot.setBackgroundResource(R.drawable.dot_gray)
+                        b.tvStatusLabel.text = "IDLE"
+                        b.tvStatusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.status_offline))
+                        b.llStatusPill.setBackgroundResource(R.drawable.bg_status_offline)
+                    }
                 }
             }
             holder.itemView.setOnClickListener { onEdit(item) }

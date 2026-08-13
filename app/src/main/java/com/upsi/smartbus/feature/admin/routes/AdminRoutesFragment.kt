@@ -221,7 +221,7 @@ class AdminRoutesFragment : Fragment() {
         val sorted = AdminSortHelper.sortRoutes(filtered)
 
         if (tabFilter == "ALL") {
-            listOf("WEEKDAY" to "📅 Weekday Laluan (1–8 + Shuttle)", "SATURDAY" to "📅 Saturday Laluan (9–18)").forEach { (type, title) ->
+            listOf("WEEKDAY" to "Weekday Laluan (1–8 + Shuttle)", "SATURDAY" to "Saturday Laluan (9–18)").forEach { (type, title) ->
                 val group = sorted.filter { it.scheduleType.equals(type, true) }
                 if (group.isNotEmpty()) {
                     displayItems.add(RouteListItem.Header(title, group.size))
@@ -246,25 +246,62 @@ class AdminRoutesFragment : Fragment() {
 
     private fun showEditDialog(route: Route) {
         val editStops = route.stops.toMutableList()
-        val names = RouteData.stops.map { "${it.abbreviation} - ${it.fullName}" }
+        val names = RouteData.stops.map { "${it.abbreviation} — ${it.fullName}" }
         val abbrs = RouteData.stops.map { it.abbreviation }
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Edit ${route.name}")
-            .setMessage(editStops.joinToString(" ➔ "))
-            .setItems(names.toTypedArray()) { _, which ->
-                editStops.add(abbrs[which])
-                db.collection("routes").document(route.id).update("stops", editStops)
-                    .addOnSuccessListener { RouteRepository.invalidateCache() }
-            }.show()
+
+        fun buildStopSummary() = editStops.joinToString(" → ")
+
+        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Edit Stops: ${route.name}")
+            .setMessage(buildStopSummary())
+            .setNeutralButton("Add Stop") { dlg, _ ->
+                com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Add Stop")
+                    .setItems(names.toTypedArray()) { _, which ->
+                        editStops.add(abbrs[which])
+                        db.collection("routes").document(route.id).update("stops", editStops)
+                            .addOnSuccessListener {
+                                RouteRepository.invalidateCache()
+                                com.google.android.material.snackbar.Snackbar
+                                    .make(binding.root, "Stop added: ${abbrs[which]}", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
+                                    .show()
+                            }
+                    }.show()
+                dlg.dismiss()
+            }
+            .setPositiveButton("Remove Last") { _, _ ->
+                if (editStops.isNotEmpty()) {
+                    val removed = editStops.removeLast()
+                    db.collection("routes").document(route.id).update("stops", editStops)
+                        .addOnSuccessListener { RouteRepository.invalidateCache() }
+                    com.google.android.material.snackbar.Snackbar
+                        .make(binding.root, "Removed: $removed", 4000)
+                        .setAction("UNDO") {
+                            editStops.add(removed)
+                            db.collection("routes").document(route.id).update("stops", editStops)
+                                .addOnSuccessListener { RouteRepository.invalidateCache() }
+                        }
+                        .setActionTextColor(ContextCompat.getColor(requireContext(), R.color.status_moving))
+                        .show()
+                }
+            }
+            .setNegativeButton("Close", null)
+            .show()
     }
 
     private fun deleteRoute(route: Route) {
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Delete ${route.name}?")
-            .setPositiveButton("Delete") { _, _ ->
-                db.collection("routes").document(route.id).delete()
-                    .addOnSuccessListener { RouteRepository.invalidateCache() }
-            }.setNegativeButton("Cancel", null).show()
+        val routeRef = db.collection("routes").document(route.id)
+        routeRef.get().addOnSuccessListener { snapshot ->
+            val backup = snapshot.data ?: return@addOnSuccessListener
+            routeRef.delete().addOnSuccessListener { RouteRepository.invalidateCache() }
+            com.google.android.material.snackbar.Snackbar
+                .make(binding.root, "${route.name} deleted", 5000)
+                .setAction("UNDO") {
+                    routeRef.set(backup).addOnSuccessListener { RouteRepository.invalidateCache() }
+                }
+                .setActionTextColor(ContextCompat.getColor(requireContext(), R.color.status_moving))
+                .show()
+        }
     }
 
     override fun onDestroyView() {
@@ -302,7 +339,7 @@ class AdminRoutesFragment : Fragment() {
                     b.tvRouteOrder.visibility = View.VISIBLE
                     b.tvRouteOrder.text = AdminSortHelper.routeNumberLabel(r)
                     b.tvRouteName.text = "${AdminSortHelper.routeNumberLabel(r)} ${r.name}"
-                    b.tvStopChain.text = r.stops.joinToString(" ➔ ")
+                    b.tvStopChain.text = r.stops.joinToString(" → ")
                     b.btnEditRoute.setOnClickListener { onEdit(r) }
                     holder.itemView.setOnLongClickListener { onDelete(r); true }
                 }

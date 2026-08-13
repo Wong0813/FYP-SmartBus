@@ -10,66 +10,85 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
 
-        <!-- Hero date card -->
+        <!-- ══════════ HERO HEADER ══════════ -->
         <LinearLayout
             android:id="@+id/cardDateHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_admin_hero"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="18dp">
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/admin_fleet_overview"
+                android:textColor="@color/white_alpha_80"
+                android:textSize="11sp"
+                android:letterSpacing="0.12"
+                android:textStyle="bold" />
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:layout_marginTop="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvCurrentDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Jumaat, 8 Ogos 2026"
+                        android:textColor="@color/text_white"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvDaySubtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Jadual perkhidmatan aktif"
+                        android:textColor="@color/white_alpha_80"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
 
                 <TextView
+                    android:id="@+id/tvDayType"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/admin_fleet_overview"
-                    android:textColor="@color/white_alpha_80"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvCurrentDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Jumaat, 8 Ogos 2026"
-                    android:textColor="@color/text_white"
-                    android:textSize="16sp"
+                    android:background="@drawable/bg_day_type_badge"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="7dp"
+                    android:text="HARI BEKERJA"
+                    android:textColor="@color/crimson_primary"
+                    android:textSize="10sp"
+                    android:letterSpacing="0.06"
                     android:textStyle="bold" />
 
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/tvDayType"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_day_type_badge"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="6dp"
-                android:text="HARI BEKERJA"
-                android:textColor="@color/crimson_primary"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-
         </LinearLayout>
 
-        <!-- Stats row -->
+        <!-- ══════════ STATS ROW ══════════ -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
             android:orientation="horizontal">
 
+            <!-- Active Card -->
             <LinearLayout
                 android:id="@+id/cardStatOnline"
                 android:layout_width="0dp"
@@ -77,45 +96,79 @@
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_stat_card_green"
-                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:padding="14dp">
 
-                <FrameLayout
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:background="@drawable/bg_stat_icon_green">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/bg_stat_icon_green">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_status_active"
+                            android:contentDescription="Active" />
+
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/tvStatOnlineCount"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:text="0"
+                        android:textColor="@color/status_moving"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Dalam Tugas"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:background="@drawable/dot_green" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="🟢"
-                        android:textSize="14sp" />
+                        android:layout_marginStart="4dp"
+                        android:text="Aktif sekarang"
+                        android:textColor="@color/status_moving"
+                        android:textSize="9sp" />
 
-                </FrameLayout>
-
-                <TextView
-                    android:id="@+id/tvStatOnlineCount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="0"
-                    android:textColor="@color/status_moving"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Dalam Tugas"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
+                </LinearLayout>
 
             </LinearLayout>
 
+            <!-- Resting Card -->
             <LinearLayout
                 android:id="@+id/cardStatResting"
                 android:layout_width="0dp"
@@ -123,45 +176,79 @@
                 android:layout_marginHorizontal="3dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_stat_card_orange"
-                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:padding="14dp">
 
-                <FrameLayout
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:background="@drawable/bg_stat_icon_orange">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/bg_stat_icon_orange">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_status_resting"
+                            android:contentDescription="Resting" />
+
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/tvStatRestingCount"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:text="0"
+                        android:textColor="@color/status_resting"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Sedang Rehat"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:background="@drawable/dot_orange" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="🟡"
-                        android:textSize="14sp" />
+                        android:layout_marginStart="4dp"
+                        android:text="Rehat sementara"
+                        android:textColor="@color/status_resting"
+                        android:textSize="9sp" />
 
-                </FrameLayout>
-
-                <TextView
-                    android:id="@+id/tvStatRestingCount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="0"
-                    android:textColor="@color/status_resting"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Rehat"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
+                </LinearLayout>
 
             </LinearLayout>
 
+            <!-- Offline Card -->
             <LinearLayout
                 android:id="@+id/cardStatOffline"
                 android:layout_width="0dp"
@@ -169,55 +256,95 @@
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_stat_card_gray"
-                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:padding="14dp">
 
-                <FrameLayout
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:background="@drawable/bg_stat_icon_gray">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/bg_stat_icon_gray">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_status_offline"
+                            android:contentDescription="Offline" />
+
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/tvStatOfflineCount"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:text="0"
+                        android:textColor="@color/status_offline"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Tidak Aktif"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:background="@drawable/dot_gray" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="⚫"
-                        android:textSize="14sp" />
+                        android:layout_marginStart="4dp"
+                        android:text="Luar talian"
+                        android:textColor="@color/status_offline"
+                        android:textSize="9sp" />
 
-                </FrameLayout>
-
-                <TextView
-                    android:id="@+id/tvStatOfflineCount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="0"
-                    android:textColor="@color/status_offline"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Luar Talian"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
+                </LinearLayout>
 
             </LinearLayout>
 
         </LinearLayout>
 
-        <!-- Section header -->
+        <!-- ══════════ SECTION HEADER ══════════ -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="24dp"
             android:layout_marginBottom="12dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
+
+            <View
+                android:layout_width="4dp"
+                android:layout_height="22dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/bg_status_bar_green" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -237,23 +364,46 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Tap card to edit driver assignment"
+                    android:text="Ketuk kad untuk lihat butiran &amp; edit penugasan"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
 
             </LinearLayout>
 
-            <View
-                android:layout_width="4dp"
-                android:layout_height="28dp"
-                android:background="@drawable/bg_status_bar_green" />
+            <!-- Live pulse indicator -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <View
+                    android:id="@+id/pulseDot"
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:background="@drawable/dot_green" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="LIVE"
+                    android:textColor="@color/status_moving"
+                    android:textSize="10sp"
+                    android:letterSpacing="0.1"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
+        <!-- Schedule Grid -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvScheduleGrid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="24dp"
             android:nestedScrollingEnabled="false"
             android:overScrollMode="never" />
 

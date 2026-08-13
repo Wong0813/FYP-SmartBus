@@ -161,7 +161,7 @@
                 android:layout_height="44dp"
                 android:layout_marginTop="14dp"
                 android:background="@drawable/bg_search_bar"
-                android:drawableStart="@android:drawable/ic_menu_search"
+                android:drawableStart="@drawable/ic_search"
                 android:drawablePadding="10dp"
                 android:hint="Search name, email, route..."
                 android:importantForAutofill="no"
@@ -440,15 +440,51 @@
                 android:nestedScrollingEnabled="false"
                 android:overScrollMode="never" />
 
-            <TextView
-                android:id="@+id/tvEmptyUsers"
+            <!-- Empty state with illustration -->
+            <LinearLayout
+                android:id="@+id/llEmptyUsers"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
+                android:layout_marginBottom="16dp"
                 android:gravity="center"
-                android:text="No accounts found.\nTap 'Sync 20 Drivers' to import official UPSI drivers."
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:src="@drawable/ic_empty_state"
+                    android:contentDescription="No accounts" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Tiada akaun ditemui"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Ketuk 'Sync All Data' untuk import akaun rasmi UPSI atau tambah akaun baharu."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="3dp" />
+
+            </LinearLayout>
+
+            <!-- Legacy hidden view kept for binding compat -->
+            <TextView
+                android:id="@+id/tvEmptyUsers"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
                 android:visibility="gone" />
 
             <!-- Legacy ids kept for binding compat -->
