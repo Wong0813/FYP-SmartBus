@@ -37,8 +37,7 @@
                         android:layout_height="44dp"
                         android:layout_gravity="center"
                         android:contentDescription="Bus icon"
-                        android:src="@android:drawable/ic_menu_mapmode"
-                        android:tint="@color/white" />
+                        android:src="@drawable/ic_bus_white" />
                 </FrameLayout>
 
                 <!-- SMARTBUS Title -->
@@ -116,7 +115,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:contentDescription="Error"
-                    android:src="@android:drawable/ic_dialog_alert"
+                    android:src="@drawable/ic_status_offline"
                     android:tint="@color/error_red" />
 
                 <TextView
@@ -137,9 +136,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_input_field"
-                android:drawableStart="@android:drawable/ic_menu_myplaces"
+                android:drawableStart="@drawable/ic_nav_profile"
                 android:drawablePadding="12dp"
-                android:drawableTint="@color/crimson_primary"
                 android:hint="@string/hint_username"
                 android:importantForAutofill="no"
                 android:inputType="text"
@@ -159,9 +157,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_input_field"
-                    android:drawableStart="@android:drawable/ic_lock_idle_lock"
+                    android:drawableStart="@drawable/ic_status_offline"
                     android:drawablePadding="12dp"
-                    android:drawableTint="@color/crimson_primary"
                     android:hint="@string/hint_password"
                     android:importantForAutofill="no"
                     android:inputType="textPassword"
@@ -179,7 +176,7 @@
                     android:layout_marginEnd="8dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Toggle password visibility"
-                    android:src="@android:drawable/ic_menu_view"
+                    android:src="@drawable/ic_search"
                     android:tint="@color/text_secondary" />
             </FrameLayout>
 

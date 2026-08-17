@@ -3011,6 +3011,7 @@ drawable bg_capsule_translucent
 drawable bg_capsule_white
 drawable bg_card
 drawable bg_card_20
+drawable bg_circle_crimson
 drawable bg_day_type_badge
 drawable bg_drawer_header
 drawable bg_error_banner
@@ -3135,6 +3136,10 @@ drawable ic_nav_straight
 drawable ic_nav_turn_left
 drawable ic_nav_turn_right
 drawable ic_nav_uturn
+drawable ic_profile_email
+drawable ic_profile_faculty
+drawable ic_profile_id
+drawable ic_profile_location
 drawable ic_route_white
 drawable ic_search
 drawable ic_search_black_24

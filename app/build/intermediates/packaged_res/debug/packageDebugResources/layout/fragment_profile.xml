@@ -34,8 +34,7 @@
                     android:layout_height="48dp"
                     android:layout_gravity="center"
                     android:contentDescription="Role icon"
-                    android:src="@android:drawable/ic_menu_myplaces"
-                    android:tint="@color/crimson_primary" />
+                    android:src="@drawable/ic_nav_profile" />
             </FrameLayout>
 
             <!-- Full Name -->
@@ -106,8 +105,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:contentDescription="ID"
-                    android:src="@android:drawable/ic_menu_agenda"
-                    android:tint="@color/crimson_primary" />
+                    android:src="@drawable/ic_profile_id" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -153,8 +151,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:contentDescription="Faculty"
-                    android:src="@android:drawable/ic_menu_info_details"
-                    android:tint="@color/crimson_primary" />
+                    android:src="@drawable/ic_profile_faculty" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -200,8 +197,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:contentDescription="Program"
-                    android:src="@android:drawable/ic_menu_sort_by_size"
-                    android:tint="@color/crimson_primary" />
+                    android:src="@drawable/ic_profile_faculty" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -246,8 +242,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:contentDescription="Email"
-                    android:src="@android:drawable/ic_dialog_email"
-                    android:tint="@color/crimson_primary" />
+                    android:src="@drawable/ic_profile_email" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -297,7 +292,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:contentDescription="Bus"
-                    android:src="@android:drawable/ic_menu_mapmode"
+                    android:src="@drawable/ic_bus_white"
                     android:tint="@color/crimson_primary" />
 
                 <LinearLayout
@@ -346,7 +341,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:contentDescription="Route"
-                    android:src="@android:drawable/ic_menu_directions"
+                    android:src="@drawable/ic_route_white"
                     android:tint="@color/crimson_primary" />
 
                 <LinearLayout
@@ -407,8 +402,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:contentDescription="Location"
-                    android:src="@android:drawable/ic_menu_compass"
-                    android:tint="@color/crimson_primary" />
+                    android:src="@drawable/ic_profile_location" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -451,7 +445,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:contentDescription="Fleet"
-                    android:src="@android:drawable/ic_menu_mapmode"
+                    android:src="@drawable/ic_bus_white"
                     android:tint="@color/crimson_primary" />
 
                 <LinearLayout
