@@ -1,95 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dp"
-    android:background="@drawable/bg_form_card"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:padding="14dp">
-
-    <FrameLayout
-        android:layout_width="46dp"
-        android:layout_height="46dp"
-        android:background="@drawable/bg_admin_badge">
-
-        <TextView
-            android:id="@+id/tvBusOrder"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="#01"
-            android:textColor="@color/crimson_primary"
-            android:textSize="11sp"
-            android:textStyle="bold" />
-
-    </FrameLayout>
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="@color/card_bg"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="2dp">
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="14dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+        <!-- Bus number badge -->
+        <FrameLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_avatar_admin">
 
             <TextView
-                android:id="@+id/tvBusName"
-                android:layout_width="0dp"
+                android:id="@+id/tvBusOrder"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Bus A"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp"
+                android:layout_gravity="center"
+                android:text="#01"
+                android:textColor="@color/text_white"
+                android:textSize="12sp"
                 android:textStyle="bold" />
 
-            <View
-                android:id="@+id/statusDot"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:background="@drawable/dot_green" />
+        </FrameLayout>
+
+        <!-- Info section -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Bus ID + status dot -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvBusName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="BUS-001"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <!-- Status pill -->
+                <LinearLayout
+                    android:id="@+id/llStatusPill"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_status_offline"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp">
+
+                    <View
+                        android:id="@+id/statusDot"
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:background="@drawable/dot_gray" />
+
+                    <TextView
+                        android:id="@+id/tvBusStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="IDLE"
+                        android:textColor="@color/status_offline"
+                        android:textSize="9sp"
+                        android:letterSpacing="0.05"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Plate number -->
+            <TextView
+                android:id="@+id/tvBusPlate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:text="WXX 0001"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+
+            <!-- Assigned route chip -->
+            <TextView
+                android:id="@+id/tvBusRoute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_filter_chip"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="Laluan 1"
+                android:textColor="@color/crimson_primary"
+                android:textSize="10sp"
+                android:textStyle="bold" />
 
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tvBusPlate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="ABC 1234"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
-
-        <TextView
-            android:id="@+id/tvBusRoute"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:background="@drawable/bg_role_badge"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="3dp"
-            android:text="Route A"
-            android:textColor="@color/crimson_primary"
-            android:textSize="10sp"
-            android:textStyle="bold" />
+        <!-- Delete button -->
+        <ImageButton
+            android:id="@+id/btnDeleteBus"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_icon_btn_delete"
+            android:contentDescription="Delete"
+            android:padding="9dp"
+            android:src="@drawable/ic_delete" />
 
     </LinearLayout>
 
-    <ImageButton
-        android:id="@+id/btnDeleteBus"
-        android:layout_width="38dp"
-        android:layout_height="38dp"
-        android:layout_marginStart="8dp"
-        android:background="@drawable/bg_icon_btn_delete"
-        android:contentDescription="Delete"
-        android:padding="8dp"
-        android:src="@android:drawable/ic_menu_delete"
-        app:tint="@color/signout_text" />
-
-</LinearLayout>
+</androidx.cardview.widget.CardView>

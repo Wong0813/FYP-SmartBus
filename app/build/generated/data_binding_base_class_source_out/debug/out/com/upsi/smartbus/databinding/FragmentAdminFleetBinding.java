@@ -42,6 +42,9 @@ public final class FragmentAdminFleetBinding implements ViewBinding {
   public final EditText etLicensePlate;
 
   @NonNull
+  public final LinearLayout llEmptyFleet;
+
+  @NonNull
   public final LinearLayout llFleetForm;
 
   @NonNull
@@ -56,9 +59,9 @@ public final class FragmentAdminFleetBinding implements ViewBinding {
   private FragmentAdminFleetBinding(@NonNull NestedScrollView rootView,
       @NonNull TextView btnRegisterBus, @NonNull TextView btnSyncFleet,
       @NonNull TextView btnToggleFleetForm, @NonNull EditText etBusId, @NonNull EditText etBusName,
-      @NonNull EditText etLicensePlate, @NonNull LinearLayout llFleetForm,
-      @NonNull RecyclerView rvFleet, @NonNull Spinner spinnerBusRoute,
-      @NonNull TextView tvFleetTotal) {
+      @NonNull EditText etLicensePlate, @NonNull LinearLayout llEmptyFleet,
+      @NonNull LinearLayout llFleetForm, @NonNull RecyclerView rvFleet,
+      @NonNull Spinner spinnerBusRoute, @NonNull TextView tvFleetTotal) {
     this.rootView = rootView;
     this.btnRegisterBus = btnRegisterBus;
     this.btnSyncFleet = btnSyncFleet;
@@ -66,6 +69,7 @@ public final class FragmentAdminFleetBinding implements ViewBinding {
     this.etBusId = etBusId;
     this.etBusName = etBusName;
     this.etLicensePlate = etLicensePlate;
+    this.llEmptyFleet = llEmptyFleet;
     this.llFleetForm = llFleetForm;
     this.rvFleet = rvFleet;
     this.spinnerBusRoute = spinnerBusRoute;
@@ -135,6 +139,12 @@ public final class FragmentAdminFleetBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.llEmptyFleet;
+      LinearLayout llEmptyFleet = ViewBindings.findChildViewById(rootView, id);
+      if (llEmptyFleet == null) {
+        break missingId;
+      }
+
       id = R.id.llFleetForm;
       LinearLayout llFleetForm = ViewBindings.findChildViewById(rootView, id);
       if (llFleetForm == null) {
@@ -160,8 +170,8 @@ public final class FragmentAdminFleetBinding implements ViewBinding {
       }
 
       return new FragmentAdminFleetBinding((NestedScrollView) rootView, btnRegisterBus,
-          btnSyncFleet, btnToggleFleetForm, etBusId, etBusName, etLicensePlate, llFleetForm,
-          rvFleet, spinnerBusRoute, tvFleetTotal);
+          btnSyncFleet, btnToggleFleetForm, etBusId, etBusName, etLicensePlate, llEmptyFleet,
+          llFleetForm, rvFleet, spinnerBusRoute, tvFleetTotal);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

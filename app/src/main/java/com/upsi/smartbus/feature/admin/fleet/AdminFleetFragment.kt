@@ -52,17 +52,21 @@ class AdminFleetFragment : Fragment() {
         binding.btnToggleFleetForm.setOnClickListener {
             val show = binding.llFleetForm.visibility != View.VISIBLE
             binding.llFleetForm.visibility = if (show) View.VISIBLE else View.GONE
-            binding.btnToggleFleetForm.text = if (show) "✕ Close" else "+ Register Bus"
+            binding.btnToggleFleetForm.text = if (show) "Close" else "+ Register Bus"
         }
     }
 
     private fun setupSync() {
         binding.btnSyncFleet.setOnClickListener {
             binding.btnSyncFleet.isEnabled = false
+            binding.btnSyncFleet.text = "Syncing..."
             AccountSeeder.seedOfficialBuses {
                 if (_binding == null) return@seedOfficialBuses
                 binding.btnSyncFleet.isEnabled = true
-                Toast.makeText(requireContext(), "20 buses synced (aligned with Laluan)", Toast.LENGTH_LONG).show()
+                binding.btnSyncFleet.text = "Sync Fleet"
+                com.google.android.material.snackbar.Snackbar
+                    .make(binding.root, "20 buses synced to Firestore", com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
+                    .show()
             }
         }
     }
@@ -144,16 +148,29 @@ class AdminFleetFragment : Fragment() {
             }
             busList.sortBy { AdminSortHelper.busOrderKey(it.id) }
             binding.tvFleetTotal.text = "${busList.size} Buses"
+            val isEmpty = busList.isEmpty()
+            binding.llEmptyFleet.visibility = if (isEmpty) View.VISIBLE else View.GONE
+            binding.rvFleet.visibility = if (isEmpty) View.GONE else View.VISIBLE
             fleetAdapter.notifyDataSetChanged()
             AdminUiHelper.expandRecyclerView(binding.rvFleet)
         }
     }
 
     private fun deleteBus(bus: Bus) {
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Remove ${bus.id}?")
-            .setPositiveButton("Delete") { _, _ -> db.collection("buses").document(bus.id).delete() }
-            .setNegativeButton("Cancel", null).show()
+        val busRef = db.collection("buses").document(bus.id)
+        busRef.get().addOnSuccessListener { snapshot ->
+            val backup = snapshot.data ?: return@addOnSuccessListener
+            busRef.delete()
+            com.google.android.material.snackbar.Snackbar
+                .make(binding.root, "${bus.id} removed", 5000)
+                .setAction("UNDO") {
+                    busRef.set(backup)
+                }
+                .setActionTextColor(
+                    androidx.core.content.ContextCompat.getColor(requireContext(), R.color.status_moving)
+                )
+                .show()
+        }
     }
 
     override fun onDestroyView() {
@@ -172,17 +189,34 @@ class AdminFleetFragment : Fragment() {
             VH(ItemFleetCardBinding.inflate(LayoutInflater.from(p.context), p, false))
         override fun onBindViewHolder(h: VH, pos: Int) {
             val bus = buses[pos]
+            val ctx = h.itemView.context
             val order = AdminSortHelper.busOrderKey(bus.id)
             h.binding.tvBusOrder.text = "#${String.format("%02d", order.coerceAtMost(99))}"
-            h.binding.tvBusName.text = "${bus.id} • ${bus.name}"
+            h.binding.tvBusName.text = "${bus.id} \u2022 ${bus.name}"
             h.binding.tvBusPlate.text = bus.licensePlate.ifEmpty { bus.plateNumber }
-            h.binding.tvBusRoute.text = bus.routeName
-            val dot = when (bus.status.lowercase()) {
-                "working" -> R.drawable.dot_green
-                "resting" -> R.drawable.dot_orange
-                else -> R.drawable.dot_gray
+            h.binding.tvBusRoute.text = bus.routeName.ifEmpty { "Unassigned" }
+
+            when (bus.status.lowercase()) {
+                "working" -> {
+                    h.binding.statusDot.setBackgroundResource(R.drawable.dot_green)
+                    h.binding.tvBusStatus.text = "AKTIF"
+                    h.binding.tvBusStatus.setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.status_moving))
+                    h.binding.llStatusPill.setBackgroundResource(R.drawable.bg_status_moving)
+                }
+                "resting" -> {
+                    h.binding.statusDot.setBackgroundResource(R.drawable.dot_orange)
+                    h.binding.tvBusStatus.text = "REHAT"
+                    h.binding.tvBusStatus.setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.status_resting))
+                    h.binding.llStatusPill.setBackgroundResource(R.drawable.bg_status_resting)
+                }
+                else -> {
+                    h.binding.statusDot.setBackgroundResource(R.drawable.dot_gray)
+                    h.binding.tvBusStatus.text = "IDLE"
+                    h.binding.tvBusStatus.setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.status_offline))
+                    h.binding.llStatusPill.setBackgroundResource(R.drawable.bg_status_offline)
+                }
             }
-            h.binding.statusDot.setBackgroundResource(dot)
+
             h.itemView.setOnClickListener { onEdit(bus) }
             h.binding.btnDeleteBus.setOnClickListener { onDelete(bus) }
         }

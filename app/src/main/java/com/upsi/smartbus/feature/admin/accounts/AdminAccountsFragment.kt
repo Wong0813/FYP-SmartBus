@@ -83,8 +83,9 @@ class AdminAccountsFragment : Fragment() {
     private fun setupSyncButton() {
         binding.btnSyncOfficial.setOnClickListener {
             binding.btnSyncOfficial.isEnabled = false
+            binding.btnSyncOfficial.text = "Syncing..."
             binding.tvSyncStatus.visibility = View.VISIBLE
-            binding.tvSyncStatus.text = "Syncing routes + 20 drivers (Driver 01 → Laluan 1)..."
+            binding.tvSyncStatus.text = "Syncing routes + 20 drivers..."
 
             AccountSeeder.seedOfficialRoutes {
                 AccountSeeder.seedOfficialDrivers(
@@ -99,20 +100,20 @@ class AdminAccountsFragment : Fragment() {
                             AccountSeeder.seedDemoStudents {
                                 if (_binding == null) return@seedDemoStudents
                                 binding.btnSyncOfficial.isEnabled = true
+                                binding.btnSyncOfficial.text = "Sync All Data"
                                 binding.tvSyncStatus.text =
-                                    "✅ Synced $success drivers + buses to Firestore" +
+                                    "Synced $success drivers + buses" +
                                         if (failed > 0) " ($failed failed)" else ""
-                                Toast.makeText(
-                                    requireContext(),
-                                    "20 official drivers imported!",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                                com.google.android.material.snackbar.Snackbar
+                                    .make(binding.root, "$success drivers + buses imported!", 4000)
+                                    .show()
                             }
                         }
                     }
                 )
             }
         }
+
     }
 
     private fun setupSearch() {

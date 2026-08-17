@@ -150,6 +150,47 @@
             android:nestedScrollingEnabled="false"
             android:overScrollMode="never" />
 
+        <!-- Empty state -->
+        <LinearLayout
+            android:id="@+id/llEmptyFleet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:src="@drawable/ic_empty_state"
+                android:contentDescription="No buses" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Tiada bas berdaftar"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Ketuk 'Sync Fleet' untuk import 20 bas rasmi atau daftarkan bas baharu."
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:lineSpacingExtra="3dp" />
+
+        </LinearLayout>
+
+
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>

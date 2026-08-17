@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
 import com.upsi.smartbus.R;
@@ -18,10 +19,13 @@ import java.lang.String;
 
 public final class ItemFleetCardBinding implements ViewBinding {
   @NonNull
-  private final LinearLayout rootView;
+  private final CardView rootView;
 
   @NonNull
   public final ImageButton btnDeleteBus;
+
+  @NonNull
+  public final LinearLayout llStatusPill;
 
   @NonNull
   public final View statusDot;
@@ -38,21 +42,27 @@ public final class ItemFleetCardBinding implements ViewBinding {
   @NonNull
   public final TextView tvBusRoute;
 
-  private ItemFleetCardBinding(@NonNull LinearLayout rootView, @NonNull ImageButton btnDeleteBus,
-      @NonNull View statusDot, @NonNull TextView tvBusName, @NonNull TextView tvBusOrder,
-      @NonNull TextView tvBusPlate, @NonNull TextView tvBusRoute) {
+  @NonNull
+  public final TextView tvBusStatus;
+
+  private ItemFleetCardBinding(@NonNull CardView rootView, @NonNull ImageButton btnDeleteBus,
+      @NonNull LinearLayout llStatusPill, @NonNull View statusDot, @NonNull TextView tvBusName,
+      @NonNull TextView tvBusOrder, @NonNull TextView tvBusPlate, @NonNull TextView tvBusRoute,
+      @NonNull TextView tvBusStatus) {
     this.rootView = rootView;
     this.btnDeleteBus = btnDeleteBus;
+    this.llStatusPill = llStatusPill;
     this.statusDot = statusDot;
     this.tvBusName = tvBusName;
     this.tvBusOrder = tvBusOrder;
     this.tvBusPlate = tvBusPlate;
     this.tvBusRoute = tvBusRoute;
+    this.tvBusStatus = tvBusStatus;
   }
 
   @Override
   @NonNull
-  public LinearLayout getRoot() {
+  public CardView getRoot() {
     return rootView;
   }
 
@@ -80,6 +90,12 @@ public final class ItemFleetCardBinding implements ViewBinding {
       id = R.id.btnDeleteBus;
       ImageButton btnDeleteBus = ViewBindings.findChildViewById(rootView, id);
       if (btnDeleteBus == null) {
+        break missingId;
+      }
+
+      id = R.id.llStatusPill;
+      LinearLayout llStatusPill = ViewBindings.findChildViewById(rootView, id);
+      if (llStatusPill == null) {
         break missingId;
       }
 
@@ -113,8 +129,14 @@ public final class ItemFleetCardBinding implements ViewBinding {
         break missingId;
       }
 
-      return new ItemFleetCardBinding((LinearLayout) rootView, btnDeleteBus, statusDot, tvBusName,
-          tvBusOrder, tvBusPlate, tvBusRoute);
+      id = R.id.tvBusStatus;
+      TextView tvBusStatus = ViewBindings.findChildViewById(rootView, id);
+      if (tvBusStatus == null) {
+        break missingId;
+      }
+
+      return new ItemFleetCardBinding((CardView) rootView, btnDeleteBus, llStatusPill, statusDot,
+          tvBusName, tvBusOrder, tvBusPlate, tvBusRoute, tvBusStatus);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

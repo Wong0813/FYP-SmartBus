@@ -20,6 +20,10 @@
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\layout\\fragment_admin_accounts.xml"
     },
     {
+        "merged": "com.upsi.smartbus.app-debug-36:/layout_fragment_admin_fleet.xml.flat",
+        "source": "com.upsi.smartbus.app-main-38:/layout/fragment_admin_fleet.xml"
+    },
+    {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_bg_insight_banner.xml.flat",
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\bg_insight_banner.xml"
     },
@@ -84,24 +88,20 @@
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\bg_route_chip.xml"
     },
     {
-        "merged": "com.upsi.smartbus.app-debug-36:/drawable_ic_nav_profile.xml.flat",
-        "source": "com.upsi.smartbus.app-main-38:/drawable/ic_nav_profile.xml"
+        "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_bg_avatar_circle.xml.flat",
+        "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\bg_avatar_circle.xml"
     },
     {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_ic_admin_routes.xml.flat",
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\ic_admin_routes.xml"
     },
     {
-        "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_bg_avatar_circle.xml.flat",
-        "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\bg_avatar_circle.xml"
+        "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\menu_drawer_student.xml.flat",
+        "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\menu\\drawer_student.xml"
     },
     {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_bg_drawer_header.xml.flat",
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\bg_drawer_header.xml"
-    },
-    {
-        "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\menu_drawer_student.xml.flat",
-        "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\menu\\drawer_student.xml"
     },
     {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_bg_weather_banner.xml.flat",
@@ -136,8 +136,8 @@
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\layout\\fragment_student_map.xml"
     },
     {
-        "merged": "com.upsi.smartbus.app-debug-36:/menu_drawer_admin.xml.flat",
-        "source": "com.upsi.smartbus.app-main-38:/menu/drawer_admin.xml"
+        "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_ic_nav_profile.xml.flat",
+        "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\ic_nav_profile.xml"
     },
     {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_bg_button_crimson.xml.flat",
@@ -148,8 +148,8 @@
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\bg_capsule_white.xml"
     },
     {
-        "merged": "com.upsi.smartbus.app-debug-36:/layout_activity_admin.xml.flat",
-        "source": "com.upsi.smartbus.app-main-38:/layout/activity_admin.xml"
+        "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_ic_admin_map.xml.flat",
+        "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\ic_admin_map.xml"
     },
     {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\layout_fragment_driver_control.xml.flat",
@@ -200,6 +200,10 @@
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\layout\\fragment_profile.xml"
     },
     {
+        "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_ic_menu_burger.xml.flat",
+        "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\ic_menu_burger.xml"
+    },
+    {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_ic_map_stop_start.xml.flat",
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\ic_map_stop_start.xml"
     },
@@ -226,10 +230,6 @@
     {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_bg_stat_card_green.xml.flat",
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\bg_stat_card_green.xml"
-    },
-    {
-        "merged": "com.upsi.smartbus.app-debug-36:/drawable_ic_menu_burger.xml.flat",
-        "source": "com.upsi.smartbus.app-main-38:/drawable/ic_menu_burger.xml"
     },
     {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_ic_nav_turn_left.xml.flat",
@@ -284,10 +284,6 @@
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\bg_status_bar_gray.xml"
     },
     {
-        "merged": "com.upsi.smartbus.app-debug-36:/layout_fragment_admin_live_map.xml.flat",
-        "source": "com.upsi.smartbus.app-main-38:/layout/fragment_admin_live_map.xml"
-    },
-    {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_bg_search_bar.xml.flat",
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\bg_search_bar.xml"
     },
@@ -340,16 +336,20 @@
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\bg_portal_badge.xml"
     },
     {
-        "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_ic_nav_turn_right.xml.flat",
-        "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\ic_nav_turn_right.xml"
-    },
-    {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\menu_drawer_admin.xml.flat",
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\menu\\drawer_admin.xml"
     },
     {
+        "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_ic_nav_turn_right.xml.flat",
+        "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\ic_nav_turn_right.xml"
+    },
+    {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_ic_delete.xml.flat",
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\ic_delete.xml"
+    },
+    {
+        "merged": "com.upsi.smartbus.app-debug-36:/layout_item_fleet_card.xml.flat",
+        "source": "com.upsi.smartbus.app-main-38:/layout/item_fleet_card.xml"
     },
     {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_ic_sync_white.xml.flat",
@@ -396,8 +396,16 @@
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\xml\\data_extraction_rules.xml"
     },
     {
+        "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\layout_fragment_admin_live_map.xml.flat",
+        "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\layout\\fragment_admin_live_map.xml"
+    },
+    {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\layout_item_fleet_card.xml.flat",
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\layout\\item_fleet_card.xml"
+    },
+    {
+        "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_ic_nav_signout.xml.flat",
+        "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\ic_nav_signout.xml"
     },
     {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_ic_nav_arrive.xml.flat",
@@ -452,20 +460,12 @@
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\bg_login_header.xml"
     },
     {
-        "merged": "com.upsi.smartbus.app-debug-36:/drawable_ic_nav_signout.xml.flat",
-        "source": "com.upsi.smartbus.app-main-38:/drawable/ic_nav_signout.xml"
-    },
-    {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_bg_capsule_translucent.xml.flat",
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\drawable\\bg_capsule_translucent.xml"
     },
     {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\layout_item_bus_card.xml.flat",
         "source": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-main-38:\\layout\\item_bus_card.xml"
-    },
-    {
-        "merged": "com.upsi.smartbus.app-debug-36:/drawable_ic_admin_map.xml.flat",
-        "source": "com.upsi.smartbus.app-main-38:/drawable/ic_admin_map.xml"
     },
     {
         "merged": "C:\\Users\\wxuef\\.gradle\\daemon\\9.0.0\\com.upsi.smartbus.app-debug-36:\\drawable_bg_eta_ai.xml.flat",

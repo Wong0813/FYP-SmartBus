@@ -208,35 +208,91 @@ class AdminDashboardFragment : Fragment() {
 
     private fun showEditDriverDialog(item: ScheduleItem) {
         if (item.driverUid.isEmpty()) {
-            Toast.makeText(requireContext(), "No driver for ${item.route.name}. Sync in Manage Accounts.", Toast.LENGTH_LONG).show()
+            com.google.android.material.snackbar.Snackbar
+                .make(binding.root, "Tiada pemandu untuk ${item.route.name}. Sync di Manage Accounts.", 4000)
+                .show()
             return
         }
         val ctx = requireContext()
-        val layout = LinearLayout(ctx).apply { orientation = LinearLayout.VERTICAL; setPadding(48, 32, 48, 16) }
-        val etName = EditText(ctx).apply { hint = "Driver Name"; setText(item.driverName) }
-        val etBus = EditText(ctx).apply { hint = "Bus ID"; setText(item.busId) }
-        layout.addView(etName); layout.addView(etBus)
+        val layout = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(56, 40, 56, 24)
+        }
+
+        // Route label
+        val tvRoute = android.widget.TextView(ctx).apply {
+            text = "${AdminSortHelper.routeNumberLabel(item.route)} ${item.route.name}"
+            setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.text_secondary))
+            textSize = 11f
+            setPadding(0, 0, 0, 16)
+        }
+
+        val etName = android.widget.EditText(ctx).apply {
+            hint = "Nama Pemandu"
+            setText(item.driverName)
+            setBackgroundResource(R.drawable.bg_input_field)
+            setPadding(32, 24, 32, 24)
+        }
+        val etBus = android.widget.EditText(ctx).apply {
+            hint = "Bus ID (cth: BUS-001)"
+            setText(if (item.busId == "—") "" else item.busId)
+            setBackgroundResource(R.drawable.bg_input_field)
+            setPadding(32, 24, 32, 24)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = 12 }
+        }
+
+        layout.addView(tvRoute)
+        layout.addView(etName)
+        layout.addView(etBus)
+
         val routes = RouteRepository.getCachedRoutes().map { it.name }
         com.google.android.material.dialog.MaterialAlertDialogBuilder(ctx)
-            .setTitle("${AdminSortHelper.routeNumberLabel(item.route)} ${item.route.name}")
+            .setTitle("Edit Penugasan Pemandu")
             .setView(layout)
-            .setPositiveButton("Save") { _, _ ->
+            .setPositiveButton("Simpan") { dlg, _ ->
+                val newName = etName.text.toString().trim()
+                val newBus = etBus.text.toString().trim()
+                if (newName.isEmpty()) {
+                    com.google.android.material.snackbar.Snackbar
+                        .make(binding.root, "Nama pemandu tidak boleh kosong", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
+                        .show()
+                    return@setPositiveButton
+                }
                 db.collection("users").document(item.driverUid).update(mapOf(
-                    "name" to etName.text.toString().trim(),
-                    "assignedBus" to etBus.text.toString().trim()
-                )).addOnSuccessListener { loadScheduleData() }
+                    "name" to newName,
+                    "assignedBus" to newBus
+                )).addOnSuccessListener {
+                    loadScheduleData()
+                    com.google.android.material.snackbar.Snackbar
+                        .make(binding.root, "Penugasan dikemas kini", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
+                        .show()
+                }.addOnFailureListener {
+                    com.google.android.material.snackbar.Snackbar
+                        .make(binding.root, "Gagal menyimpan: ${it.message}", 4000)
+                        .show()
+                }
             }
-            .setNeutralButton("Change Route") { _, _ ->
+            .setNeutralButton("Tukar Laluan") { _, _ ->
                 com.google.android.material.dialog.MaterialAlertDialogBuilder(ctx)
-                    .setTitle("Reassign")
+                    .setTitle("Tukar Laluan untuk ${item.driverName}")
                     .setItems(routes.toTypedArray()) { _, w ->
                         db.collection("users").document(item.driverUid)
                             .update("assignedRoute", routes[w])
-                            .addOnSuccessListener { loadScheduleData() }
+                            .addOnSuccessListener {
+                                loadScheduleData()
+                                com.google.android.material.snackbar.Snackbar
+                                    .make(binding.root, "Laluan ditukar ke: ${routes[w]}", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
+                                    .show()
+                            }
                     }.show()
             }
-            .setNegativeButton("Cancel", null).show()
+            .setNegativeButton("Batal", null)
+            .show()
     }
+
 
     override fun onDestroyView() {
         busListener?.remove()
