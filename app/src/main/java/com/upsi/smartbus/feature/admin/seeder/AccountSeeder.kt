@@ -10,7 +10,7 @@ import com.upsi.smartbus.core.model.RouteData
 object AccountSeeder {
 
     private const val PREFS = "smartbus_admin"
-    private const val KEY_ACCOUNTS_SEEDED = "accounts_seeded_v4"
+    private const val KEY_ACCOUNTS_SEEDED = "accounts_seeded_v6"
 
     data class AlignedEntry(
         val number: Int,
@@ -60,8 +60,7 @@ object AccountSeeder {
                     "stops" to route.stops,
                     "scheduleType" to route.scheduleType,
                     "routeOrder" to (index + 1)
-                ),
-                SetOptions.merge()
+                )
             ).addOnCompleteListener {
                 done++
                 if (done == routes.size) {
@@ -121,7 +120,7 @@ object AccountSeeder {
                 "faculty" to "",
                 "program" to ""
             )
-            db.collection("users").document(docId).set(profile, SetOptions.merge())
+            db.collection("users").document(docId).set(profile)
                 .addOnSuccessListener {
                     success++; completed++
                     onProgress?.invoke(completed, entries.size)
@@ -138,32 +137,83 @@ object AccountSeeder {
     fun seedOfficialBuses(onComplete: ((count: Int) -> Unit)? = null) {
         val db = FirestoreHelper.db
         val entries = alignedEntries()
-        var done = 0
-        entries.forEach { entry ->
-            val busData = mapOf(
-                "id" to entry.driver.busId,
-                "name" to entry.route.name,
-                "licensePlate" to entry.driver.plateNumber,
-                "plateNumber" to entry.driver.plateNumber,
-                "routeName" to entry.route.name,
-                "routeStops" to entry.route.stops,
-                "startStop" to entry.route.stops.firstOrNull().orEmpty(),
-                "status" to "IDLE",
-                "speed" to 0.0,
-                "nextStop" to entry.route.stops.getOrElse(1) { "" },
-                "distanceToNext" to 0.0,
-                "passengerCount" to 0,
-                "capacity" to 40,
-                "driverName" to entry.driver.driverName,
-                "driverNumber" to entry.number,
-                "lastUpdated" to System.currentTimeMillis()
-            )
-            db.collection("buses").document(entry.driver.busId)
-                .set(busData, SetOptions.merge())
-                .addOnCompleteListener {
-                    done++
-                    if (done == entries.size) onComplete?.invoke(done)
+        val validBusIds = entries.map { it.driver.busId }.toSet()
+
+        // 1. Clean up obsolete/duplicate bus documents
+        db.collection("buses").get().addOnSuccessListener { snapshot ->
+            val batch = db.batch()
+            var deleteCount = 0
+            for (doc in snapshot.documents) {
+                if (doc.id !in validBusIds) {
+                    batch.delete(doc.reference)
+                    deleteCount++
                 }
+            }
+
+            val proceedWithInsert = {
+                var done = 0
+                entries.forEach { entry ->
+                    val busData = mapOf(
+                        "id" to entry.driver.busId,
+                        "name" to entry.route.name,
+                        "licensePlate" to entry.driver.plateNumber,
+                        "plateNumber" to entry.driver.plateNumber,
+                        "routeName" to entry.route.name,
+                        "routeStops" to entry.route.stops,
+                        "startStop" to entry.route.stops.firstOrNull().orEmpty(),
+                        "status" to "IDLE",
+                        "speed" to 0.0,
+                        "nextStop" to entry.route.stops.getOrElse(1) { "" },
+                        "distanceToNext" to 0.0,
+                        "passengerCount" to 0,
+                        "capacity" to 40,
+                        "driverName" to entry.driver.driverName,
+                        "driverNumber" to entry.number,
+                        "lastUpdated" to System.currentTimeMillis()
+                    )
+                    db.collection("buses").document(entry.driver.busId)
+                        .set(busData, SetOptions.merge())
+                        .addOnCompleteListener {
+                            done++
+                            if (done == entries.size) onComplete?.invoke(done)
+                        }
+                }
+            }
+
+            if (deleteCount > 0) {
+                batch.commit().addOnCompleteListener { proceedWithInsert() }
+            } else {
+                proceedWithInsert()
+            }
+        }.addOnFailureListener {
+            // Fallback direct write if query fails
+            var done = 0
+            entries.forEach { entry ->
+                val busData = mapOf(
+                    "id" to entry.driver.busId,
+                    "name" to entry.route.name,
+                    "licensePlate" to entry.driver.plateNumber,
+                    "plateNumber" to entry.driver.plateNumber,
+                    "routeName" to entry.route.name,
+                    "routeStops" to entry.route.stops,
+                    "startStop" to entry.route.stops.firstOrNull().orEmpty(),
+                    "status" to "IDLE",
+                    "speed" to 0.0,
+                    "nextStop" to entry.route.stops.getOrElse(1) { "" },
+                    "distanceToNext" to 0.0,
+                    "passengerCount" to 0,
+                    "capacity" to 40,
+                    "driverName" to entry.driver.driverName,
+                    "driverNumber" to entry.number,
+                    "lastUpdated" to System.currentTimeMillis()
+                )
+                db.collection("buses").document(entry.driver.busId)
+                    .set(busData, SetOptions.merge())
+                    .addOnCompleteListener {
+                        done++
+                        if (done == entries.size) onComplete?.invoke(done)
+                    }
+            }
         }
     }
 

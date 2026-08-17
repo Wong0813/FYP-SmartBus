@@ -9,14 +9,18 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
 import com.upsi.smartbus.feature.MainActivity
 import com.upsi.smartbus.R
+import com.upsi.smartbus.core.data.FirestoreHelper
 import com.upsi.smartbus.databinding.ActivityLoginBinding
+import com.upsi.smartbus.feature.admin.seeder.AccountSeeder
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private val auth by lazy { FirebaseAuth.getInstance() }
+    private val db by lazy { FirestoreHelper.db }
     private var passwordVisible = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +52,6 @@ class LoginActivity : AppCompatActivity() {
                     InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
                 binding.btnTogglePassword.setImageResource(android.R.drawable.ic_menu_view)
             }
-            // Move cursor to end
             binding.etPassword.setSelection(binding.etPassword.text.length)
         }
     }
@@ -67,18 +70,82 @@ class LoginActivity : AppCompatActivity() {
             binding.btnLogin.isEnabled = false
             binding.btnLogin.text = "Signing in…"
 
-            val email = if (username.contains("@")) username else "$username@upsi.edu.my"
+            val email = if (username.contains("@")) username.lowercase() else "${username.lowercase()}@upsi.edu.my"
+
+            // 1. Try normal Firebase Auth signIn
             auth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener {
-                    navigateToMain()
+                    syncUserDocumentOnLogin(email)
                 }
                 .addOnFailureListener { exception ->
-                    binding.btnLogin.isEnabled = true
-                    binding.btnLogin.text = getString(R.string.btn_sign_in)
-                    val errorMsg = exception.localizedMessage ?: "Login failed. Please check your credentials."
-                    showError(errorMsg)
+                    // 2. If user doesn't exist in Auth, auto-provision official account into Firebase Authentication
+                    if (shouldAutoRegister(email, password)) {
+                        autoRegisterInFirebaseAuth(email, password)
+                    } else {
+                        binding.btnLogin.isEnabled = true
+                        binding.btnLogin.text = getString(R.string.btn_sign_in)
+                        val errorMsg = exception.localizedMessage ?: "Login failed. Please check your credentials."
+                        showError(errorMsg)
+                    }
                 }
         }
+    }
+
+    private fun shouldAutoRegister(email: String, pass: String): Boolean {
+        val isOfficialDriver = Regex("driver(\\d+)@upsi\\.edu\\.my").matches(email)
+        val isAdmin = email.startsWith("admin")
+        val isStudent = email.startsWith("student")
+        return (isOfficialDriver || isAdmin || isStudent) && (pass.length >= 6)
+    }
+
+    private fun autoRegisterInFirebaseAuth(email: String, pass: String) {
+        auth.createUserWithEmailAndPassword(email, pass)
+            .addOnSuccessListener { authResult ->
+                syncUserDocumentOnLogin(email)
+            }
+            .addOnFailureListener { regEx ->
+                binding.btnLogin.isEnabled = true
+                binding.btnLogin.text = getString(R.string.btn_sign_in)
+                val msg = regEx.localizedMessage ?: "Authentication error. Please check your password (min 6 characters)."
+                showError(msg)
+            }
+    }
+
+    private fun syncUserDocumentOnLogin(email: String) {
+        val currentUid = auth.currentUser?.uid ?: return navigateToMain()
+
+        // Match existing driver or student document in Firestore and sync UID
+        db.collection("users").whereEqualTo("email", email).get()
+            .addOnSuccessListener { snap ->
+                if (!snap.isEmpty) {
+                    val doc = snap.documents.first()
+                    val data = doc.data?.toMutableMap() ?: mutableMapOf()
+                    data["authUid"] = currentUid
+                    // Duplicate/link record with Auth UID for lightning-fast lookups
+                    db.collection("users").document(currentUid).set(data)
+                } else {
+                    // Create basic record if missing
+                    val isDriver = email.startsWith("driver")
+                    val isAdmin = email.startsWith("admin")
+                    val role = when {
+                        isAdmin -> "ADMIN"
+                        isDriver -> "DRIVER"
+                        else -> "STUDENT"
+                    }
+                    val initialData = mapOf(
+                        "uid" to currentUid,
+                        "email" to email,
+                        "role" to role,
+                        "name" to email.substringBefore("@").replaceFirstChar { it.uppercase() },
+                        "accountType" to "PORTAL"
+                    )
+                    db.collection("users").document(currentUid).set(initialData)
+                }
+                navigateToMain()
+            }
+            .addOnFailureListener {
+                navigateToMain()
+            }
     }
 
     private fun setupHowToAccess() {
@@ -97,38 +164,39 @@ class LoginActivity : AppCompatActivity() {
 
         // Title
         val title = TextView(this).apply {
-            text = getString(R.string.demo_title)
+            text = "Official Account Credentials"
             textSize = 18f
             setTextColor(resources.getColor(R.color.text_primary, theme))
             setTypeface(typeface, android.graphics.Typeface.BOLD)
         }
         container.addView(title)
 
-        // Spacer
-        val spacer = View(this).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 24
-            )
+        val desc = TextView(this).apply {
+            text = "All accounts have default password: driver123 / admin123"
+            textSize = 12f
+            setTextColor(resources.getColor(R.color.text_secondary, theme))
+            setPadding(0, 8, 0, 16)
         }
-        container.addView(spacer)
+        container.addView(desc)
 
-        // Credential entries
         val credentials = listOf(
-            "🎓" to getString(R.string.demo_student),
-            "🚌" to getString(R.string.demo_driver),
-            "🛡️" to getString(R.string.demo_admin)
+            "🚌" to "driver1@upsi.edu.my ~ driver18 (Laluan 1..18)",
+            "🚍" to "driver19@upsi.edu.my (Shuttle Campus KAB)",
+            "🚍" to "driver20@upsi.edu.my (Shuttle Campus KUO)",
+            "🛡️" to "admin@upsi.edu.my / admin123",
+            "🎓" to "student1@upsi.edu.my / student123"
         )
 
         for ((emoji, text) in credentials) {
             val row = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = android.view.Gravity.CENTER_VERTICAL
-                setPadding(0, 16, 0, 16)
+                setPadding(0, 12, 0, 12)
             }
 
             val emojiView = TextView(this).apply {
                 this.text = emoji
-                textSize = 20f
+                textSize = 18f
             }
             row.addView(emojiView)
 
@@ -139,33 +207,12 @@ class LoginActivity : AppCompatActivity() {
 
             val credText = TextView(this).apply {
                 this.text = text
-                textSize = 14f
+                textSize = 13f
                 setTextColor(resources.getColor(R.color.text_primary, theme))
-                typeface = android.graphics.Typeface.MONOSPACE
             }
             row.addView(credText)
-
             container.addView(row)
-
-            // Add divider (except after last)
-            if (text != credentials.last().second) {
-                val divider = View(this).apply {
-                    layoutParams = LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT, 1
-                    )
-                    setBackgroundColor(resources.getColor(R.color.divider, theme))
-                }
-                container.addView(divider)
-            }
         }
-
-        // Bottom spacer
-        val bottomSpacer = View(this).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 32
-            )
-        }
-        container.addView(bottomSpacer)
 
         dialog.setContentView(container)
         dialog.show()

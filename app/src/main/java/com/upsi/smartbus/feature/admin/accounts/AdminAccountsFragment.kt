@@ -214,7 +214,7 @@ class AdminAccountsFragment : Fragment() {
                 if (_binding == null) return@addSnapshotListener
                 if (error != null) {
                     com.google.android.material.snackbar.Snackbar
-                        .make(binding.root, "Gagal memuatkan data: ${error.message}", 4000)
+                        .make(binding.root, "Failed to load data: ${error.message}", 4000)
                         .show()
                     return@addSnapshotListener
                 }
@@ -497,7 +497,7 @@ class AdminAccountsFragment : Fragment() {
                     val num = if (user.driverNumber > 0) user.driverNumber else AdminSortHelper.driverOrderKey(user)
                     b.tvDriverNumber.visibility = View.VISIBLE
                     b.tvDriverNumber.text = String.format("%02d", num)
-                    val routeText = user.assignedRoute.ifEmpty { "Belum ditetapkan" }
+                    val routeText = user.assignedRoute.ifEmpty { "Unassigned" }
                     val busText = user.assignedBus.ifEmpty { "—" }
                     b.tvAssignedRoute.text = "$routeText  |  $busText"
                 }

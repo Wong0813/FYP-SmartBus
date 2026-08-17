@@ -6,7 +6,7 @@ import com.upsi.smartbus.core.data.RouteRepository
 object AdminDataSeeder {
 
     private const val PREFS = "smartbus_admin"
-    private const val KEY_ROUTES_SEEDED = "routes_seeded_v3"
+    private const val KEY_ROUTES_SEEDED = "routes_seeded_v6"
 
     fun seedIfNeeded(context: Context, onComplete: (() -> Unit)? = null) {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -15,9 +15,13 @@ object AdminDataSeeder {
             return
         }
         AccountSeeder.seedOfficialRoutes {
-            prefs.edit().putBoolean(KEY_ROUTES_SEEDED, true).apply()
-            RouteRepository.invalidateCache()
-            onComplete?.invoke()
+            AccountSeeder.seedOfficialBuses {
+                AccountSeeder.seedOfficialDrivers { _, _ ->
+                    prefs.edit().putBoolean(KEY_ROUTES_SEEDED, true).apply()
+                    RouteRepository.invalidateCache()
+                    onComplete?.invoke()
+                }
+            }
         }
     }
 }

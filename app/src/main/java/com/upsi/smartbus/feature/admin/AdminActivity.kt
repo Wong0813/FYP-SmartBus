@@ -127,6 +127,12 @@ class AdminActivity : AppCompatActivity() {
             }
     }
 
+    fun navigateToLiveMap(targetRouteName: String? = null) {
+        binding.navView.setCheckedItem(R.id.nav_live_map)
+        val mapFrag = AdminLiveMapFragment.newInstance(targetRouteName)
+        loadFragment(mapFrag, "Live Map")
+    }
+
     private fun loadFragment(fragment: Fragment, title: String) {
         binding.tvToolbarTitle.text = title
         supportFragmentManager.beginTransaction()

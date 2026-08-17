@@ -1,24 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Glow ring -->
     <item>
         <shape android:shape="oval">
-            <solid android:color="#33FFB300" />
-            <size android:width="20dp" android:height="20dp" />
-        </shape>
-    </item>
-    <!-- Pin circle -->
-    <item android:left="2dp" android:top="2dp" android:right="2dp" android:bottom="2dp">
-        <shape android:shape="oval">
             <solid android:color="#FFFFFF" />
-            <stroke android:width="2dp" android:color="#FFB300" />
+            <stroke android:width="2.5dp" android:color="#00897B" />
             <size android:width="16dp" android:height="16dp" />
         </shape>
     </item>
-    <!-- Inner dot -->
-    <item android:left="6dp" android:top="6dp" android:right="6dp" android:bottom="6dp">
+    <item android:left="4dp" android:top="4dp" android:right="4dp" android:bottom="4dp">
         <shape android:shape="oval">
-            <solid android:color="#FFB300" />
+            <solid android:color="#00897B" />
             <size android:width="8dp" android:height="8dp" />
         </shape>
     </item>

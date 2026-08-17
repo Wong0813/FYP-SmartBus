@@ -199,19 +199,19 @@ class AdminFleetFragment : Fragment() {
             when (bus.status.lowercase()) {
                 "working" -> {
                     h.binding.statusDot.setBackgroundResource(R.drawable.dot_green)
-                    h.binding.tvBusStatus.text = "AKTIF"
+                    h.binding.tvBusStatus.text = "ACTIVE"
                     h.binding.tvBusStatus.setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.status_moving))
                     h.binding.llStatusPill.setBackgroundResource(R.drawable.bg_status_moving)
                 }
                 "resting" -> {
                     h.binding.statusDot.setBackgroundResource(R.drawable.dot_orange)
-                    h.binding.tvBusStatus.text = "REHAT"
+                    h.binding.tvBusStatus.text = "RESTING"
                     h.binding.tvBusStatus.setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.status_resting))
                     h.binding.llStatusPill.setBackgroundResource(R.drawable.bg_status_resting)
                 }
                 else -> {
                     h.binding.statusDot.setBackgroundResource(R.drawable.dot_gray)
-                    h.binding.tvBusStatus.text = "IDLE"
+                    h.binding.tvBusStatus.text = "OFFLINE"
                     h.binding.tvBusStatus.setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.status_offline))
                     h.binding.llStatusPill.setBackgroundResource(R.drawable.bg_status_offline)
                 }

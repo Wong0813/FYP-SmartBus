@@ -1,5 +1,6 @@
 package com.upsi.smartbus.feature.admin.dashboard
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,9 +20,11 @@ import com.upsi.smartbus.core.model.Bus
 import com.upsi.smartbus.core.model.Route
 import com.upsi.smartbus.databinding.FragmentAdminDashboardBinding
 import com.upsi.smartbus.databinding.ItemScheduleCardBinding
+import com.upsi.smartbus.feature.admin.AdminActivity
 import com.upsi.smartbus.feature.admin.seeder.AdminSortHelper
-import com.upsi.smartbus.feature.admin.seeder.AdminUiHelper
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 class AdminDashboardFragment : Fragment() {
 
@@ -37,7 +40,7 @@ class AdminDashboardFragment : Fragment() {
         val driverNumber: Int = 0,
         val busId: String,
         val plateNumber: String,
-        var status: String = "IDLE",
+        var status: String = "OFFLINE",
         val isActiveDay: Boolean = true
     )
 
@@ -61,13 +64,13 @@ class AdminDashboardFragment : Fragment() {
 
     private fun setupStatCardClicks() {
         binding.cardStatOnline.setOnClickListener {
-            filterAndShowStatus("working", "Bas Dalam Tugas")
+            filterAndShowStatus("working", "Active Buses on Duty")
         }
         binding.cardStatResting.setOnClickListener {
-            filterAndShowStatus("resting", "Bas Sedang Rehat")
+            filterAndShowStatus("resting", "Buses on Break")
         }
         binding.cardStatOffline.setOnClickListener {
-            filterAndShowStatus("idle", "Bas Tidak Aktif")
+            filterAndShowStatus("idle", "Offline / Idle Buses")
         }
     }
 
@@ -77,46 +80,56 @@ class AdminDashboardFragment : Fragment() {
         }
         val names = filtered.map { "${it.route.name} — ${it.driverName}" }
         if (names.isEmpty()) {
-            android.widget.Toast.makeText(requireContext(), "Tiada bas dalam status ini.", android.widget.Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "No buses currently in this status.", Toast.LENGTH_SHORT).show()
             return
         }
         com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
             .setTitle(title)
             .setItems(names.toTypedArray(), null)
-            .setPositiveButton("Tutup", null)
+            .setPositiveButton("Close", null)
             .show()
     }
 
     private fun setupDateHeader() {
         val cal = Calendar.getInstance()
         val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
-        val malayDays = arrayOf("", "Ahad", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu")
-        val malayMonths = arrayOf(
-            "Januari", "Februari", "Mac", "April", "Mei", "Jun",
-            "Julai", "Ogos", "September", "Oktober", "November", "Disember"
-        )
-        binding.tvCurrentDate.text = "${malayDays[dayOfWeek]}, ${cal.get(Calendar.DAY_OF_MONTH)} ${malayMonths[cal.get(Calendar.MONTH)]} ${cal.get(Calendar.YEAR)}"
+        val sdf = SimpleDateFormat("EEEE, d MMMM yyyy", Locale.ENGLISH)
+        binding.tvCurrentDate.text = sdf.format(cal.time)
+
+        // Always ensure high-contrast white text on the translucent badge
+        binding.tvDayType.setTextColor(Color.WHITE)
+
         when (dayOfWeek) {
             Calendar.SUNDAY -> {
-                binding.tvDayType.text = "TIADA PERKHIDMATAN"
-                binding.tvDayType.setTextColor(ContextCompat.getColor(requireContext(), R.color.status_offline))
-                binding.tvDaySubtitle.text = "Tiada perkhidmatan bas hari ini"
+                binding.tvDayType.text = "NO SERVICE"
+                binding.tvDaySubtitle.text = "No bus service operating today"
             }
             Calendar.SATURDAY -> {
-                binding.tvDayType.text = "SABTU"
-                binding.tvDayType.setTextColor(ContextCompat.getColor(requireContext(), R.color.status_resting))
-                binding.tvDaySubtitle.text = "Jadual Sabtu aktif — Laluan 9–18"
+                binding.tvDayType.text = "SATURDAY"
+                binding.tvDaySubtitle.text = "Saturday schedule active — Routes 9–18"
             }
             else -> {
-                binding.tvDayType.text = "HARI BEKERJA"
-                binding.tvDayType.setTextColor(ContextCompat.getColor(requireContext(), R.color.crimson_primary))
-                binding.tvDaySubtitle.text = "Jadual perkhidmatan aktif — Laluan 1–8 & Shuttle"
+                binding.tvDayType.text = "WEEKDAY"
+                binding.tvDaySubtitle.text = "Active service schedule — Routes 1–8 & Shuttle"
             }
         }
     }
 
     private fun setupScheduleGrid() {
-        scheduleAdapter = ScheduleAdapter(scheduleItems) { showEditDriverDialog(it) }
+        scheduleAdapter = ScheduleAdapter(
+            items = scheduleItems,
+            onClick = { item ->
+                // Direct jump to Live Map focused on this specific route!
+                val adminAct = activity as? AdminActivity
+                if (adminAct != null) {
+                    adminAct.navigateToLiveMap(item.route.name)
+                }
+            },
+            onLongClick = { item ->
+                // Long press to edit driver assignment
+                showEditDriverDialog(item)
+            }
+        )
         binding.rvScheduleGrid.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.rvScheduleGrid.adapter = scheduleAdapter
     }
@@ -170,11 +183,9 @@ class AdminDashboardFragment : Fragment() {
                         }
                     }
                     scheduleAdapter.notifyDataSetChanged()
-                    AdminUiHelper.expandRecyclerView(binding.rvScheduleGrid)
                 }
 
             scheduleAdapter.notifyDataSetChanged()
-            AdminUiHelper.expandRecyclerView(binding.rvScheduleGrid)
         }
     }
 
@@ -209,7 +220,7 @@ class AdminDashboardFragment : Fragment() {
     private fun showEditDriverDialog(item: ScheduleItem) {
         if (item.driverUid.isEmpty()) {
             com.google.android.material.snackbar.Snackbar
-                .make(binding.root, "Tiada pemandu untuk ${item.route.name}. Sync di Manage Accounts.", 4000)
+                .make(binding.root, "No driver assigned for ${item.route.name}. Sync in Manage Accounts.", 4000)
                 .show()
             return
         }
@@ -222,19 +233,19 @@ class AdminDashboardFragment : Fragment() {
         // Route label
         val tvRoute = android.widget.TextView(ctx).apply {
             text = "${AdminSortHelper.routeNumberLabel(item.route)} ${item.route.name}"
-            setTextColor(androidx.core.content.ContextCompat.getColor(ctx, R.color.text_secondary))
+            setTextColor(ContextCompat.getColor(ctx, R.color.text_secondary))
             textSize = 11f
             setPadding(0, 0, 0, 16)
         }
 
-        val etName = android.widget.EditText(ctx).apply {
-            hint = "Nama Pemandu"
+        val etName = EditText(ctx).apply {
+            hint = "Driver Name"
             setText(item.driverName)
             setBackgroundResource(R.drawable.bg_input_field)
             setPadding(32, 24, 32, 24)
         }
-        val etBus = android.widget.EditText(ctx).apply {
-            hint = "Bus ID (cth: BUS-001)"
+        val etBus = EditText(ctx).apply {
+            hint = "Bus ID (e.g. BUS-001)"
             setText(if (item.busId == "—") "" else item.busId)
             setBackgroundResource(R.drawable.bg_input_field)
             setPadding(32, 24, 32, 24)
@@ -250,14 +261,14 @@ class AdminDashboardFragment : Fragment() {
 
         val routes = RouteRepository.getCachedRoutes().map { it.name }
         com.google.android.material.dialog.MaterialAlertDialogBuilder(ctx)
-            .setTitle("Edit Penugasan Pemandu")
+            .setTitle("Edit Driver Assignment")
             .setView(layout)
-            .setPositiveButton("Simpan") { dlg, _ ->
+            .setPositiveButton("Save") { dlg, _ ->
                 val newName = etName.text.toString().trim()
                 val newBus = etBus.text.toString().trim()
                 if (newName.isEmpty()) {
                     com.google.android.material.snackbar.Snackbar
-                        .make(binding.root, "Nama pemandu tidak boleh kosong", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
+                        .make(binding.root, "Driver name cannot be empty", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
                         .show()
                     return@setPositiveButton
                 }
@@ -267,32 +278,31 @@ class AdminDashboardFragment : Fragment() {
                 )).addOnSuccessListener {
                     loadScheduleData()
                     com.google.android.material.snackbar.Snackbar
-                        .make(binding.root, "Penugasan dikemas kini", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
+                        .make(binding.root, "Driver assignment updated successfully", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
                         .show()
                 }.addOnFailureListener {
                     com.google.android.material.snackbar.Snackbar
-                        .make(binding.root, "Gagal menyimpan: ${it.message}", 4000)
+                        .make(binding.root, "Failed to save: ${it.message}", 4000)
                         .show()
                 }
             }
-            .setNeutralButton("Tukar Laluan") { _, _ ->
+            .setNeutralButton("Change Route") { _, _ ->
                 com.google.android.material.dialog.MaterialAlertDialogBuilder(ctx)
-                    .setTitle("Tukar Laluan untuk ${item.driverName}")
+                    .setTitle("Change Route for ${item.driverName}")
                     .setItems(routes.toTypedArray()) { _, w ->
                         db.collection("users").document(item.driverUid)
                             .update("assignedRoute", routes[w])
                             .addOnSuccessListener {
                                 loadScheduleData()
                                 com.google.android.material.snackbar.Snackbar
-                                    .make(binding.root, "Laluan ditukar ke: ${routes[w]}", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
+                                    .make(binding.root, "Route changed to: ${routes[w]}", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
                                     .show()
                             }
                     }.show()
             }
-            .setNegativeButton("Batal", null)
+            .setNegativeButton("Cancel", null)
             .show()
     }
-
 
     override fun onDestroyView() {
         busListener?.remove()
@@ -302,7 +312,8 @@ class AdminDashboardFragment : Fragment() {
 
     class ScheduleAdapter(
         private val items: List<ScheduleItem>,
-        private val onEdit: (ScheduleItem) -> Unit
+        private val onClick: (ScheduleItem) -> Unit,
+        private val onLongClick: (ScheduleItem) -> Unit
     ) : RecyclerView.Adapter<ScheduleAdapter.VH>() {
         inner class VH(val binding: ItemScheduleCardBinding) : RecyclerView.ViewHolder(binding.root)
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
@@ -313,14 +324,14 @@ class AdminDashboardFragment : Fragment() {
             val b = holder.binding
             b.tvScheduleRouteName.text = item.route.name
             b.tvScheduleRouteDesc.text = "${AdminSortHelper.routeNumberLabel(item.route)} • Driver ${String.format("%02d", item.driverNumber.coerceAtLeast(item.routeOrder))}"
-            b.tvScheduleDriverName.text = item.driverName.ifEmpty { "Belum ditetapkan" }
-            b.tvScheduleBusInfo.text = if (item.busId == "—") "Tiada bas ditetapkan" else "${item.busId}  •  ${item.plateNumber}"
-            b.tvScheduleStops.text = item.route.stops.joinToString(" → ")
+            b.tvScheduleDriverName.text = item.driverName.ifEmpty { "Unassigned" }
+            b.tvScheduleBusInfo.text = if (item.busId == "—") "No bus assigned" else "${item.busId}  •  ${item.plateNumber}"
+            b.tvScheduleStops.text = item.route.stops.joinToString(" ➔ ")
 
             if (!item.isActiveDay) {
                 b.statusBar.setBackgroundResource(R.drawable.bg_status_bar_gray)
                 b.statusDot.setBackgroundResource(R.drawable.dot_gray)
-                b.tvStatusLabel.text = "REHAT"
+                b.tvStatusLabel.text = "OFFLINE"
                 b.tvStatusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.status_offline))
                 b.llStatusPill.setBackgroundResource(R.drawable.bg_status_offline)
             } else {
@@ -328,27 +339,29 @@ class AdminDashboardFragment : Fragment() {
                     "working" -> {
                         b.statusBar.setBackgroundResource(R.drawable.bg_status_bar_green)
                         b.statusDot.setBackgroundResource(R.drawable.dot_green)
-                        b.tvStatusLabel.text = "AKTIF"
+                        b.tvStatusLabel.text = "ACTIVE"
                         b.tvStatusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.status_moving))
                         b.llStatusPill.setBackgroundResource(R.drawable.bg_status_moving)
                     }
                     "resting" -> {
                         b.statusBar.setBackgroundResource(R.drawable.bg_status_bar_orange)
                         b.statusDot.setBackgroundResource(R.drawable.dot_orange)
-                        b.tvStatusLabel.text = "REHAT"
+                        b.tvStatusLabel.text = "RESTING"
                         b.tvStatusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.status_resting))
                         b.llStatusPill.setBackgroundResource(R.drawable.bg_status_resting)
                     }
                     else -> {
                         b.statusBar.setBackgroundResource(R.drawable.bg_status_bar_gray)
                         b.statusDot.setBackgroundResource(R.drawable.dot_gray)
-                        b.tvStatusLabel.text = "IDLE"
+                        b.tvStatusLabel.text = "OFFLINE"
                         b.tvStatusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.status_offline))
                         b.llStatusPill.setBackgroundResource(R.drawable.bg_status_offline)
                     }
                 }
             }
-            holder.itemView.setOnClickListener { onEdit(item) }
+
+            holder.itemView.setOnClickListener { onClick(item) }
+            holder.itemView.setOnLongClickListener { onLongClick(item); true }
         }
         override fun getItemCount() = items.size
     }

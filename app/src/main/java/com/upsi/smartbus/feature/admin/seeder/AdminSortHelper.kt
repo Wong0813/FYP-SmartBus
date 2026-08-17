@@ -45,7 +45,6 @@ object AdminSortHelper {
     fun sortRoutes(routes: List<Route>): List<Route> =
         routes.sortedWith(
             compareBy<Route>(
-                { if (it.scheduleType.equals("SATURDAY", true)) 1 else 0 },
                 { routeOrderKey(it) },
                 { it.name }
             )
@@ -56,11 +55,10 @@ object AdminSortHelper {
 
     fun sortBusesById(ids: List<String>): List<String> = ids.sortedBy { busOrderKey(it) }
 
-    /** Canonical 20 routes in official UPSI order */
+    /** Canonical 20 routes in official UPSI order (1..18: Laluan 1..18, 19..20: Shuttle) */
     fun canonicalRoutes(): List<Route> {
-        val weekday = sortRoutes(RouteData.weekdayRoutes)
-        val saturday = sortRoutes(RouteData.saturdayRoutes)
-        return weekday + saturday
+        val all = RouteData.weekdayRoutes + RouteData.saturdayRoutes
+        return sortRoutes(all)
     }
 
     fun routeNumberLabel(route: Route): String {

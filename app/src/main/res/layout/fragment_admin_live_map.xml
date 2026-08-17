@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -55,139 +57,144 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <!-- Refresh button -->
-        <FrameLayout
-            android:id="@+id/btnRefreshMap"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+        <!-- Bus selector capsule (top-right) -->
+        <LinearLayout
+            android:id="@+id/busSelector"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:background="@drawable/bg_capsule_white"
             android:clickable="true"
             android:elevation="6dp"
-            android:focusable="true">
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="8dp">
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_sync_white"
-                android:contentDescription="Refresh"
-                android:alpha="0.7" />
+            <View
+                android:id="@+id/busSelectorDot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/dot_green" />
 
-        </FrameLayout>
+            <TextView
+                android:id="@+id/tvSelectedBus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:maxWidth="200dp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:text="Semua Bas"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="▼"
+                android:textColor="@color/text_secondary"
+                android:textSize="8sp" />
+        </LinearLayout>
 
     </LinearLayout>
 
-    <!-- ══ BOTTOM PANEL: Bus status list ══ -->
+    <!-- ══ BOTTOM PANEL: Clean compact status card ══ -->
     <androidx.cardview.widget.CardView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_marginHorizontal="12dp"
         android:layout_marginBottom="16dp"
         app:cardBackgroundColor="@color/card_bg"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="8dp">
+        app:cardCornerRadius="16dp"
+        app:cardElevation="6dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
             android:paddingHorizontal="16dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="12dp">
+            android:paddingVertical="14dp">
 
-            <!-- Header -->
+            <!-- Route & Info Column -->
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:layout_marginBottom="12dp">
+                android:layout_weight="1"
+                android:orientation="vertical">
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:id="@+id/tvBottomPanelTitle"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Status Semua Bas"
+                    android:text="Semua Bas (2 Aktif)"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
-                <!-- Status summary pills -->
-                <LinearLayout
+                <TextView
+                    android:id="@+id/tvBottomPanelSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/tvMapStatActive"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_status_moving"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="3dp"
-                        android:text="0 Aktif"
-                        android:textColor="@color/status_moving"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvMapStatResting"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:background="@drawable/bg_status_resting"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="3dp"
-                        android:text="0 Rehat"
-                        android:textColor="@color/status_resting"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvMapStatOffline"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:background="@drawable/bg_status_offline"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="3dp"
-                        android:text="0 Offline"
-                        android:textColor="@color/status_offline"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
+                    android:layout_marginTop="2dp"
+                    android:text="Pilih laluan di menu atas untuk paparan terperinci"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
 
             </LinearLayout>
 
-            <!-- Horizontal bus status scroll -->
-            <HorizontalScrollView
-                android:layout_width="match_parent"
+            <!-- Status summary pills -->
+            <LinearLayout
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:scrollbars="none">
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-                <LinearLayout
-                    android:id="@+id/llBusStatusRow"
+                <TextView
+                    android:id="@+id/tvMapStatActive"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal" />
+                    android:background="@drawable/bg_status_moving"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:text="0 Aktif"
+                    android:textColor="@color/status_moving"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
 
-            </HorizontalScrollView>
+                <TextView
+                    android:id="@+id/tvMapStatResting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/bg_status_resting"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:text="0 Rehat"
+                    android:textColor="@color/status_resting"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
 
-            <!-- Empty state -->
-            <TextView
-                android:id="@+id/tvMapEmpty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:paddingVertical="12dp"
-                android:text="Tiada bas dalam talian. Pastikan pemandu telah log masuk."
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp"
-                android:visibility="gone" />
+                <TextView
+                    android:id="@+id/tvMapStatOffline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/bg_status_offline"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:text="0 Offline"
+                    android:textColor="@color/status_offline"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
 
         </LinearLayout>
 

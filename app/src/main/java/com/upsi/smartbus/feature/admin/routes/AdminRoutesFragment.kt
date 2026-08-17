@@ -75,7 +75,7 @@ class AdminRoutesFragment : Fragment() {
                 RouteRepository.invalidateCache()
                 RouteRepository.loadRoutes {
                     binding.btnSyncRoutes.isEnabled = true
-                    Toast.makeText(requireContext(), "20 Laluan synced to Firestore", Toast.LENGTH_LONG).show()
+                    Toast.makeText(requireContext(), "20 Routes synced to Firestore", Toast.LENGTH_LONG).show()
                 }
             }
         }

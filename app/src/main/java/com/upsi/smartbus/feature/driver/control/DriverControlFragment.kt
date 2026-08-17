@@ -252,51 +252,105 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     // ════════════════════════════════════════════════════════════════════
 
     private fun loadDriverProfile() {
-        val uid = auth.currentUser?.uid
+        val user = auth.currentUser
+        val uid = user?.uid
+        val email = user?.email?.lowercase() ?: ""
+
         if (uid == null) {
-            assignedBusId = "BUS-001"
-            assignedRouteName = "Laluan 1"
-            pushToFirestore()
+            applyFallbackByEmail(email)
             return
         }
 
         db.collection("users").document(uid).get()
             .addOnSuccessListener { doc ->
                 if (_binding == null) return@addOnSuccessListener
-                val route = doc.getString("assignedRoute") ?: "Laluan 1"
-                val bus   = doc.getString("assignedBus")  ?: "BUS-001"
-
-                assignedBusId     = bus.ifEmpty { "BUS-001" }
-                assignedRouteName = route
-                driverName        = doc.getString("name") ?: "Driver"
-                driverEmail       = doc.getString("email") ?: auth.currentUser?.email.orEmpty()
-                plateNumber       = doc.getString("plateNumber") ?: ""
-
-                val matched = RouteRepository.findRoute(route)
-                    ?: RouteData.getAllRoutes().find { it.name == route || it.shortName == route }
-                if (matched != null && matched.stops.isNotEmpty()) routeStops = matched.stops
-
-                val firstStop = RouteData.getStopByAbbreviation(routeStops.firstOrNull() ?: "KAB")
-                if (firstStop != null) {
-                    currentLat = firstStop.latitude
-                    currentLon = firstStop.longitude
+                if (doc.exists() && doc.getString("assignedRoute") != null) {
+                    applyDriverProfile(
+                        route = doc.getString("assignedRoute").orEmpty(),
+                        bus = doc.getString("assignedBus").orEmpty(),
+                        name = doc.getString("name") ?: "Driver",
+                        plate = doc.getString("plateNumber").orEmpty(),
+                        email = doc.getString("email") ?: email
+                    )
+                } else {
+                    // Try lookup by email
+                    lookupDriverByEmail(email)
                 }
-                nextStopIndex = 1
-                nextStopAbbr = routeStops.getOrElse(1) { routeStops.first() }
-
-                drawRouteOnDriverMap()
-                updateBusMarkerPosition()
-                updateDriverPanel()
-                buildDriverStopTimeline()
-                pushToFirestore()
-                fetchNavigationSteps()
             }
             .addOnFailureListener {
-                if (_binding == null) return@addOnFailureListener
-                assignedBusId = "BUS-001"
-                assignedRouteName = "Laluan 1"
-                pushToFirestore()
+                lookupDriverByEmail(email)
             }
+    }
+
+    private fun lookupDriverByEmail(email: String) {
+        if (email.isNotEmpty()) {
+            db.collection("users").whereEqualTo("email", email).get()
+                .addOnSuccessListener { snap ->
+                    if (_binding == null) return@addOnSuccessListener
+                    if (!snap.isEmpty) {
+                        val doc = snap.documents.first()
+                        applyDriverProfile(
+                            route = doc.getString("assignedRoute").orEmpty(),
+                            bus = doc.getString("assignedBus").orEmpty(),
+                            name = doc.getString("name") ?: "Driver",
+                            plate = doc.getString("plateNumber").orEmpty(),
+                            email = email
+                        )
+                    } else {
+                        applyFallbackByEmail(email)
+                    }
+                }
+                .addOnFailureListener {
+                    applyFallbackByEmail(email)
+                }
+        } else {
+            applyFallbackByEmail(email)
+        }
+    }
+
+    private fun applyFallbackByEmail(email: String) {
+        val numMatch = Regex("driver(\\d+)@").find(email)?.groupValues?.get(1)?.toIntOrNull()
+        val defaultAccount = when (numMatch) {
+            19 -> RouteData.defaultDrivers.find { it.routeName.contains("KAB", true) }
+            20 -> RouteData.defaultDrivers.find { it.routeName.contains("KUO", true) }
+            in 1..18 -> RouteData.defaultDrivers.find { it.routeName.equals("Laluan $numMatch", true) }
+            else -> RouteData.defaultDrivers.first()
+        } ?: RouteData.defaultDrivers.first()
+
+        applyDriverProfile(
+            route = defaultAccount.routeName,
+            bus = defaultAccount.busId,
+            name = defaultAccount.driverName,
+            plate = defaultAccount.plateNumber,
+            email = email.ifEmpty { defaultAccount.email }
+        )
+    }
+
+    private fun applyDriverProfile(route: String, bus: String, name: String, plate: String, email: String) {
+        assignedBusId     = bus.ifEmpty { "BUS-001" }
+        assignedRouteName = route.ifEmpty { "Laluan 1" }
+        driverName        = name
+        driverEmail       = email
+        plateNumber       = plate
+
+        val matched = RouteRepository.findRoute(assignedRouteName)
+            ?: RouteData.getAllRoutes().find { it.name.equals(assignedRouteName, true) || it.shortName.equals(assignedRouteName, true) }
+        if (matched != null && matched.stops.isNotEmpty()) routeStops = matched.stops
+
+        val firstStop = RouteData.getStopByAbbreviation(routeStops.firstOrNull() ?: "KAB")
+        if (firstStop != null) {
+            currentLat = firstStop.latitude
+            currentLon = firstStop.longitude
+        }
+        nextStopIndex = 1
+        nextStopAbbr = routeStops.getOrElse(1) { routeStops.first() }
+
+        drawRouteOnDriverMap()
+        updateBusMarkerPosition()
+        updateDriverPanel()
+        buildDriverStopTimeline()
+        pushToFirestore()
+        fetchNavigationSteps()
     }
 
     // ════════════════════════════════════════════════════════════════════
