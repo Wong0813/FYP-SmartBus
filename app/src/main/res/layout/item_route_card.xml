@@ -1,89 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dp"
-    android:background="@drawable/bg_form_card"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:padding="14dp">
-
-    <FrameLayout
-        android:layout_width="52dp"
-        android:layout_height="52dp"
-        android:background="@drawable/bg_route_chip">
-
-        <TextView
-            android:id="@+id/tvShortName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:textColor="@color/crimson_primary"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            tools:text="L1" />
-
-        <TextView
-            android:id="@+id/tvRouteOrder"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:layout_marginBottom="2dp"
-            android:textColor="@color/text_secondary"
-            android:textSize="8sp"
-            android:visibility="gone"
-            tools:text="#01" />
-
-    </FrameLayout>
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="@color/card_bg"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="2dp">
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="14dp">
 
-        <TextView
-            android:id="@+id/tvRouteName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/text_primary"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            tools:text="Laluan 1" />
-
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:scrollbars="none">
+        <!-- Short name badge (Laluan number circle) -->
+        <FrameLayout
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="@drawable/bg_circle_crimson">
 
             <TextView
-                android:id="@+id/tvStopChain"
+                android:id="@+id/tvShortName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_input_field"
-                android:paddingHorizontal="10dp"
-                android:paddingVertical="4dp"
-                android:textColor="@color/text_secondary"
-                android:textSize="11sp"
-                tools:text="KAB ➔ PT ➔ SS ➔ KA ➔ DKP ➔ KAB" />
+                android:layout_gravity="center"
+                android:textColor="@color/text_white"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:text="L1" />
 
-        </HorizontalScrollView>
+            <TextView
+                android:id="@+id/tvRouteOrder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="3dp"
+                android:textColor="@color/white_alpha_80"
+                android:textSize="8sp"
+                android:visibility="gone"
+                tools:text="#01" />
+
+        </FrameLayout>
+
+        <!-- Info section -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvRouteName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="Laluan 1 — Kolej Aminuddin Baki" />
+
+            <!-- Stop chain scrollable -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:scrollbars="none">
+
+                <TextView
+                    android:id="@+id/tvStopChain"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_filter_chip"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    tools:text="KAB → PT → SS → KA → DKP → KAB" />
+
+            </HorizontalScrollView>
+
+        </LinearLayout>
+
+        <!-- Edit button -->
+        <ImageButton
+            android:id="@+id/btnEditRoute"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_icon_btn_edit"
+            android:contentDescription="Edit Route"
+            android:padding="9dp"
+            android:src="@drawable/ic_edit" />
 
     </LinearLayout>
 
-    <ImageButton
-        android:id="@+id/btnEditRoute"
-        android:layout_width="38dp"
-        android:layout_height="38dp"
-        android:layout_marginStart="8dp"
-        android:background="@drawable/bg_icon_btn_edit"
-        android:contentDescription="Edit Route"
-        android:padding="8dp"
-        android:src="@android:drawable/ic_menu_edit"
-        app:tint="@color/crimson_primary" />
-
-</LinearLayout>
+</androidx.cardview.widget.CardView>

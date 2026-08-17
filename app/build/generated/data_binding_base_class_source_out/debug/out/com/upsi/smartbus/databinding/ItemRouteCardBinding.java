@@ -5,10 +5,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
 import com.upsi.smartbus.R;
@@ -18,7 +18,7 @@ import java.lang.String;
 
 public final class ItemRouteCardBinding implements ViewBinding {
   @NonNull
-  private final LinearLayout rootView;
+  private final CardView rootView;
 
   @NonNull
   public final ImageButton btnEditRoute;
@@ -35,7 +35,7 @@ public final class ItemRouteCardBinding implements ViewBinding {
   @NonNull
   public final TextView tvStopChain;
 
-  private ItemRouteCardBinding(@NonNull LinearLayout rootView, @NonNull ImageButton btnEditRoute,
+  private ItemRouteCardBinding(@NonNull CardView rootView, @NonNull ImageButton btnEditRoute,
       @NonNull TextView tvRouteName, @NonNull TextView tvRouteOrder, @NonNull TextView tvShortName,
       @NonNull TextView tvStopChain) {
     this.rootView = rootView;
@@ -48,7 +48,7 @@ public final class ItemRouteCardBinding implements ViewBinding {
 
   @Override
   @NonNull
-  public LinearLayout getRoot() {
+  public CardView getRoot() {
     return rootView;
   }
 
@@ -103,8 +103,8 @@ public final class ItemRouteCardBinding implements ViewBinding {
         break missingId;
       }
 
-      return new ItemRouteCardBinding((LinearLayout) rootView, btnEditRoute, tvRouteName,
-          tvRouteOrder, tvShortName, tvStopChain);
+      return new ItemRouteCardBinding((CardView) rootView, btnEditRoute, tvRouteName, tvRouteOrder,
+          tvShortName, tvStopChain);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

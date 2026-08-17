@@ -457,12 +457,26 @@ class AdminAccountsFragment : Fragment() {
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
             when (val item = items[position]) {
                 is AccountListItem.Header -> {
-                    (holder as HeaderVH).binding.tvSectionTitle.text = item.title
-                    holder.binding.tvSectionCount.text = "${item.count}"
+                    val hb = (holder as HeaderVH).binding
+                    hb.tvSectionTitle.text = item.title
+                    hb.tvSectionCount.text = "${item.count}"
+
+                    // Color-code accent bar by role
+                    val accentColor = when {
+                        item.title.contains("Admin", ignoreCase = true) ->
+                            androidx.core.content.ContextCompat.getColor(holder.itemView.context, R.color.crimson_primary)
+                        item.title.contains("Driver", ignoreCase = true) ->
+                            androidx.core.content.ContextCompat.getColor(holder.itemView.context, R.color.status_resting)
+                        else ->
+                            androidx.core.content.ContextCompat.getColor(holder.itemView.context, R.color.status_moving)
+                    }
+                    hb.viewSectionAccent.setBackgroundColor(accentColor)
+                    hb.tvSectionTitle.setTextColor(accentColor)
                 }
                 is AccountListItem.User -> bindUser((holder as UserVH).binding, item.profile)
             }
         }
+
 
         private fun bindUser(b: ItemUserCardBinding, user: UserProfile) {
             b.tvUserName.text = user.name

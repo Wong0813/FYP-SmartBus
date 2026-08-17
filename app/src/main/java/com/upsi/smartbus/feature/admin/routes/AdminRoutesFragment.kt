@@ -329,8 +329,20 @@ class AdminRoutesFragment : Fragment() {
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, pos: Int) {
             when (val item = items[pos]) {
                 is RouteListItem.Header -> {
-                    (holder as HeaderVH).binding.tvSectionTitle.text = item.title
-                    holder.binding.tvSectionCount.text = "${item.count}"
+                    val hb = (holder as HeaderVH).binding
+                    hb.tvSectionTitle.text = item.title
+                    hb.tvSectionCount.text = "${item.count}"
+
+                    val accentColor = when {
+                        item.title.contains("Weekday", ignoreCase = true) ->
+                            androidx.core.content.ContextCompat.getColor(holder.itemView.context, R.color.status_moving)
+                        item.title.contains("Saturday", ignoreCase = true) ->
+                            androidx.core.content.ContextCompat.getColor(holder.itemView.context, R.color.status_resting)
+                        else ->
+                            androidx.core.content.ContextCompat.getColor(holder.itemView.context, R.color.crimson_primary)
+                    }
+                    hb.viewSectionAccent.setBackgroundColor(accentColor)
+                    hb.tvSectionTitle.setTextColor(accentColor)
                 }
                 is RouteListItem.RouteItem -> {
                     val b = (holder as RouteVH).binding

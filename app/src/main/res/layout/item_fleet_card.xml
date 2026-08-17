@@ -22,7 +22,7 @@
         <FrameLayout
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@drawable/bg_avatar_admin">
+            android:background="@drawable/bg_circle_crimson">
 
             <TextView
                 android:id="@+id/tvBusOrder"
