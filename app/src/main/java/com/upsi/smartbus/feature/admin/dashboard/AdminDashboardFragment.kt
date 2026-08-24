@@ -32,11 +32,7 @@ class AdminDashboardFragment : Fragment() {
     private var _binding: FragmentAdminDashboardBinding? = null
     private val binding get() = _binding!!
     private val db by lazy { FirestoreHelper.db }
-    private val etaPredictor = EtaPredictor()
-
-    companion object {
-        private const val CAMPUS_SPEED_LIMIT = 40
-    }
+    private val etaPredictor = com.upsi.smartbus.core.util.EtaPredictor()
 
     data class FleetItem(
         val route: Route,
@@ -52,7 +48,11 @@ class AdminDashboardFragment : Fragment() {
         var lastUpdated: Long = 0L,
         val isActiveDay: Boolean = true
     ) {
-        val isSpeeding: Boolean get() = speed > CAMPUS_SPEED_LIMIT && status.equals("working", true)
+        val isSpeeding: Boolean get() =
+            com.upsi.smartbus.core.util.DriverSafetyEvaluator.evaluateSpeed(
+                speed,
+                com.upsi.smartbus.core.util.DriverSafetyEvaluator.DEFAULT_CAMPUS_SPEED_LIMIT
+            ) != com.upsi.smartbus.core.util.DriverSafetyEvaluator.SafetyLevel.NORMAL && status.equals("working", true)
         val isActive: Boolean get() = status.equals("working", true)
         val isResting: Boolean get() = status.equals("resting", true)
     }
@@ -347,7 +347,10 @@ class AdminDashboardFragment : Fragment() {
                     b.tvStatusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.crimson_primary))
                     b.llStatusPill.setBackgroundResource(R.drawable.bg_status_moving)
                     b.llSpeedAlert.visibility = View.VISIBLE
-                    b.tvSpeedAlert.text = "⚠️ EXCEEDING LIMIT (${String.format(Locale.ENGLISH, "%.0f", item.speed)} km/h)"
+                    b.tvSpeedAlert.text = com.upsi.smartbus.core.util.DriverSafetyEvaluator.getSpeedAlertLabel(
+                        item.speed,
+                        com.upsi.smartbus.core.util.DriverSafetyEvaluator.DEFAULT_CAMPUS_SPEED_LIMIT
+                    )
                     b.tvFleetSpeed.setTextColor(ContextCompat.getColor(ctx, R.color.crimson_primary))
                     b.tvFleetSpeed.text = "${String.format(Locale.ENGLISH, "%.0f", item.speed)} km/h"
                     b.tvFleetNextStop.text = "Next: ${item.nextStop.ifEmpty { "En Route" }} (${String.format(Locale.ENGLISH, "%.1f", item.distanceToNext)} km)"

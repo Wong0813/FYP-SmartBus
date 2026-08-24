@@ -287,6 +287,14 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
             return
         }
 
+        val bearing = com.upsi.smartbus.core.util.GeoSpatialCalculator.calculateBearing(
+            startPos.latitude, startPos.longitude,
+            targetPos.latitude, targetPos.longitude
+        )
+        if (bearing > 0.1f) {
+            marker.rotation = bearing
+        }
+
         val animator = ValueAnimator.ofFloat(0f, 1f)
         animator.duration = duration
         animator.interpolator = AccelerateDecelerateInterpolator()
