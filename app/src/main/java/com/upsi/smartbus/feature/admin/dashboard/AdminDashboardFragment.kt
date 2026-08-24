@@ -85,22 +85,8 @@ class AdminDashboardFragment : Fragment() {
     // ══════════════════════════════════════════════════════════════
 
     private fun setupDateHeader() {
-        val cal = Calendar.getInstance()
-        val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
-        val sdf = SimpleDateFormat("EEEE, d MMMM yyyy", Locale.ENGLISH)
-        binding.tvCurrentDate.text = sdf.format(cal.time)
-
-        when (dayOfWeek) {
-            Calendar.SUNDAY -> {
-                binding.tvDayType.text = "NO SERVICE"
-            }
-            Calendar.SATURDAY -> {
-                binding.tvDayType.text = "SATURDAY"
-            }
-            else -> {
-                binding.tvDayType.text = "WEEKDAY"
-            }
-        }
+        binding.tvCurrentDate.text = com.upsi.smartbus.core.util.DateTimeHelper.getFormattedCurrentDate()
+        binding.tvDayType.text = com.upsi.smartbus.core.util.DateTimeHelper.getTodayScheduleType()
     }
 
     // ══════════════════════════════════════════════════════════════
