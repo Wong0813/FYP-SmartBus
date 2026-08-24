@@ -2,41 +2,38 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="20dp"
-    android:layout_marginBottom="6dp"
+    android:layout_marginTop="16dp"
+    android:layout_marginBottom="8dp"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingHorizontal="2dp">
+    android:paddingHorizontal="4dp">
 
-    <!-- Coloured accent bar -->
+    <!-- Accent bar (kept for visual fidelity & compat) -->
     <View
         android:id="@+id/viewSectionAccent"
-        android:layout_width="4dp"
-        android:layout_height="18dp"
-        android:layout_marginEnd="10dp"
-        android:background="@drawable/bg_status_bar_green" />
+        android:layout_width="0dp"
+        android:layout_height="16dp"
+        android:layout_marginEnd="0dp"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/tvSectionTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Drivers"
-        android:textColor="@color/text_primary"
+        android:letterSpacing="0.08"
+        android:text="DRIVERS"
+        android:textColor="#1A1A2E"
         android:textSize="13sp"
-        android:letterSpacing="0.05"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/tvSectionCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_role_badge"
-        android:paddingHorizontal="10dp"
-        android:paddingVertical="4dp"
-        android:text="20"
-        android:textColor="@color/crimson_primary"
-        android:textSize="11sp"
+        android:text="3"
+        android:textColor="#C0181A"
+        android:textSize="11.5sp"
         android:textStyle="bold" />
 
 </LinearLayout>

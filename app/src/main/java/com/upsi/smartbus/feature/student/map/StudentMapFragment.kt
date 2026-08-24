@@ -129,19 +129,72 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // FIRESTORE
+    // REALTIME DATABASE LIVE BUS TRACKING
     // ══════════════════════════════════════════════════════════════════════════
 
-    private fun listenToAllBuses() {
-        allBusesListener?.remove()
-        allBusesListener = db.collection("buses")
-            .addSnapshotListener { snap, err ->
-                if (_binding == null || googleMap == null) return@addSnapshotListener
-                if (err != null || snap == null) return@addSnapshotListener
+    private var rtdbListener: com.google.firebase.database.ValueEventListener? = null
+    private val staticBusesMap = mutableMapOf<String, Bus>()
 
-                val fetched = snap.documents.mapNotNull { doc ->
-                    runCatching { doc.toObject(Bus::class.java)?.copy(id = doc.id) }.getOrNull()
+    private fun listenToAllBuses() {
+        // 1. One-time load of static bus metadata from Firestore
+        db.collection("buses").get().addOnSuccessListener { snapshot ->
+            if (_binding == null) return@addOnSuccessListener
+            staticBusesMap.clear()
+            for (doc in snapshot.documents) {
+                val bus = doc.toObject(Bus::class.java) ?: continue
+                staticBusesMap[doc.id] = bus.copy(id = doc.id)
+            }
+            bindRealtimeDatabaseListener()
+        }.addOnFailureListener {
+            bindRealtimeDatabaseListener()
+        }
+    }
+
+    private fun bindRealtimeDatabaseListener() {
+        rtdbListener?.let { com.upsi.smartbus.core.data.RealtimeDbHelper.liveBuses.removeEventListener(it) }
+        rtdbListener = object : com.google.firebase.database.ValueEventListener {
+            override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                if (_binding == null || googleMap == null) return
+
+                val fetched = mutableListOf<Bus>()
+                for (child in snapshot.children) {
+                    val busId = child.key ?: continue
+                    val lat = child.child("latitude").getValue(Double::class.java) ?: 0.0
+                    val lng = child.child("longitude").getValue(Double::class.java) ?: 0.0
+                    val speed = child.child("speed").getValue(Double::class.java) ?: 0.0
+                    val status = child.child("status").getValue(String::class.java) ?: "IDLE"
+                    val nextStop = child.child("nextStop").getValue(String::class.java) ?: ""
+                    val dist = child.child("distanceToNext").getValue(Double::class.java) ?: 0.0
+                    val routeName = child.child("routeName").getValue(String::class.java) ?: ""
+                    val lastUpdated = child.child("lastUpdated").getValue(Long::class.java) ?: System.currentTimeMillis()
+
+                    val staticBus = staticBusesMap[busId]
+                    val finalRouteName = routeName.ifEmpty { staticBus?.routeName.orEmpty() }
+                    val finalRouteStops = staticBus?.routeStops ?: (RouteData.getAllRoutes().find { it.name.equals(finalRouteName, true) }?.stops ?: emptyList())
+
+                    val mergedBus = Bus(
+                        id = busId,
+                        name = staticBus?.name?.ifEmpty { finalRouteName } ?: finalRouteName,
+                        routeName = finalRouteName,
+                        plateNumber = staticBus?.plateNumber ?: busId,
+                        licensePlate = staticBus?.licensePlate ?: staticBus?.plateNumber ?: busId,
+                        routeStops = finalRouteStops,
+                        startStop = finalRouteStops.firstOrNull().orEmpty(),
+                        location = com.google.firebase.firestore.GeoPoint(lat, lng),
+                        speed = speed,
+                        nextStop = nextStop,
+                        distanceToNext = dist,
+                        status = status,
+                        photoUrl = staticBus?.photoUrl.orEmpty(),
+                        lastUpdated = lastUpdated
+                    )
+                    fetched.add(mergedBus)
                 }
+
+                if (fetched.isEmpty()) {
+                    fetched.addAll(staticBusesMap.values)
+                }
+
                 availableBuses = fetched
 
                 updateAllBusMarkers()
@@ -159,6 +212,10 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
 
                 updateBottomPanel()
             }
+
+            override fun onCancelled(error: com.google.firebase.database.DatabaseError) {}
+        }
+        com.upsi.smartbus.core.data.RealtimeDbHelper.liveBuses.addValueEventListener(rtdbListener!!)
     }
 
     private fun updateAllBusMarkers() {
@@ -724,6 +781,7 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
     }
 
     override fun onDestroyView() {
+        rtdbListener?.let { com.upsi.smartbus.core.data.RealtimeDbHelper.liveBuses.removeEventListener(it) }
         allBusesListener?.remove()
         _binding = null
         super.onDestroyView()

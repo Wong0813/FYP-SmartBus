@@ -1,196 +1,460 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_screen"
-    android:clipToPadding="false"
-    android:fillViewport="true"
-    android:scrollbars="none">
+    android:background="@color/bg_screen">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_admin_hero"
             android:orientation="vertical"
-            android:padding="18dp">
+            android:paddingBottom="40dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- ══════════ HERO ZONE (Deep Crimson Gradient) ══════════ -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Fleet Command"
-                android:textColor="@color/white_alpha_80"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                android:background="@drawable/bg_account_hero_gradient"
+                android:orientation="vertical"
+                android:paddingHorizontal="20dp"
+                android:paddingTop="36dp"
+                android:paddingBottom="44dp">
 
-            <TextView
-                android:id="@+id/tvFleetTotal"
-                android:layout_width="wrap_content"
+                <!-- Hero Top Bar (Integrated Hamburger & ADMIN Badge) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageButton
+                        android:id="@+id/btnHeroDrawer"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_hero_drawer_btn"
+                        android:contentDescription="Open Menu"
+                        android:padding="10dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_menu_burger"
+                        app:tint="@color/text_white" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_hero_admin_badge"
+                        android:letterSpacing="0.1"
+                        android:paddingHorizontal="14dp"
+                        android:paddingVertical="5dp"
+                        android:text="ADMIN"
+                        android:textColor="@color/text_white"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <!-- Management Portal Label -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.15"
+                    android:text="BUS FLEET COMMAND"
+                    android:textColor="#FECACA"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <!-- Big Number Total Buses Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="bottom"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvFleetTotal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:includeFontPadding="false"
+                        android:letterSpacing="-0.04"
+                        android:textColor="@color/text_white"
+                        android:textSize="54sp"
+                        android:textStyle="bold"
+                        tools:text="20" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:includeFontPadding="false"
+                            android:text="Total"
+                            android:textColor="@color/text_white"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:includeFontPadding="false"
+                            android:text="Buses"
+                            android:textColor="#FECACA"
+                            android:textSize="13.5sp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Stats Numbers Strip -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <!-- Active Count -->
+                    <TextView
+                        android:id="@+id/tvFleetActiveCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/text_white"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        tools:text="0" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="Active"
+                        android:textColor="#FECACA"
+                        android:textSize="10.5sp" />
+
+                    <!-- Divider -->
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="14dp"
+                        android:layout_marginHorizontal="10dp"
+                        android:background="#40FFFFFF" />
+
+                    <!-- Depot Count -->
+                    <TextView
+                        android:id="@+id/tvFleetDepotCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/text_white"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        tools:text="20" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="In Depot"
+                        android:textColor="#FECACA"
+                        android:textSize="10.5sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- ══════════ FLOATING SEARCH CARD (Overlaps Hero) ══════════ -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="20 Buses"
-                android:textColor="@color/text_white"
-                android:textSize="22sp"
-                android:textStyle="bold" />
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="-24dp"
+                android:background="@drawable/bg_search_card_floating"
+                android:elevation="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="4dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:contentDescription="Search"
+                    android:src="@drawable/ic_search"
+                    app:tint="#9CA3AF" />
+
+                <EditText
+                    android:id="@+id/etSearchBuses"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:hint="Search bus ID, plate, route..."
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="#9CA3AF"
+                    android:textSize="13sp" />
+
+                <ImageView
+                    android:id="@+id/btnClearBusSearch"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:clickable="true"
+                    android:contentDescription="Clear Search"
+                    android:focusable="true"
+                    android:src="@drawable/ic_close"
+                    android:visibility="gone"
+                    app:tint="#9CA3AF" />
+
+            </LinearLayout>
+
+            <!-- ══════════ ACTION ROW (Sync Fleet + Register Bus) ══════════ -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="BUS-001 → Laluan 1 • aligned 1-to-1 with drivers"
-                android:textColor="@color/white_alpha_80"
-                android:textSize="11sp" />
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="14dp"
+                android:orientation="horizontal">
 
-        </LinearLayout>
+                <!-- Sync Fleet Button -->
+                <LinearLayout
+                    android:id="@+id/btnSyncFleet"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_btn_sync_white"
+                    android:clickable="true"
+                    android:elevation="1dp"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="12dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal">
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:contentDescription="Sync"
+                        android:src="@drawable/ic_sync_white"
+                        app:tint="#C0181A" />
 
-            <TextView
-                android:id="@+id/btnSyncFleet"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_marginEnd="6dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_admin_badge"
-                android:gravity="center"
-                android:text="⬆ Sync 20 Buses"
-                android:textColor="@color/crimson_primary"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="Sync 20 Buses"
+                        android:textColor="#1A1A2E"
+                        android:textSize="12.5sp"
+                        android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/btnToggleFleetForm"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_marginStart="6dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_button_crimson"
-                android:gravity="center"
-                android:text="+ Register Bus"
-                android:textColor="@color/text_white"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                </LinearLayout>
 
-        </LinearLayout>
+                <!-- + Register Bus Button -->
+                <LinearLayout
+                    android:id="@+id/btnToggleFleetForm"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_weight="1.2"
+                    android:background="@drawable/bg_btn_new_account"
+                    android:clickable="true"
+                    android:elevation="3dp"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp">
 
-        <LinearLayout
-            android:id="@+id/llFleetForm"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_form_card"
-            android:orientation="vertical"
-            android:padding="16dp"
-            android:visibility="gone">
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:contentDescription="Add Bus"
+                        android:src="@drawable/ic_add_white"
+                        app:tint="@color/text_white" />
 
-            <EditText
-                android:id="@+id/etBusId"
+                    <TextView
+                        android:id="@+id/tvRegisterBusBtnText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="+ Register Bus"
+                        android:textColor="@color/text_white"
+                        android:textSize="12.5sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- ══════════ COLLAPSIBLE REGISTER FORM ══════════ -->
+            <LinearLayout
+                android:id="@+id/llFleetForm"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@drawable/bg_input_field"
-                android:hint="@string/bus_id_label"
-                android:paddingHorizontal="14dp"
-                android:textSize="14sp" />
-
-            <EditText
-                android:id="@+id/etBusName"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_input_field"
-                android:hint="@string/bus_name_label"
-                android:paddingHorizontal="14dp"
-                android:textSize="14sp" />
-
-            <EditText
-                android:id="@+id/etLicensePlate"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_input_field"
-                android:hint="@string/license_plate_label"
-                android:paddingHorizontal="14dp"
-                android:textSize="14sp" />
-
-            <Spinner
-                android:id="@+id/spinnerBusRoute"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_input_field" />
-
-            <TextView
-                android:id="@+id/btnRegisterBus"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="12dp"
-                android:background="@drawable/bg_button_crimson"
-                android:gravity="center"
-                android:text="@string/register_bus"
-                android:textColor="@color/text_white"
-                android:textStyle="bold" />
+                android:background="@drawable/bg_form_card"
+                android:elevation="2dp"
+                android:orientation="vertical"
+                android:padding="18dp"
+                android:visibility="gone">
 
-        </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/register_bus"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvFleet"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:nestedScrollingEnabled="false"
-            android:overScrollMode="never" />
+                <EditText
+                    android:id="@+id/etBusId"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_input_field"
+                    android:hint="@string/bus_id_label"
+                    android:importantForAutofill="no"
+                    android:paddingHorizontal="14dp"
+                    android:textSize="14sp" />
 
-        <!-- Empty state -->
-        <LinearLayout
-            android:id="@+id/llEmptyFleet"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:layout_marginBottom="16dp"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:padding="24dp"
-            android:visibility="gone">
+                <EditText
+                    android:id="@+id/etBusName"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_input_field"
+                    android:hint="@string/bus_name_label"
+                    android:importantForAutofill="no"
+                    android:paddingHorizontal="14dp"
+                    android:textSize="14sp" />
 
-            <ImageView
-                android:layout_width="96dp"
-                android:layout_height="96dp"
-                android:src="@drawable/ic_empty_state"
-                android:contentDescription="No buses" />
+                <EditText
+                    android:id="@+id/etLicensePlate"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_input_field"
+                    android:hint="@string/license_plate_label"
+                    android:importantForAutofill="no"
+                    android:paddingHorizontal="14dp"
+                    android:textSize="14sp" />
 
-            <TextView
-                android:layout_width="wrap_content"
+                <Spinner
+                    android:id="@+id/spinnerBusRoute"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_input_field"
+                    android:paddingHorizontal="14dp" />
+
+                <TextView
+                    android:id="@+id/btnRegisterBus"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_button_crimson"
+                    android:gravity="center"
+                    android:text="@string/register_bus"
+                    android:textColor="@color/text_white"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <!-- ══════════ FLEET LIST SECTION HEADER ══════════ -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="16dp"
-                android:text="Tiada bas berdaftar"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:gravity="center" />
+                android:layout_marginBottom="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <TextView
-                android:layout_width="wrap_content"
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:letterSpacing="0.08"
+                    android:text="REGISTERED BUSES"
+                    android:textColor="#1A1A2E"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvFleetListCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="20"
+                    android:textColor="#C0181A"
+                    android:textSize="11.5sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <!-- ══════════ BUS LIST RECYCLERVIEW ══════════ -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvFleet"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="Ketuk 'Sync Fleet' untuk import 20 bas rasmi atau daftarkan bas baharu."
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp"
+                android:layout_marginHorizontal="16dp"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
+
+            <!-- ══════════ EMPTY STATE ══════════ -->
+            <LinearLayout
+                android:id="@+id/llEmptyFleet"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="36dp"
+                android:layout_marginBottom="16dp"
                 android:gravity="center"
-                android:lineSpacingExtra="3dp" />
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:contentDescription="No buses"
+                    android:src="@drawable/ic_empty_state" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:gravity="center"
+                    android:text="No buses found"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
+    </androidx.core.widget.NestedScrollView>
 
-    </LinearLayout>
-
-</androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -34,6 +34,9 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.btnHeroDrawer.setOnClickListener {
+            (activity as? com.upsi.smartbus.feature.admin.AdminActivity)?.openDrawer()
+        }
         loadProfile()
         setupSignOut()
     }
@@ -54,17 +57,6 @@ class ProfileFragment : Fragment() {
                 Toast.makeText(requireContext(), "Failed to load profile", Toast.LENGTH_SHORT).show()
             }
 
-        // Load fleet count
-        db.collection("buses").get()
-            .addOnSuccessListener { snapshot ->
-                if (!isAdded) return@addOnSuccessListener
-                val count = snapshot.size()
-                binding.tvFleetCount.text = getString(R.string.fleet_count_format, count)
-            }
-            .addOnFailureListener {
-                if (!isAdded) return@addOnFailureListener
-                binding.tvFleetCount.text = getString(R.string.fleet_count_format, 0)
-            }
     }
 
     private fun populateProfile(profile: UserProfile) {

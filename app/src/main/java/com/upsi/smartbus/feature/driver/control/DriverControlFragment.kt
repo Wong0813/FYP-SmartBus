@@ -643,42 +643,34 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     }
 
     // ════════════════════════════════════════════════════════════════════
-    // FIRESTORE PUSH — Real-time location sharing
+    // REALTIME DATABASE PUSH — High frequency live location sharing
     // ════════════════════════════════════════════════════════════════════
 
     private fun pushToFirestore() {
-        val firestoreStatus = when (currentStatus) {
+        val liveStatus = when (currentStatus) {
             "WORKING" -> "Working"; "RESTING" -> "Resting"; else -> "IDLE"
         }
         val targetBusId = assignedBusId.ifEmpty { "BUS-001" }
-        val displayPlate = plateNumber.ifEmpty { assignedBusId }
 
-        val busData = hashMapOf(
-            "id"             to targetBusId,
-            "name"           to assignedRouteName,
-            "routeName"      to assignedRouteName,
-            "driverName"     to driverName,
-            "driverEmail"    to driverEmail,
-            "plateNumber"    to displayPlate,
-            "licensePlate"   to displayPlate,
-            "routeStops"     to routeStops,
-            "startStop"      to (routeStops.firstOrNull() ?: "KAB"),
+        val liveData = hashMapOf(
+            "latitude"       to currentLat,
+            "longitude"      to currentLon,
+            "speed"          to currentSpeed.toDouble(),
+            "status"         to liveStatus,
             "nextStop"       to nextStopAbbr,
             "distanceToNext" to distanceToNextKm,
-            "location"       to com.google.firebase.firestore.GeoPoint(currentLat, currentLon),
-            "speed"          to currentSpeed.toDouble(),
-            "status"         to firestoreStatus,
-            "passengerCount" to 12,
-            "capacity"       to 40,
+            "driverName"     to driverName,
+            "routeName"      to assignedRouteName,
             "lastUpdated"    to System.currentTimeMillis()
         )
 
-        db.collection("buses").document(targetBusId).set(busData)
+        // Push high-frequency location data to Realtime Database (0 Firestore quota consumed)
+        com.upsi.smartbus.core.data.RealtimeDbHelper.busRef(targetBusId).setValue(liveData)
             .addOnSuccessListener {
-                logTerminal("ONLINE SYNC OK: $targetBusId ($assignedRouteName)")
+                logTerminal("RTDB SYNC OK: $targetBusId ($assignedRouteName)")
             }
             .addOnFailureListener { err ->
-                val errMsg = err.localizedMessage ?: "Unknown Firestore error"
+                val errMsg = err.localizedMessage ?: "Unknown RTDB error"
                 logTerminal("ERR: $errMsg")
             }
     }
@@ -828,8 +820,8 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
         handler.removeCallbacks(repeatRunnable)
         isRepeating = false
         if (assignedBusId.isNotEmpty()) {
-            db.collection("buses").document(assignedBusId)
-                .update("status", "IDLE", "speed", 0.0, "lastUpdated", System.currentTimeMillis())
+            com.upsi.smartbus.core.data.RealtimeDbHelper.busRef(assignedBusId)
+                .updateChildren(mapOf<String, Any>("status" to "IDLE", "speed" to 0.0, "lastUpdated" to System.currentTimeMillis()))
         }
         _binding = null
         super.onDestroyView()

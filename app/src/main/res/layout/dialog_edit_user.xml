@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_dialog_rounded"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- ══════════ HEADER ══════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvEditDialogTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit Account"
+                android:textColor="#111827"
+                android:textSize="17.5sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvEditDialogSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Update profile photo, details and assignments"
+                android:textColor="#9CA3AF"
+                android:textSize="11.5sp" />
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btnDialogClose"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_icon_btn_edit"
+            android:contentDescription="Close"
+            android:padding="8dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_close"
+            app:tint="#6B7280" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="14dp"
+        android:background="#F1F5F9" />
+
+    <!-- ══════════ AVATAR PHOTO PICKER ZONE ══════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginBottom="14dp"
+        android:background="#F8FAFC"
+        android:padding="12dp">
+
+        <FrameLayout
+            android:id="@+id/flAvatarPickContainer"
+            android:layout_width="64dp"
+            android:layout_height="64dp">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardPreventCornerOverlap="true">
+
+                <ImageView
+                    android:id="@+id/ivDialogUserAvatar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="User Avatar"
+                    android:scaleType="centerCrop"
+                    android:background="#F1F5F9"
+                    android:src="@drawable/ic_nav_profile" />
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Camera Badge Overlay -->
+            <FrameLayout
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="bottom|end"
+                android:background="@drawable/bg_avatar_circle"
+                android:elevation="4dp"
+                android:backgroundTint="#C0181A">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="Camera"
+                    android:src="@drawable/ic_menu_burger"
+                    app:tint="@color/text_white" />
+
+            </FrameLayout>
+
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvAvatarPickLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profile Photo"
+                android:textColor="#1F2937"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Upload custom photo to Firebase"
+                android:textColor="#9CA3AF"
+                android:textSize="10.5sp" />
+
+            <TextView
+                android:id="@+id/btnPickGallery"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_btn_sync_white"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:paddingHorizontal="12dp"
+                android:text="📷 Change Photo"
+                android:textColor="#1F2937"
+                android:textSize="11.5sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- ══════════ INPUT FIELDS ══════════ -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="320dp"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Field 1: Full Name -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.08"
+                android:text="FULL NAME"
+                android:textColor="#6B7280"
+                android:textSize="9.5sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etEditName"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="Full Name"
+                android:importantForAutofill="no"
+                android:inputType="textPersonName"
+                android:paddingHorizontal="14dp"
+                android:textColor="@color/text_primary"
+                android:textSize="13.5sp" />
+
+            <!-- Field 2: Staff / Student ID -->
+            <TextView
+                android:id="@+id/tvLabelStaffNo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.08"
+                android:text="STAFF / STUDENT ID"
+                android:textColor="#6B7280"
+                android:textSize="9.5sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etEditStaffNo"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="e.g. DRV-01 or STU-001"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:paddingHorizontal="14dp"
+                android:textColor="@color/text_primary"
+                android:textSize="13.5sp" />
+
+            <!-- ── DRIVER ONLY FIELDS ── -->
+            <LinearLayout
+                android:id="@+id/llEditDriverFields"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.08"
+                    android:text="ASSIGNED ROUTE"
+                    android:textColor="#6B7280"
+                    android:textSize="9.5sp"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/spinnerEditRoute"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/bg_input_field"
+                    android:paddingHorizontal="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.08"
+                    android:text="ASSIGNED BUS ID"
+                    android:textColor="#6B7280"
+                    android:textSize="9.5sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/etEditBus"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/bg_input_field"
+                    android:hint="e.g. BUS-001"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:paddingHorizontal="14dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13.5sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.08"
+                    android:text="LICENSE PLATE"
+                    android:textColor="#6B7280"
+                    android:textSize="9.5sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/etEditPlate"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/bg_input_field"
+                    android:hint="e.g. WAA 1234 A"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:paddingHorizontal="14dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13.5sp" />
+
+            </LinearLayout>
+
+            <!-- ── STUDENT ONLY FIELDS ── -->
+            <LinearLayout
+                android:id="@+id/llEditStudentFields"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.08"
+                    android:text="FACULTY"
+                    android:textColor="#6B7280"
+                    android:textSize="9.5sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/etEditFaculty"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/bg_input_field"
+                    android:hint="e.g. FSKIK"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:paddingHorizontal="14dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13.5sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.08"
+                    android:text="PROGRAM"
+                    android:textColor="#6B7280"
+                    android:textSize="9.5sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/etEditProgram"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/bg_input_field"
+                    android:hint="e.g. Software Engineering"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:paddingHorizontal="14dp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13.5sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <!-- ══════════ ACTION BUTTONS ══════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/btnDialogCancel"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_btn_sync_white"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:text="Cancel"
+            android:textColor="#4B5563"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/btnDialogSave"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1.3"
+            android:background="@drawable/bg_btn_new_account"
+            android:clickable="true"
+            android:elevation="2dp"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:text="Save Changes"
+            android:textColor="@color/text_white"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</LinearLayout>

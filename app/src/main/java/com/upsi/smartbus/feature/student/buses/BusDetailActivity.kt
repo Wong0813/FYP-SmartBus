@@ -42,21 +42,63 @@ class BusDetailActivity : AppCompatActivity() {
         attachFirestoreListener(busId)
     }
 
-    // ── Firestore ─────────────────────────────────────────────────────────────
+    // ── Realtime Database ───────────────────────────────────────────────────
+
+    private var rtdbListener: com.google.firebase.database.ValueEventListener? = null
+    private var staticBus: Bus? = null
 
     private fun attachFirestoreListener(busId: String) {
-        busListener = db.collection("buses").document(busId)
-            .addSnapshotListener { doc, error ->
-                if (error != null || doc == null || !doc.exists()) {
-                    // Firestore unavailable — keep showing the fallback
-                    return@addSnapshotListener
-                }
+        // 1. One-time load static details from Firestore
+        db.collection("buses").document(busId).get().addOnSuccessListener { doc ->
+            if (isFinishing || isDestroyed) return@addOnSuccessListener
+            staticBus = doc.toObject(Bus::class.java)?.copy(id = doc.id)
+            bindRealtimeListener(busId)
+        }.addOnFailureListener {
+            bindRealtimeListener(busId)
+        }
+    }
 
-                try {
-                    val bus = doc.toObject(Bus::class.java)
-                    if (bus != null) populateViews(bus)
-                } catch (_: Exception) {}
+    private fun bindRealtimeListener(busId: String) {
+        rtdbListener?.let { com.upsi.smartbus.core.data.RealtimeDbHelper.busRef(busId).removeEventListener(it) }
+        rtdbListener = object : com.google.firebase.database.ValueEventListener {
+            override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                if (isFinishing || isDestroyed) return
+
+                val lat = snapshot.child("latitude").getValue(Double::class.java) ?: 0.0
+                val lng = snapshot.child("longitude").getValue(Double::class.java) ?: 0.0
+                val speed = snapshot.child("speed").getValue(Double::class.java) ?: 0.0
+                val status = snapshot.child("status").getValue(String::class.java) ?: "IDLE"
+                val nextStop = snapshot.child("nextStop").getValue(String::class.java) ?: ""
+                val dist = snapshot.child("distanceToNext").getValue(Double::class.java) ?: 0.0
+                val routeName = snapshot.child("routeName").getValue(String::class.java) ?: ""
+                val lastUpdated = snapshot.child("lastUpdated").getValue(Long::class.java) ?: System.currentTimeMillis()
+
+                val s = staticBus
+                val finalRoute = routeName.ifEmpty { s?.routeName ?: "Laluan 1" }
+                val merged = Bus(
+                    id = busId,
+                    name = s?.name?.ifEmpty { finalRoute } ?: finalRoute,
+                    routeName = finalRoute,
+                    plateNumber = s?.plateNumber ?: busId,
+                    licensePlate = s?.licensePlate ?: s?.plateNumber ?: busId,
+                    routeStops = s?.routeStops ?: RouteData.getAllRoutes().find { it.name.equals(finalRoute, true) }?.stops ?: listOf("KAB", "PT", "SS", "KA", "DKP", "KAB"),
+                    startStop = s?.startStop ?: "KAB",
+                    location = GeoPoint(lat, lng),
+                    speed = speed,
+                    nextStop = nextStop,
+                    distanceToNext = dist,
+                    passengerCount = 12,
+                    capacity = 40,
+                    status = status,
+                    photoUrl = s?.photoUrl.orEmpty(),
+                    lastUpdated = lastUpdated
+                )
+                populateViews(merged)
             }
+
+            override fun onCancelled(error: com.google.firebase.database.DatabaseError) {}
+        }
+        com.upsi.smartbus.core.data.RealtimeDbHelper.busRef(busId).addValueEventListener(rtdbListener!!)
     }
 
     // ── UI ────────────────────────────────────────────────────────────────────
@@ -170,6 +212,8 @@ class BusDetailActivity : AppCompatActivity() {
     // ── Cleanup ───────────────────────────────────────────────────────────────
 
     override fun onDestroy() {
+        val busId = intent.getStringExtra("bus_id") ?: "bus_a"
+        rtdbListener?.let { com.upsi.smartbus.core.data.RealtimeDbHelper.busRef(busId).removeEventListener(it) }
         busListener?.remove()
         super.onDestroy()
     }

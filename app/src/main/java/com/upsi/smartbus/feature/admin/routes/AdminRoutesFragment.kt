@@ -1,6 +1,10 @@
 package com.upsi.smartbus.feature.admin.routes
 
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,9 +24,9 @@ import com.upsi.smartbus.core.model.RouteData
 import com.upsi.smartbus.databinding.FragmentAdminRoutesBinding
 import com.upsi.smartbus.databinding.ItemAccountSectionHeaderBinding
 import com.upsi.smartbus.databinding.ItemRouteCardBinding
+import com.upsi.smartbus.feature.admin.AdminActivity
 import com.upsi.smartbus.feature.admin.seeder.AccountSeeder
 import com.upsi.smartbus.feature.admin.seeder.AdminSortHelper
-import com.upsi.smartbus.feature.admin.seeder.AdminUiHelper
 
 class AdminRoutesFragment : Fragment() {
 
@@ -36,6 +40,7 @@ class AdminRoutesFragment : Fragment() {
     private var routesListener: ListenerRegistration? = null
     private val selectedStops = mutableListOf<String>()
     private var tabFilter = "ALL"
+    private var searchQuery = ""
 
     sealed class RouteListItem {
         data class Header(val title: String, val count: Int) : RouteListItem()
@@ -49,9 +54,13 @@ class AdminRoutesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.btnHeroDrawer.setOnClickListener {
+            (activity as? AdminActivity)?.openDrawer()
+        }
         setupStopsSpinner()
         setupAddStop()
         setupSave()
+        setupSearch()
         setupTabs()
         setupSync()
         setupToggleForm()
@@ -59,11 +68,27 @@ class AdminRoutesFragment : Fragment() {
         RouteRepository.loadRoutes { listenToRoutes() }
     }
 
+    private fun setupSearch() {
+        binding.etSearchRoutes.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                searchQuery = s?.toString()?.trim().orEmpty().lowercase()
+                binding.btnClearRouteSearch.visibility = if (searchQuery.isNotEmpty()) View.VISIBLE else View.GONE
+                rebuildList()
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        binding.btnClearRouteSearch.setOnClickListener {
+            binding.etSearchRoutes.setText("")
+        }
+    }
+
     private fun setupToggleForm() {
         binding.btnToggleRouteForm.setOnClickListener {
             val show = binding.llRouteForm.visibility != View.VISIBLE
             binding.llRouteForm.visibility = if (show) View.VISIBLE else View.GONE
-            binding.btnToggleRouteForm.text = if (show) "✕ Close" else "+ New Route"
+            binding.tvNewRouteBtnText.text = if (show) "✕ Close Form" else "+ New Route"
         }
     }
 
@@ -97,82 +122,92 @@ class AdminRoutesFragment : Fragment() {
     }
 
     private fun updateTabStyles() {
-        val selectedBg = R.drawable.bg_filter_chip_selected
-        val normalBg = R.drawable.bg_filter_chip
-        val selColor = ContextCompat.getColor(requireContext(), R.color.crimson_primary)
-        val normColor = ContextCompat.getColor(requireContext(), R.color.text_secondary)
-        val mapping = listOf(
+        val tabs = listOf(
             binding.tabAllRoutes to "ALL",
             binding.tabWeekday to "WEEKDAY",
             binding.tabSaturday to "SATURDAY"
         )
-        mapping.forEach { (view, f) ->
-            val on = tabFilter == f
-            view.setBackgroundResource(if (on) selectedBg else normalBg)
-            view.setTextColor(if (on) selColor else normColor)
-            view.typeface = if (on) android.graphics.Typeface.DEFAULT_BOLD else android.graphics.Typeface.DEFAULT
+        tabs.forEach { (view, filter) ->
+            val selected = tabFilter == filter
+            if (selected) {
+                view.setBackgroundResource(R.drawable.bg_filter_tab_active)
+                view.setTextColor(Color.WHITE)
+                view.setTypeface(null, Typeface.BOLD)
+            } else {
+                view.setBackgroundResource(R.drawable.bg_filter_tab_inactive)
+                view.setTextColor(Color.parseColor("#6B7280"))
+                view.setTypeface(null, Typeface.BOLD)
+            }
         }
     }
 
     private fun setupStopsSpinner() {
+        val allStops = RouteData.stops.map { "${it.abbreviation} - ${it.fullName}" }
         binding.spinnerStops.adapter = ArrayAdapter(
-            requireContext(), android.R.layout.simple_spinner_dropdown_item,
-            RouteData.stops.map { "${it.abbreviation} - ${it.fullName}" }
+            requireContext(), android.R.layout.simple_spinner_dropdown_item, allStops
         )
     }
 
     private fun setupAddStop() {
         binding.btnAddStop.setOnClickListener {
-            val idx = binding.spinnerStops.selectedItemPosition
-            if (idx in RouteData.stops.indices) {
-                selectedStops.add(RouteData.stops[idx].abbreviation)
-                refreshChips()
-            }
+            val stop = RouteData.stops[binding.spinnerStops.selectedItemPosition].abbreviation
+            selectedStops.add(stop)
+            renderStopChips()
         }
     }
 
-    private fun refreshChips() {
+    private fun renderStopChips() {
         binding.llStopChips.removeAllViews()
-        selectedStops.forEachIndexed { i, abbr ->
-            if (i > 0) binding.llStopChips.addView(TextView(requireContext()).apply {
-                text = " ➔ "; textSize = 13f
-                setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary))
-            })
-            binding.llStopChips.addView(TextView(requireContext()).apply {
-                text = abbr; textSize = 12f
-                setTextColor(ContextCompat.getColor(requireContext(), R.color.crimson_primary))
-                setBackgroundResource(R.drawable.bg_route_chip)
-                setPadding(24, 8, 24, 8)
-                setOnClickListener { selectedStops.removeAt(i); refreshChips() }
-            })
+        val ctx = requireContext()
+        selectedStops.forEachIndexed { i, stop ->
+            val tv = TextView(ctx).apply {
+                text = "${i + 1}. $stop \u2715"
+                setBackgroundResource(R.drawable.bg_role_badge)
+                setPadding(24, 12, 24, 12)
+                setTextColor(ContextCompat.getColor(ctx, R.color.crimson_primary))
+                textSize = 12f
+                setOnClickListener {
+                    selectedStops.removeAt(i)
+                    renderStopChips()
+                }
+                val lp = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                lp.marginEnd = 16
+                layoutParams = lp
+            }
+            binding.llStopChips.addView(tv)
         }
     }
 
     private fun setupSave() {
         binding.btnSaveRoute.setOnClickListener {
             val name = binding.etRouteName.text.toString().trim()
-            if (name.isEmpty() || selectedStops.size < 2) {
-                Toast.makeText(requireContext(), "Name + at least 2 stops required", Toast.LENGTH_SHORT).show()
+            if (name.isEmpty() || selectedStops.isEmpty()) {
+                Toast.makeText(requireContext(), "Enter name and at least 1 stop", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            val id = AccountSeeder.routeDocId(name) + "_${System.currentTimeMillis()}"
-            db.collection("routes").document(id).set(mapOf(
-                "id" to id, "name" to name, "shortName" to "L${allRoutes.size + 1}",
-                "stops" to selectedStops.toList(), "scheduleType" to "WEEKDAY",
-                "routeOrder" to allRoutes.size + 1
-            )).addOnSuccessListener {
-                RouteRepository.invalidateCache()
+            val short = name.split(" ").take(2).joinToString("") { it.take(1) }
+            val scheduleType = if (name.contains("Saturday", true)) "SATURDAY" else "WEEKDAY"
+            val route = Route(name = name, shortName = short, stops = selectedStops.toList(), scheduleType = scheduleType)
+            db.collection("routes").add(route).addOnSuccessListener {
+                Toast.makeText(requireContext(), "Route created", Toast.LENGTH_SHORT).show()
                 binding.etRouteName.text?.clear()
-                selectedStops.clear(); refreshChips()
-                Toast.makeText(requireContext(), "Route saved", Toast.LENGTH_SHORT).show()
+                selectedStops.clear()
+                renderStopChips()
+                binding.llRouteForm.visibility = View.GONE
+                binding.tvNewRouteBtnText.text = "+ New Route"
             }
         }
     }
 
     private fun setupRecyclerView() {
-        routeAdapter = RouteSectionAdapter(displayItems,
-            onEdit = { showEditDialog(it) },
-            onDelete = { deleteRoute(it) })
+        routeAdapter = RouteSectionAdapter(
+            displayItems,
+            onEdit = { showEdit(it) },
+            onDelete = { deleteRoute(it) }
+        )
         binding.rvRoutes.layoutManager = LinearLayoutManager(requireContext())
         binding.rvRoutes.adapter = routeAdapter
     }
@@ -181,127 +216,116 @@ class AdminRoutesFragment : Fragment() {
         routesListener?.remove()
         routesListener = db.collection("routes").addSnapshotListener { snap, err ->
             if (_binding == null) return@addSnapshotListener
-            if (err != null) {
-                allRoutes.clear()
-                allRoutes.addAll(RouteRepository.getCachedRoutes())
-            } else {
-                val fromFs = snap?.documents?.mapNotNull {
-                    it.toObject(Route::class.java)?.copy(id = it.id)
-                }.orEmpty()
-                allRoutes.clear()
-                allRoutes.addAll(
-                    if (fromFs.isEmpty()) RouteRepository.getCachedRoutes()
-                    else RouteRepository.getCachedRoutes().map { cached ->
-                        fromFs.find { it.name.equals(cached.name, true) } ?: cached
-                    }.let { merged ->
-                        val extras = fromFs.filter { fs -> merged.none { it.name.equals(fs.name, true) } }
-                        AdminSortHelper.sortRoutes(merged + extras)
-                    }
-                )
+            allRoutes.clear()
+            for (doc in snap?.documents.orEmpty()) {
+                doc.toObject(Route::class.java)?.let { allRoutes.add(it.copy(id = doc.id)) }
             }
-            binding.tvRouteTotal.text = "${allRoutes.size} Laluan"
-            binding.tabAllRoutes.text = "All (${allRoutes.size})"
+
+            val weekday = allRoutes.count { it.scheduleType.equals("WEEKDAY", true) }
+            val saturday = allRoutes.count { it.scheduleType.equals("SATURDAY", true) }
+            val shuttle = allRoutes.count { it.name.contains("Shuttle", true) }
+
+            binding.tvRouteTotal.text = "${allRoutes.size}"
+            binding.tvRouteWeekdayCount.text = "$weekday"
+            binding.tvRouteSaturdayCount.text = "$saturday"
+            binding.tvRouteShuttleCount.text = "$shuttle"
+
             rebuildList()
         }
     }
 
     private fun rebuildList() {
         displayItems.clear()
+        val sorted = AdminSortHelper.sortRoutes(allRoutes)
         val canonical = AdminSortHelper.canonicalRoutes()
-        val filtered = when (tabFilter) {
-            "WEEKDAY" -> allRoutes.filter { it.scheduleType.equals("WEEKDAY", true) }
-            "SATURDAY" -> allRoutes.filter { it.scheduleType.equals("SATURDAY", true) }
-            else -> allRoutes
-        }.ifEmpty { when (tabFilter) {
-            "WEEKDAY" -> canonical.filter { it.scheduleType == "WEEKDAY" }
-            "SATURDAY" -> canonical.filter { it.scheduleType == "SATURDAY" }
-            else -> canonical
-        }}
 
-        val sorted = AdminSortHelper.sortRoutes(filtered)
+        fun matchesSearch(r: Route): Boolean {
+            if (searchQuery.isEmpty()) return true
+            return r.name.lowercase().contains(searchQuery) ||
+                    r.shortName.lowercase().contains(searchQuery) ||
+                    r.scheduleType.lowercase().contains(searchQuery) ||
+                    r.stops.any { it.lowercase().contains(searchQuery) }
+        }
 
-        if (tabFilter == "ALL") {
-            listOf("WEEKDAY" to "Weekday Laluan (1–8 + Shuttle)", "SATURDAY" to "Saturday Laluan (9–18)").forEach { (type, title) ->
-                val group = sorted.filter { it.scheduleType.equals(type, true) }
-                if (group.isNotEmpty()) {
-                    displayItems.add(RouteListItem.Header(title, group.size))
-                    group.forEachIndexed { idx, route ->
-                        val order = canonical.indexOfFirst { it.name == route.name }.let { if (it >= 0) it + 1 else idx + 1 }
-                        displayItems.add(RouteListItem.RouteItem(route, order))
+        val filtered = sorted.filter { matchesSearch(it) }
+
+        val weekdayRoutes = filtered.filter { it.scheduleType.equals("WEEKDAY", true) }
+        val saturdayRoutes = filtered.filter { it.scheduleType.equals("SATURDAY", true) }
+
+        when (tabFilter) {
+            "WEEKDAY" -> {
+                if (weekdayRoutes.isNotEmpty()) {
+                    displayItems.add(RouteListItem.Header("WEEKDAY ROUTES (LALUAN 1–8)", weekdayRoutes.size))
+                    weekdayRoutes.forEach { r ->
+                        val order = canonical.indexOfFirst { it.name == r.name }.let { if (it >= 0) it + 1 else AdminSortHelper.routeOrderKey(r) }
+                        displayItems.add(RouteListItem.RouteItem(r, order))
                     }
                 }
             }
-        } else {
-            sorted.forEachIndexed { idx, route ->
-                val order = AdminSortHelper.routeOrderKey(route).let { if (it < 900) it else idx + 1 }
-                displayItems.add(RouteListItem.RouteItem(route, order))
+            "SATURDAY" -> {
+                if (saturdayRoutes.isNotEmpty()) {
+                    displayItems.add(RouteListItem.Header("SATURDAY ROUTES (LALUAN 9–18)", saturdayRoutes.size))
+                    saturdayRoutes.forEach { r ->
+                        val order = canonical.indexOfFirst { it.name == r.name }.let { if (it >= 0) it + 1 else AdminSortHelper.routeOrderKey(r) }
+                        displayItems.add(RouteListItem.RouteItem(r, order))
+                    }
+                }
+            }
+            else -> {
+                if (weekdayRoutes.isNotEmpty()) {
+                    displayItems.add(RouteListItem.Header("WEEKDAY ROUTES", weekdayRoutes.size))
+                    weekdayRoutes.forEach { r ->
+                        val order = canonical.indexOfFirst { it.name == r.name }.let { if (it >= 0) it + 1 else AdminSortHelper.routeOrderKey(r) }
+                        displayItems.add(RouteListItem.RouteItem(r, order))
+                    }
+                }
+                if (saturdayRoutes.isNotEmpty()) {
+                    displayItems.add(RouteListItem.Header("SATURDAY ROUTES", saturdayRoutes.size))
+                    saturdayRoutes.forEach { r ->
+                        val order = canonical.indexOfFirst { it.name == r.name }.let { if (it >= 0) it + 1 else AdminSortHelper.routeOrderKey(r) }
+                        displayItems.add(RouteListItem.RouteItem(r, order))
+                    }
+                }
             }
         }
 
-        binding.tvEmptyRoutes.visibility =
-            if (displayItems.none { it is RouteListItem.RouteItem }) View.VISIBLE else View.GONE
+        val isEmpty = displayItems.isEmpty()
+        binding.llEmptyRoutes.visibility = if (isEmpty) View.VISIBLE else View.GONE
+        binding.rvRoutes.visibility = if (isEmpty) View.GONE else View.VISIBLE
+
         routeAdapter.notifyDataSetChanged()
-        AdminUiHelper.expandRecyclerView(binding.rvRoutes)
     }
 
-    private fun showEditDialog(route: Route) {
-        val editStops = route.stops.toMutableList()
-        val names = RouteData.stops.map { "${it.abbreviation} — ${it.fullName}" }
-        val abbrs = RouteData.stops.map { it.abbreviation }
-
-        fun buildStopSummary() = editStops.joinToString(" → ")
-
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Edit Stops: ${route.name}")
-            .setMessage(buildStopSummary())
-            .setNeutralButton("Add Stop") { dlg, _ ->
-                com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-                    .setTitle("Add Stop")
-                    .setItems(names.toTypedArray()) { _, which ->
-                        editStops.add(abbrs[which])
-                        db.collection("routes").document(route.id).update("stops", editStops)
-                            .addOnSuccessListener {
-                                RouteRepository.invalidateCache()
-                                com.google.android.material.snackbar.Snackbar
-                                    .make(binding.root, "Stop added: ${abbrs[which]}", com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
-                                    .show()
-                            }
-                    }.show()
-                dlg.dismiss()
-            }
-            .setPositiveButton("Remove Last") { _, _ ->
-                if (editStops.isNotEmpty()) {
-                    val removed = editStops.removeLast()
-                    db.collection("routes").document(route.id).update("stops", editStops)
-                        .addOnSuccessListener { RouteRepository.invalidateCache() }
-                    com.google.android.material.snackbar.Snackbar
-                        .make(binding.root, "Removed: $removed", 4000)
-                        .setAction("UNDO") {
-                            editStops.add(removed)
-                            db.collection("routes").document(route.id).update("stops", editStops)
-                                .addOnSuccessListener { RouteRepository.invalidateCache() }
-                        }
-                        .setActionTextColor(ContextCompat.getColor(requireContext(), R.color.status_moving))
-                        .show()
+    private fun showEdit(route: Route) {
+        val ctx = requireContext()
+        val et = android.widget.EditText(ctx).apply {
+            hint = "Route Name"
+            setText(route.name)
+            setBackgroundResource(R.drawable.bg_input_field)
+            setPadding(32, 24, 32, 24)
+        }
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(ctx)
+            .setTitle("Edit Route")
+            .setView(et)
+            .setPositiveButton("Save") { _, _ ->
+                val newName = et.text.toString().trim()
+                if (newName.isNotEmpty()) {
+                    db.collection("routes").document(route.id).update("name", newName)
                 }
             }
-            .setNegativeButton("Close", null)
+            .setNegativeButton("Cancel", null)
             .show()
     }
 
     private fun deleteRoute(route: Route) {
-        val routeRef = db.collection("routes").document(route.id)
-        routeRef.get().addOnSuccessListener { snapshot ->
-            val backup = snapshot.data ?: return@addOnSuccessListener
-            routeRef.delete().addOnSuccessListener { RouteRepository.invalidateCache() }
-            com.google.android.material.snackbar.Snackbar
-                .make(binding.root, "${route.name} deleted", 5000)
-                .setAction("UNDO") {
-                    routeRef.set(backup).addOnSuccessListener { RouteRepository.invalidateCache() }
-                }
-                .setActionTextColor(ContextCompat.getColor(requireContext(), R.color.status_moving))
-                .show()
-        }
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Delete ${route.name}")
+            .setMessage("Are you sure?")
+            .setPositiveButton("Delete") { _, _ ->
+                db.collection("routes").document(route.id).delete()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     override fun onDestroyView() {
@@ -316,14 +340,24 @@ class AdminRoutesFragment : Fragment() {
         private val onDelete: (Route) -> Unit
     ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-        override fun getItemViewType(p: Int) = when (items[p]) {
-            is RouteListItem.Header -> 0
-            is RouteListItem.RouteItem -> 1
+        companion object {
+            private const val TYPE_HEADER = 0
+            private const val TYPE_ROUTE = 1
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, type: Int) = when (type) {
-            0 -> HeaderVH(ItemAccountSectionHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-            else -> RouteVH(ItemRouteCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+        inner class HeaderVH(val binding: ItemAccountSectionHeaderBinding) : RecyclerView.ViewHolder(binding.root)
+        inner class RouteVH(val binding: ItemRouteCardBinding) : RecyclerView.ViewHolder(binding.root)
+
+        override fun getItemViewType(pos: Int) =
+            if (items[pos] is RouteListItem.Header) TYPE_HEADER else TYPE_ROUTE
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            val inf = LayoutInflater.from(parent.context)
+            return if (viewType == TYPE_HEADER) {
+                HeaderVH(ItemAccountSectionHeaderBinding.inflate(inf, parent, false))
+            } else {
+                RouteVH(ItemRouteCardBinding.inflate(inf, parent, false))
+            }
         }
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, pos: Int) {
@@ -332,17 +366,6 @@ class AdminRoutesFragment : Fragment() {
                     val hb = (holder as HeaderVH).binding
                     hb.tvSectionTitle.text = item.title
                     hb.tvSectionCount.text = "${item.count}"
-
-                    val accentColor = when {
-                        item.title.contains("Weekday", ignoreCase = true) ->
-                            androidx.core.content.ContextCompat.getColor(holder.itemView.context, R.color.status_moving)
-                        item.title.contains("Saturday", ignoreCase = true) ->
-                            androidx.core.content.ContextCompat.getColor(holder.itemView.context, R.color.status_resting)
-                        else ->
-                            androidx.core.content.ContextCompat.getColor(holder.itemView.context, R.color.crimson_primary)
-                    }
-                    hb.viewSectionAccent.setBackgroundColor(accentColor)
-                    hb.tvSectionTitle.setTextColor(accentColor)
                 }
                 is RouteListItem.RouteItem -> {
                     val b = (holder as RouteVH).binding
@@ -359,7 +382,5 @@ class AdminRoutesFragment : Fragment() {
         }
 
         override fun getItemCount() = items.size
-        class HeaderVH(val binding: ItemAccountSectionHeaderBinding) : RecyclerView.ViewHolder(binding.root)
-        class RouteVH(val binding: ItemRouteCardBinding) : RecyclerView.ViewHolder(binding.root)
     }
 }

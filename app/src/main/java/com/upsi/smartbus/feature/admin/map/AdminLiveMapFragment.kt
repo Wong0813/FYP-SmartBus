@@ -95,6 +95,19 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
             .findFragmentById(R.id.adminMapView) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
+        binding.btnMapDrawer.setOnClickListener {
+            (activity as? com.upsi.smartbus.feature.admin.AdminActivity)?.openDrawer()
+        }
+
+        binding.btnBackToDashboard.setOnClickListener {
+            val adminAct = activity as? com.upsi.smartbus.feature.admin.AdminActivity
+            if (adminAct != null) {
+                adminAct.returnToDashboard()
+            } else {
+                activity?.onBackPressedDispatcher?.onBackPressed()
+            }
+        }
+
         binding.busSelector.setOnClickListener {
             showBusPickerDialog()
         }
@@ -123,64 +136,103 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // FIRESTORE
+    // REALTIME DATABASE LIVE BUS TRACKING
     // ══════════════════════════════════════════════════════════════════════════
 
-    private fun listenToBuses() {
-        busListener?.remove()
-        busListener = db.collection("buses").addSnapshotListener { snapshot, error ->
-            if (_binding == null || map == null) return@addSnapshotListener
-            if (error != null || snapshot == null) return@addSnapshotListener
+    private var rtdbListener: com.google.firebase.database.ValueEventListener? = null
+    private val staticBusesMap = mutableMapOf<String, Bus>()
 
-            busList.clear()
+    private fun listenToBuses() {
+        // 1. One-time low-frequency load of static bus metadata from Firestore
+        db.collection("buses").get().addOnSuccessListener { snapshot ->
+            if (_binding == null) return@addOnSuccessListener
+            staticBusesMap.clear()
             for (doc in snapshot.documents) {
                 val bus = doc.toObject(Bus::class.java) ?: continue
-                busList.add(bus.copy(id = doc.id))
+                staticBusesMap[doc.id] = bus.copy(id = doc.id)
             }
-
-            // Auto-focus if arriving from Dashboard route click
-            val targetRoute = initialTargetRoute
-            if (targetRoute != null) {
-                initialTargetRoute = null
-                val match = busList.find { it.routeName.equals(targetRoute, true) || it.name.equals(targetRoute, true) }
-                if (match != null) {
-                    selectBus(match)
-                } else {
-                    val routeObj = RouteData.getAllRoutes().find { it.name.equals(targetRoute, true) }
-                    val firstStopAbbr = routeObj?.stops?.firstOrNull() ?: "KAB"
-                    val firstStop = RouteData.getStopByAbbreviation(firstStopAbbr)
-                    val loc = if (firstStop != null) com.google.firebase.firestore.GeoPoint(firstStop.latitude, firstStop.longitude)
-                              else com.google.firebase.firestore.GeoPoint(3.6845, 101.5234)
-                    val fallback = Bus(
-                        id = "BUS-${routeObj?.id ?: "01"}",
-                        name = targetRoute,
-                        routeName = targetRoute,
-                        routeStops = routeObj?.stops ?: listOf(firstStopAbbr),
-                        startStop = firstStopAbbr,
-                        location = loc,
-                        nextStop = routeObj?.stops?.getOrNull(1) ?: firstStopAbbr,
-                        status = "Offline"
-                    )
-                    selectBus(fallback)
-                }
-                return@addSnapshotListener
-            }
-
-            updateAllBusMarkers()
-
-            val current = selectedBus
-            if (current != null) {
-                val updated = busList.find { it.id == current.id || it.routeName.equals(current.routeName, true) }
-                if (updated != null) {
-                    selectedBus = updated
-                }
-                renderSingleRouteOnMap(selectedBus ?: current)
-            } else {
-                renderAllActiveBusSegments()
-            }
-
-            updateStatusPanel()
+            bindRealtimeDatabaseListener()
+        }.addOnFailureListener {
+            bindRealtimeDatabaseListener()
         }
+    }
+
+    private fun bindRealtimeDatabaseListener() {
+        rtdbListener?.let { com.upsi.smartbus.core.data.RealtimeDbHelper.liveBuses.removeEventListener(it) }
+        rtdbListener = object : com.google.firebase.database.ValueEventListener {
+            override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                if (_binding == null || map == null) return
+
+                busList.clear()
+                for (child in snapshot.children) {
+                    val busId = child.key ?: continue
+                    val lat = child.child("latitude").getValue(Double::class.java) ?: 0.0
+                    val lng = child.child("longitude").getValue(Double::class.java) ?: 0.0
+                    val speed = child.child("speed").getValue(Double::class.java) ?: 0.0
+                    val status = child.child("status").getValue(String::class.java) ?: "IDLE"
+                    val nextStop = child.child("nextStop").getValue(String::class.java) ?: ""
+                    val dist = child.child("distanceToNext").getValue(Double::class.java) ?: 0.0
+                    val routeName = child.child("routeName").getValue(String::class.java) ?: ""
+                    val lastUpdated = child.child("lastUpdated").getValue(Long::class.java) ?: System.currentTimeMillis()
+
+                    val staticBus = staticBusesMap[busId]
+                    val finalRouteName = routeName.ifEmpty { staticBus?.routeName.orEmpty() }
+                    val finalRouteStops = staticBus?.routeStops ?: (RouteData.getAllRoutes().find { it.name.equals(finalRouteName, true) }?.stops ?: emptyList())
+
+                    val mergedBus = Bus(
+                        id = busId,
+                        name = staticBus?.name?.ifEmpty { finalRouteName } ?: finalRouteName,
+                        routeName = finalRouteName,
+                        plateNumber = staticBus?.plateNumber ?: busId,
+                        licensePlate = staticBus?.licensePlate ?: staticBus?.plateNumber ?: busId,
+                        routeStops = finalRouteStops,
+                        startStop = finalRouteStops.firstOrNull().orEmpty(),
+                        location = com.google.firebase.firestore.GeoPoint(lat, lng),
+                        speed = speed,
+                        nextStop = nextStop,
+                        distanceToNext = dist,
+                        status = status,
+                        photoUrl = staticBus?.photoUrl.orEmpty(),
+                        lastUpdated = lastUpdated
+                    )
+                    busList.add(mergedBus)
+                }
+
+                // If no RTDB buses yet, populate from static map for offline visibility
+                if (busList.isEmpty()) {
+                    busList.addAll(staticBusesMap.values)
+                }
+
+                // Auto-focus if arriving from Dashboard route click
+                val targetRoute = initialTargetRoute
+                if (targetRoute != null) {
+                    initialTargetRoute = null
+                    val match = busList.find { it.routeName.equals(targetRoute, true) || it.name.equals(targetRoute, true) }
+                    if (match != null) {
+                        selectBus(match)
+                    }
+                    return
+                }
+
+                updateAllBusMarkers()
+
+                val current = selectedBus
+                if (current != null) {
+                    val updated = busList.find { it.id == current.id || it.routeName.equals(current.routeName, true) }
+                    if (updated != null) {
+                        selectedBus = updated
+                    }
+                    renderSingleRouteOnMap(selectedBus ?: current)
+                } else {
+                    renderAllActiveBusSegments()
+                }
+
+                updateStatusPanel()
+            }
+
+            override fun onCancelled(error: com.google.firebase.database.DatabaseError) {}
+        }
+        com.upsi.smartbus.core.data.RealtimeDbHelper.liveBuses.addValueEventListener(rtdbListener!!)
     }
 
     private fun updateAllBusMarkers() {
@@ -436,33 +488,54 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
         }
 
         binding.tvLiveBusCount.text = "$active Active Buses"
-        binding.tvMapStatActive.text = "$active Active"
-        binding.tvMapStatResting.text = "$resting Resting"
-        binding.tvMapStatOffline.text = "$offline Offline"
 
         val bus = selectedBus
         if (bus == null) {
-            binding.tvSelectedBus.text = "All Buses ($active Active)"
+            binding.tvSelectedBus.text = "All Buses"
             binding.busSelectorDot.setBackgroundResource(if (active > 0) R.drawable.dot_green else R.drawable.dot_gray)
-            binding.tvBottomPanelTitle.text = "All Buses Status ($active Active)"
-            binding.tvBottomPanelSubtitle.text = "Displaying live active segments between current bus GPS & next stop"
+            binding.tvPanelRouteName.text = "All Active Routes"
+            binding.tvPanelDriverInfo.text = "Monitoring all $active active buses in UPSI campus"
+            binding.panelStatusDot.setBackgroundResource(if (active > 0) R.drawable.dot_green else R.drawable.dot_gray)
+            binding.tvPanelStatus.text = if (active > 0) "LIVE" else "IDLE"
+            binding.tvPanelNextStop.text = "--"
+            binding.tvPanelSpeed.text = "-- km/h"
+            binding.tvPanelEta.text = "-- min"
+            binding.tvPanelStopsChain.text = "Tracking all live buses across UPSI campus"
         } else {
             val isResting = bus.status.equals("resting", true)
+            val isWorking = bus.status.equals("working", true)
             val routeObj = RouteData.getAllRoutes().find { it.name.equals(bus.routeName, true) }
             val desc = routeObj?.shortName ?: ""
             binding.tvSelectedBus.text = if (desc.isNotEmpty()) "${bus.routeName.ifEmpty { bus.id }} — $desc" else bus.routeName.ifEmpty { bus.id }
+
             val dot = when {
                 isResting -> R.drawable.dot_orange
-                bus.status.equals("working", true) -> R.drawable.dot_green
+                isWorking -> R.drawable.dot_green
                 else -> R.drawable.dot_gray
             }
             binding.busSelectorDot.setBackgroundResource(dot)
-            binding.tvBottomPanelTitle.text = "${bus.routeName.ifEmpty { bus.id }} (${bus.status.uppercase()})"
-            binding.tvBottomPanelSubtitle.text = if (isResting) {
-                "Driver is resting at current/last known location"
+            binding.panelStatusDot.setBackgroundResource(dot)
+
+            binding.tvPanelRouteName.text = bus.routeName.ifEmpty { bus.name.ifEmpty { bus.id } }
+            binding.tvPanelStatus.text = bus.status.uppercase()
+
+            val plate = bus.plateNumber.ifEmpty { bus.licensePlate.ifEmpty { "--" } }
+            binding.tvPanelDriverInfo.text = if (isResting) {
+                "Driver is resting at current location • Bus: ${bus.id} [$plate]"
+            } else if (isWorking) {
+                "Live Tracking • Bus: ${bus.id} [$plate]"
             } else {
-                "Plate: ${bus.plateNumber.ifEmpty { bus.licensePlate.ifEmpty { "--" } }} • Next: ${bus.nextStop.ifEmpty { "KAB" }}"
+                "Offline in depot • Bus: ${bus.id} [$plate]"
             }
+
+            binding.tvPanelNextStop.text = bus.nextStop.ifEmpty { "--" }
+            binding.tvPanelSpeed.text = if (isWorking) "${bus.speed.toInt()} km/h" else "-- km/h"
+            val dist = bus.distanceToNext
+            val etaMins = if (isWorking && bus.speed > 0 && dist > 0) ((dist / bus.speed) * 60).toInt().coerceAtLeast(1) else if (dist > 0) 4 else 0
+            binding.tvPanelEta.text = if (isWorking && etaMins > 0) "~$etaMins min" else "-- min"
+
+            val stops = bus.routeStops.ifEmpty { routeObj?.stops ?: emptyList() }
+            binding.tvPanelStopsChain.text = if (stops.isNotEmpty()) stops.joinToString(" → ") else "KAB → PT → SS → KA → DKP → KAB"
         }
     }
 
@@ -578,6 +651,7 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
     }
 
     override fun onDestroyView() {
+        rtdbListener?.let { com.upsi.smartbus.core.data.RealtimeDbHelper.liveBuses.removeEventListener(it) }
         busListener?.remove()
         _binding = null
         super.onDestroyView()

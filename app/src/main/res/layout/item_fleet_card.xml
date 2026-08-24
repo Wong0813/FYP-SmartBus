@@ -2,49 +2,56 @@
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dp"
     android:clickable="true"
     android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="@color/card_bg"
-    app:cardCornerRadius="14dp"
-    app:cardElevation="2dp">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="1.5dp"
+    app:cardPreventCornerOverlap="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="14dp">
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="12dp">
 
-        <!-- Bus number badge -->
-        <FrameLayout
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@drawable/bg_circle_crimson">
+        <!-- Bus Realistic 3D Campus Shuttle Thumbnail -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="66dp"
+            android:layout_height="50dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:cardPreventCornerOverlap="true">
 
-            <TextView
-                android:id="@+id/tvBusOrder"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="#01"
-                android:textColor="@color/text_white"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+            <ImageView
+                android:id="@+id/ivBusThumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="Bus Image"
+                android:scaleType="centerCrop"
+                android:background="#F1F5F9"
+                android:padding="8dp"
+                android:src="@drawable/ic_bus_white"
+                app:tint="@color/crimson_primary" />
 
-        </FrameLayout>
+        </androidx.cardview.widget.CardView>
 
         <!-- Info section -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="14dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <!-- Bus ID + status dot -->
+            <!-- Bus ID + status pill -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -58,7 +65,7 @@
                     android:layout_weight="1"
                     android:text="BUS-001"
                     android:textColor="@color/text_primary"
-                    android:textSize="14sp"
+                    android:textSize="14.5sp"
                     android:textStyle="bold" />
 
                 <!-- Status pill -->
@@ -83,52 +90,84 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
-                        android:text="IDLE"
+                        android:text="OFFLINE"
                         android:textColor="@color/status_offline"
-                        android:textSize="9sp"
-                        android:letterSpacing="0.05"
+                        android:textSize="9.5sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
 
             </LinearLayout>
 
-            <!-- Plate number -->
+            <!-- Plate Number -->
             <TextView
                 android:id="@+id/tvBusPlate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:text="WXX 0001"
+                android:layout_marginTop="2dp"
+                android:text="WAA 1234 A"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
-            <!-- Assigned route chip -->
-            <TextView
-                android:id="@+id/tvBusRoute"
-                android:layout_width="wrap_content"
+            <!-- Assigned Route -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_filter_chip"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="3dp"
-                android:text="Laluan 1"
-                android:textColor="@color/crimson_primary"
-                android:textSize="10sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:contentDescription="Route"
+                    android:src="@drawable/ic_bus_white"
+                    app:tint="@color/crimson_primary" />
+
+                <TextView
+                    android:id="@+id/tvBusRoute"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:text="Laluan 1"
+                    android:textColor="@color/crimson_primary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
-        <!-- Delete button -->
-        <ImageButton
-            android:id="@+id/btnDeleteBus"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
+        <!-- Vertical Action Buttons (Edit & Delete) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:background="@drawable/bg_icon_btn_delete"
-            android:contentDescription="Delete"
-            android:padding="9dp"
-            android:src="@drawable/ic_delete" />
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnEditBus"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@drawable/bg_icon_btn_edit"
+                android:contentDescription="Edit Bus"
+                android:padding="7dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_edit"
+                app:tint="#9CA3AF" />
+
+            <ImageButton
+                android:id="@+id/btnDeleteBus"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/bg_icon_btn_delete"
+                android:contentDescription="Delete Bus"
+                android:padding="7dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_delete" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

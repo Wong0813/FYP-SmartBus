@@ -11,11 +11,8 @@
         android:id="@+id/ivDrawerAvatar"
         android:layout_width="56dp"
         android:layout_height="56dp"
-        android:src="@android:drawable/ic_menu_myplaces"
-        android:background="@drawable/bg_avatar_circle"
-        android:padding="12dp"
-        android:clipToOutline="true"
-        android:contentDescription="Avatar" />
+        android:src="@drawable/app_logo"
+        android:contentDescription="SmartBus Logo Avatar" />
 
     <TextView
         android:id="@+id/tvDrawerName"

@@ -1,16 +1,44 @@
 package com.upsi.smartbus.feature.admin.seeder
 
+import android.content.Context
 import com.google.firebase.firestore.SetOptions
 import com.upsi.smartbus.core.data.FirestoreHelper
 import com.upsi.smartbus.core.data.RouteRepository
 import com.upsi.smartbus.core.model.DriverAccount
 import com.upsi.smartbus.core.model.Route
 import com.upsi.smartbus.core.model.RouteData
+import org.json.JSONObject
 
 object AccountSeeder {
 
     private const val PREFS = "smartbus_admin"
-    private const val KEY_ACCOUNTS_SEEDED = "accounts_seeded_v6"
+    private const val KEY_ACCOUNTS_SEEDED = "accounts_seeded_v7"
+
+    var appContext: Context? = null
+    private var cachedSeedPhotos: Map<String, String>? = null
+
+    fun getSeedPhotos(ctx: Context? = null): Map<String, String> {
+        if (cachedSeedPhotos != null) return cachedSeedPhotos!!
+        val targetCtx = ctx ?: appContext
+        return try {
+            if (targetCtx != null) {
+                val jsonStr = targetCtx.assets.open("seed_photos.json").bufferedReader().use { it.readText() }
+                val obj = JSONObject(jsonStr)
+                val map = mutableMapOf<String, String>()
+                val keys = obj.keys()
+                while (keys.hasNext()) {
+                    val k = keys.next()
+                    map[k] = obj.getString(k)
+                }
+                cachedSeedPhotos = map
+                map
+            } else {
+                emptyMap()
+            }
+        } catch (_: Exception) {
+            emptyMap()
+        }
+    }
 
     data class AlignedEntry(
         val number: Int,
@@ -34,13 +62,14 @@ object AccountSeeder {
         }
     }
 
-    fun seedAccountsIfNeeded(context: android.content.Context, onComplete: (() -> Unit)? = null) {
-        val prefs = context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE)
+    fun seedAccountsIfNeeded(context: Context, onComplete: (() -> Unit)? = null) {
+        appContext = context.applicationContext
+        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         if (prefs.getBoolean(KEY_ACCOUNTS_SEEDED, false)) {
             onComplete?.invoke()
             return
         }
-        seedEverything {
+        seedEverything(context) {
             prefs.edit().putBoolean(KEY_ACCOUNTS_SEEDED, true).apply()
             onComplete?.invoke()
         }
@@ -72,11 +101,13 @@ object AccountSeeder {
     }
 
     fun seedOfficialDrivers(
+        context: Context? = null,
         onProgress: ((current: Int, total: Int) -> Unit)? = null,
         onComplete: ((success: Int, failed: Int) -> Unit)? = null
     ) {
+        if (context != null) appContext = context.applicationContext
         cleanupLegacyDrivers {
-            writeOfficialDrivers(onProgress, onComplete)
+            writeOfficialDrivers(context, onProgress, onComplete)
         }
     }
 
@@ -86,8 +117,8 @@ object AccountSeeder {
                 val batch = FirestoreHelper.db.batch()
                 snap.documents.filter { doc ->
                     doc.id.startsWith("driver_laluan") ||
-                        doc.id.startsWith("driver_shuttle") ||
-                        doc.id.startsWith("driver_kitaran")
+                            doc.id.startsWith("driver_shuttle") ||
+                            doc.id.startsWith("driver_kitaran")
                 }.forEach { batch.delete(it.reference) }
                 batch.commit().addOnCompleteListener { onDone() }
             }
@@ -95,17 +126,23 @@ object AccountSeeder {
     }
 
     private fun writeOfficialDrivers(
+        context: Context? = null,
         onProgress: ((current: Int, total: Int) -> Unit)?,
         onComplete: ((success: Int, failed: Int) -> Unit)?
     ) {
         val db = FirestoreHelper.db
         val entries = alignedEntries()
+        val photos = getSeedPhotos(context)
+        val driver1Photo = photos["driver1"].orEmpty()
+        val driver2Photo = photos["driver2"].orEmpty()
+
         var success = 0
         var failed = 0
         var completed = 0
 
         entries.forEach { entry ->
             val docId = driverDocId(entry.number)
+            val photo = if (entry.number % 2 == 0) driver1Photo else driver2Photo
             val profile = mapOf(
                 "uid" to docId,
                 "name" to entry.driver.driverName,
@@ -116,11 +153,12 @@ object AccountSeeder {
                 "assignedBus" to entry.driver.busId,
                 "assignedRoute" to entry.route.name,
                 "plateNumber" to entry.driver.plateNumber,
-                "accountType" to "PORTAL",
+                "accountType" to "OFFICIAL",
+                "photoUrl" to photo,
                 "faculty" to "",
                 "program" to ""
             )
-            db.collection("users").document(docId).set(profile)
+            db.collection("users").document(docId).set(profile, SetOptions.merge())
                 .addOnSuccessListener {
                     success++; completed++
                     onProgress?.invoke(completed, entries.size)
@@ -134,12 +172,15 @@ object AccountSeeder {
         }
     }
 
-    fun seedOfficialBuses(onComplete: ((count: Int) -> Unit)? = null) {
+    fun seedOfficialBuses(context: Context? = null, onComplete: ((count: Int) -> Unit)? = null) {
+        if (context != null) appContext = context.applicationContext
         val db = FirestoreHelper.db
         val entries = alignedEntries()
         val validBusIds = entries.map { it.driver.busId }.toSet()
+        val photos = getSeedPhotos(context)
+        val busRed = photos["busRed"].orEmpty()
+        val busBlue = photos["busBlue"].orEmpty()
 
-        // 1. Clean up obsolete/duplicate bus documents
         db.collection("buses").get().addOnSuccessListener { snapshot ->
             val batch = db.batch()
             var deleteCount = 0
@@ -153,6 +194,7 @@ object AccountSeeder {
             val proceedWithInsert = {
                 var done = 0
                 entries.forEach { entry ->
+                    val busPhoto = if (entry.number % 2 == 0) busBlue else busRed
                     val busData = mapOf(
                         "id" to entry.driver.busId,
                         "name" to entry.route.name,
@@ -169,6 +211,7 @@ object AccountSeeder {
                         "capacity" to 40,
                         "driverName" to entry.driver.driverName,
                         "driverNumber" to entry.number,
+                        "photoUrl" to busPhoto,
                         "lastUpdated" to System.currentTimeMillis()
                     )
                     db.collection("buses").document(entry.driver.busId)
@@ -186,9 +229,9 @@ object AccountSeeder {
                 proceedWithInsert()
             }
         }.addOnFailureListener {
-            // Fallback direct write if query fails
             var done = 0
             entries.forEach { entry ->
+                val busPhoto = if (entry.number % 2 == 0) busBlue else busRed
                 val busData = mapOf(
                     "id" to entry.driver.busId,
                     "name" to entry.route.name,
@@ -205,6 +248,7 @@ object AccountSeeder {
                     "capacity" to 40,
                     "driverName" to entry.driver.driverName,
                     "driverNumber" to entry.number,
+                    "photoUrl" to busPhoto,
                     "lastUpdated" to System.currentTimeMillis()
                 )
                 db.collection("buses").document(entry.driver.busId)
@@ -217,12 +261,17 @@ object AccountSeeder {
         }
     }
 
-    fun seedDemoStudents(onComplete: ((count: Int) -> Unit)? = null) {
+    fun seedDemoStudents(context: Context? = null, onComplete: ((count: Int) -> Unit)? = null) {
+        if (context != null) appContext = context.applicationContext
         val db = FirestoreHelper.db
+        val photos = getSeedPhotos(context)
+        val s1Photo = photos["student1"].orEmpty()
+        val s2Photo = photos["student2"].orEmpty()
+
         val students = listOf(
-            mapOf("uid" to "student_demo_01", "name" to "Ahmad Bin Ali", "email" to "student1@upsi.edu.my", "role" to "STUDENT", "faculty" to "FCI", "program" to "Software Engineering", "accountType" to "PORTAL", "staffNo" to "STU-001"),
-            mapOf("uid" to "student_demo_02", "name" to "Siti Nurhaliza", "email" to "student2@upsi.edu.my", "role" to "STUDENT", "faculty" to "FPM", "program" to "Pendidikan", "accountType" to "PORTAL", "staffNo" to "STU-002"),
-            mapOf("uid" to "student_demo_03", "name" to "Muhammad Hafiz", "email" to "student3@upsi.edu.my", "role" to "STUDENT", "faculty" to "FSS", "program" to "Pengurusan", "accountType" to "PORTAL", "staffNo" to "STU-003")
+            mapOf("uid" to "student_demo_01", "name" to "Ahmad Bin Ali", "email" to "student1@upsi.edu.my", "role" to "STUDENT", "faculty" to "FCI", "program" to "Software Engineering", "accountType" to "OFFICIAL", "staffNo" to "STU-001", "photoUrl" to s1Photo),
+            mapOf("uid" to "student_demo_02", "name" to "Siti Nurhaliza", "email" to "student2@upsi.edu.my", "role" to "STUDENT", "faculty" to "FPM", "program" to "Pendidikan", "accountType" to "OFFICIAL", "staffNo" to "STU-002", "photoUrl" to s2Photo),
+            mapOf("uid" to "student_demo_03", "name" to "Muhammad Hafiz", "email" to "student3@upsi.edu.my", "role" to "STUDENT", "faculty" to "FSS", "program" to "Pengurusan", "accountType" to "OFFICIAL", "staffNo" to "STU-003", "photoUrl" to s1Photo)
         )
         var done = 0
         students.forEach { profile ->
@@ -235,11 +284,12 @@ object AccountSeeder {
         }
     }
 
-    fun seedEverything(onComplete: (() -> Unit)? = null) {
+    fun seedEverything(context: Context? = null, onComplete: (() -> Unit)? = null) {
+        if (context != null) appContext = context.applicationContext
         seedOfficialRoutes {
-            seedOfficialDrivers { _, _ ->
-                seedOfficialBuses {
-                    seedDemoStudents { onComplete?.invoke() }
+            seedOfficialDrivers(context) { _, _ ->
+                seedOfficialBuses(context) {
+                    seedDemoStudents(context) { onComplete?.invoke() }
                 }
             }
         }
@@ -248,5 +298,5 @@ object AccountSeeder {
     fun driverDocId(number: Int): String = "driver_${String.format("%02d", number)}"
 
     fun routeDocId(routeName: String): String =
-        "route_${routeName.replace(" ", "_").lowercase()}"
+        routeName.lowercase().replace(" ", "_").replace("-", "_")
 }

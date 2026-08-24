@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/customDrawerContainer"
+    android:layout_width="265dp"
+    android:layout_height="match_parent"
+    android:layout_gravity="start"
+    android:background="@color/card_bg"
+    android:clickable="true"
+    android:elevation="16dp"
+    android:focusable="true"
+    android:orientation="vertical">
+
+    <!-- ══════════ DRAWER HEADER BAND ══════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_drawer_header_gradient"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="44dp"
+        android:paddingBottom="22dp">
+
+        <!-- Official SmartBus Brand Logo Box -->
+        <FrameLayout
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_avatar_circle"
+            android:elevation="4dp"
+            android:padding="2dp">
+
+            <ImageView
+                android:id="@+id/ivDrawerAvatar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:contentDescription="SmartBus Official Logo"
+                android:src="@drawable/app_logo" />
+
+        </FrameLayout>
+
+        <!-- Admin Name -->
+        <TextView
+            android:id="@+id/tvDrawerName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="Admin"
+            android:textColor="@color/text_white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <!-- Role Pill & Console Label -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvDrawerRole"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_drawer_badge"
+                android:letterSpacing="0.08"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp"
+                android:text="ADMIN"
+                android:textColor="@color/text_white"
+                android:textSize="9.5sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Admin Console"
+                android:textColor="@color/white_alpha_80"
+                android:textSize="11.5sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- ══════════ DRAWER MENU LIST ══════════ -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="12dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp">
+
+            <!-- MAIN MENU Section Label -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginBottom="8dp"
+                android:letterSpacing="0.12"
+                android:text="MAIN MENU"
+                android:textColor="@color/text_hint"
+                android:textSize="9.5sp"
+                android:textStyle="bold" />
+
+            <!-- 1. Schedule Dashboard -->
+            <LinearLayout
+                android:id="@+id/itemNavDashboard"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginBottom="3dp"
+                android:background="@drawable/bg_drawer_item_active"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="10dp">
+
+                <FrameLayout
+                    android:id="@+id/boxNavDashboard"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_drawer_icon_active">
+
+                    <ImageView
+                        android:id="@+id/iconNavDashboard"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Dashboard"
+                        android:src="@drawable/ic_admin_dashboard"
+                        app:tint="@color/text_white" />
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvNavDashboard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:text="@string/nav_dashboard"
+                    android:textColor="@color/crimson_primary"
+                    android:textSize="13.5sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:id="@+id/indNavDashboard"
+                    android:layout_width="3.5dp"
+                    android:layout_height="20dp"
+                    android:background="@drawable/bg_drawer_active_indicator"
+                    android:visibility="visible" />
+
+            </LinearLayout>
+
+            <!-- 2. Live Map -->
+            <LinearLayout
+                android:id="@+id/itemNavLiveMap"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginBottom="3dp"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="10dp">
+
+                <FrameLayout
+                    android:id="@+id/boxNavLiveMap"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_drawer_icon_inactive">
+
+                    <ImageView
+                        android:id="@+id/iconNavLiveMap"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Live Map"
+                        android:src="@drawable/ic_admin_map"
+                        app:tint="@color/text_secondary" />
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvNavLiveMap"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:text="Live Map"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13.5sp" />
+
+                <View
+                    android:id="@+id/indNavLiveMap"
+                    android:layout_width="3.5dp"
+                    android:layout_height="20dp"
+                    android:background="@drawable/bg_drawer_active_indicator"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <!-- 3. Manage Accounts -->
+            <LinearLayout
+                android:id="@+id/itemNavAccounts"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginBottom="3dp"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="10dp">
+
+                <FrameLayout
+                    android:id="@+id/boxNavAccounts"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_drawer_icon_inactive">
+
+                    <ImageView
+                        android:id="@+id/iconNavAccounts"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Accounts"
+                        android:src="@drawable/ic_admin_accounts"
+                        app:tint="@color/text_secondary" />
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvNavAccounts"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:text="@string/nav_manage_accounts"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13.5sp" />
+
+                <View
+                    android:id="@+id/indNavAccounts"
+                    android:layout_width="3.5dp"
+                    android:layout_height="20dp"
+                    android:background="@drawable/bg_drawer_active_indicator"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <!-- 4. Bus Fleet -->
+            <LinearLayout
+                android:id="@+id/itemNavFleet"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginBottom="3dp"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="10dp">
+
+                <FrameLayout
+                    android:id="@+id/boxNavFleet"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_drawer_icon_inactive">
+
+                    <ImageView
+                        android:id="@+id/iconNavFleet"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Fleet"
+                        android:src="@drawable/ic_admin_fleet"
+                        app:tint="@color/text_secondary" />
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvNavFleet"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:text="@string/nav_bus_fleet"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13.5sp" />
+
+                <View
+                    android:id="@+id/indNavFleet"
+                    android:layout_width="3.5dp"
+                    android:layout_height="20dp"
+                    android:background="@drawable/bg_drawer_active_indicator"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <!-- 5. Route Config -->
+            <LinearLayout
+                android:id="@+id/itemNavRoutes"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginBottom="3dp"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="10dp">
+
+                <FrameLayout
+                    android:id="@+id/boxNavRoutes"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_drawer_icon_inactive">
+
+                    <ImageView
+                        android:id="@+id/iconNavRoutes"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Routes"
+                        android:src="@drawable/ic_admin_routes"
+                        app:tint="@color/text_secondary" />
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvNavRoutes"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:text="@string/nav_route_config"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13.5sp" />
+
+                <View
+                    android:id="@+id/indNavRoutes"
+                    android:layout_width="3.5dp"
+                    android:layout_height="20dp"
+                    android:background="@drawable/bg_drawer_active_indicator"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="6dp"
+                android:layout_marginVertical="12dp"
+                android:background="@drawable/bg_drawer_dashed_divider" />
+
+            <!-- ACCOUNT Section Label -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginBottom="8dp"
+                android:letterSpacing="0.12"
+                android:text="ACCOUNT"
+                android:textColor="@color/text_hint"
+                android:textSize="9.5sp"
+                android:textStyle="bold" />
+
+            <!-- 6. Profile -->
+            <LinearLayout
+                android:id="@+id/itemNavProfile"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginBottom="3dp"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="10dp">
+
+                <FrameLayout
+                    android:id="@+id/boxNavProfile"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_drawer_icon_inactive">
+
+                    <ImageView
+                        android:id="@+id/iconNavProfile"
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Profile"
+                        android:src="@drawable/ic_nav_profile"
+                        app:tint="@color/text_secondary" />
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvNavProfile"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:text="@string/nav_profile"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13.5sp" />
+
+                <View
+                    android:id="@+id/indNavProfile"
+                    android:layout_width="3.5dp"
+                    android:layout_height="20dp"
+                    android:background="@drawable/bg_drawer_active_indicator"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <!-- 7. Sign Out -->
+            <LinearLayout
+                android:id="@+id/itemNavSignOut"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginBottom="3dp"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="10dp">
+
+                <FrameLayout
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_drawer_icon_signout">
+
+                    <ImageView
+                        android:layout_width="17dp"
+                        android:layout_height="17dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Sign Out"
+                        android:src="@drawable/ic_nav_signout"
+                        app:tint="#EF4444" />
+
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:text="@string/nav_sign_out"
+                    android:textColor="#EF4444"
+                    android:textSize="13.5sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <!-- ══════════ FOOTER VERSION ══════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/card_bg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="14dp">
+
+        <View
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:background="@drawable/dot_green" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:text="SmartBus v1.0.0 · 2026"
+            android:textColor="@color/text_hint"
+            android:textSize="10.5sp" />
+
+    </LinearLayout>
+
+</LinearLayout>

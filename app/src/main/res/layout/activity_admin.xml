@@ -12,10 +12,12 @@
         android:background="@color/bg_screen"
         android:orientation="vertical">
 
-        <!-- Admin toolbar -->
+        <!-- Admin toolbar (Deprecated, unified immersive headers used instead) -->
         <LinearLayout
+            android:id="@+id/layoutAdminToolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:background="@drawable/bg_admin_toolbar"
             android:elevation="4dp"
             android:gravity="center_vertical"
@@ -81,18 +83,8 @@
 
     </LinearLayout>
 
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/navView"
-        android:layout_width="300dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:background="@color/card_bg"
-        app:headerLayout="@layout/nav_header_admin"
-        app:itemBackground="@drawable/bg_nav_item_admin"
-        app:itemHorizontalPadding="20dp"
-        app:itemIconPadding="16dp"
-        app:itemIconTint="@color/nav_item_admin_color"
-        app:itemTextColor="@color/nav_item_admin_color"
-        app:menu="@menu/drawer_admin" />
+    <include
+        android:id="@+id/customDrawer"
+        layout="@layout/view_admin_drawer" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
