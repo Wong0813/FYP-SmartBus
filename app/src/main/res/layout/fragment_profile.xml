@@ -19,9 +19,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingBottom="40dp">
+            android:paddingBottom="48dp">
 
-            <!-- ══════════ HERO ZONE (Deep Crimson Gradient) ══════════ -->
+            <!-- ══════════ HERO ZONE (Strictly Matching Admin Design) ══════════ -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -29,9 +29,9 @@
                 android:orientation="vertical"
                 android:paddingHorizontal="20dp"
                 android:paddingTop="36dp"
-                android:paddingBottom="28dp">
+                android:paddingBottom="40dp">
 
-                <!-- Hero Top Bar (Integrated Hamburger & ADMIN Badge) -->
+                <!-- Hero Top Bar (Exact Match with Admin Dashboard / Fleet) -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -56,6 +56,7 @@
                         android:layout_weight="1" />
 
                     <TextView
+                        android:id="@+id/tvHeroRoleBadge"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_hero_admin_badge"
@@ -76,38 +77,38 @@
                     android:gravity="center_horizontal"
                     android:orientation="vertical">
 
-                    <FrameLayout
-                        android:layout_width="72dp"
-                        android:layout_height="72dp"
-                        android:background="@drawable/bg_avatar_circle"
-                        android:elevation="6dp"
-                        android:padding="2dp">
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="86dp"
+                        android:layout_height="86dp"
+                        app:cardCornerRadius="43dp"
+                        app:cardElevation="6dp"
+                        app:cardBackgroundColor="@color/card_bg">
 
                         <ImageView
-                            android:id="@+id/ivRoleIcon"
+                            android:id="@+id/ivUserAvatar"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:layout_gravity="center"
-                            android:contentDescription="Role icon"
-                            android:src="@drawable/app_logo" />
+                            android:contentDescription="User Avatar"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/ic_nav_profile" />
 
-                    </FrameLayout>
+                    </androidx.cardview.widget.CardView>
 
                     <TextView
                         android:id="@+id/tvFullName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="14dp"
                         android:textColor="@color/text_white"
-                        android:textSize="19sp"
+                        android:textSize="20sp"
                         android:textStyle="bold"
                         tools:text="SmartBus Administrator" />
 
                     <TextView
-                        android:id="@+id/tvUsername"
+                        android:id="@+id/tvUserEmail"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
+                        android:layout_marginTop="3dp"
                         android:textColor="#FECACA"
                         android:textSize="13sp"
                         tools:text="admin@upsi.edu.my" />
@@ -116,33 +117,33 @@
 
             </LinearLayout>
 
-            <!-- ══════════ ACCOUNT DETAILS CARD ══════════ -->
+            <!-- ══════════ REAL ACCOUNT PROFILE CARD ══════════ -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="-14dp"
+                android:layout_marginTop="-16dp"
                 android:background="@drawable/bg_card"
                 android:elevation="3dp"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:letterSpacing="0.1"
-                    android:text="@string/account_details"
+                    android:layout_marginBottom="12dp"
+                    android:letterSpacing="0.08"
+                    android:text="ACCOUNT DETAILS"
                     android:textColor="@color/text_secondary"
-                    android:textSize="10.5sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
-                <!-- User ID Row -->
+                <!-- Staff / Matric No Row -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
-                    android:minHeight="48dp"
+                    android:minHeight="50dp"
                     android:orientation="horizontal">
 
                     <ImageView
@@ -150,30 +151,31 @@
                         android:layout_height="20dp"
                         android:contentDescription="ID"
                         android:src="@drawable/ic_profile_id"
-                        app:tint="#6B7280" />
+                        app:tint="@color/crimson_primary" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="14dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/tvLabelStaffNo"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="User ID"
+                            android:text="Staff / Matric ID"
                             android:textColor="@color/text_hint"
                             android:textSize="11sp" />
 
                         <TextView
-                            android:id="@+id/tvUserId"
+                            android:id="@+id/tvStaffNo"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/text_primary"
-                            android:textSize="13.5sp"
+                            android:textSize="14sp"
                             android:textStyle="bold"
-                            tools:text="ADMIN-001" />
+                            tools:text="ADM-001" />
 
                     </LinearLayout>
 
@@ -189,7 +191,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
-                    android:minHeight="48dp"
+                    android:minHeight="50dp"
                     android:orientation="horizontal">
 
                     <ImageView
@@ -197,12 +199,12 @@
                         android:layout_height="20dp"
                         android:contentDescription="Email"
                         android:src="@drawable/ic_profile_email"
-                        app:tint="#6B7280" />
+                        app:tint="@color/crimson_primary" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="14dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
 
@@ -218,7 +220,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/text_primary"
-                            android:textSize="13.5sp"
+                            android:textSize="14sp"
                             android:textStyle="bold"
                             tools:text="admin@upsi.edu.my" />
 
@@ -236,7 +238,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
-                    android:minHeight="48dp"
+                    android:minHeight="50dp"
                     android:orientation="horizontal">
 
                     <ImageView
@@ -244,19 +246,19 @@
                         android:layout_height="20dp"
                         android:contentDescription="Role"
                         android:src="@drawable/ic_admin_shield"
-                        app:tint="#6B7280" />
+                        app:tint="@color/crimson_primary" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="14dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="System Role"
+                            android:text="Role"
                             android:textColor="@color/text_hint"
                             android:textSize="11sp" />
 
@@ -265,7 +267,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/crimson_primary"
-                            android:textSize="13.5sp"
+                            android:textSize="14sp"
                             android:textStyle="bold"
                             tools:text="ADMIN" />
 
@@ -273,111 +275,9 @@
 
                 </LinearLayout>
 
-                <!-- Student Faculty Row -->
-                <View
-                    android:id="@+id/dividerFaculty"
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/divider"
-                    android:visibility="gone" />
-
-                <LinearLayout
-                    android:id="@+id/rowFaculty"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:minHeight="48dp"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:contentDescription="Faculty"
-                        android:src="@drawable/ic_profile_faculty"
-                        app:tint="#6B7280" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Faculty"
-                            android:textColor="@color/text_hint"
-                            android:textSize="11sp" />
-
-                        <TextView
-                            android:id="@+id/tvFaculty"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/text_primary"
-                            android:textSize="13.5sp"
-                            android:textStyle="bold"
-                            tools:text="FSKIK" />
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-                <!-- Student Program Row -->
-                <View
-                    android:id="@+id/dividerProgram"
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/divider"
-                    android:visibility="gone" />
-
-                <LinearLayout
-                    android:id="@+id/rowProgram"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:minHeight="48dp"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:contentDescription="Program"
-                        android:src="@drawable/ic_profile_faculty"
-                        app:tint="#6B7280" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Program"
-                            android:textColor="@color/text_hint"
-                            android:textSize="11sp" />
-
-                        <TextView
-                            android:id="@+id/tvProgram"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/text_primary"
-                            android:textSize="13.5sp"
-                            android:textStyle="bold"
-                            tools:text="Software Engineering" />
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
                 <!-- Driver Assigned Bus Row -->
                 <View
-                    android:id="@+id/dividerDriver"
+                    android:id="@+id/dividerDriverBus"
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:background="@color/divider"
@@ -388,7 +288,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
-                    android:minHeight="48dp"
+                    android:minHeight="50dp"
                     android:orientation="horizontal"
                     android:visibility="gone">
 
@@ -397,12 +297,12 @@
                         android:layout_height="20dp"
                         android:contentDescription="Bus"
                         android:src="@drawable/ic_bus_white"
-                        app:tint="#6B7280" />
+                        app:tint="@color/crimson_primary" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="14dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
 
@@ -418,9 +318,9 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/text_primary"
-                            android:textSize="13.5sp"
+                            android:textSize="14sp"
                             android:textStyle="bold"
-                            tools:text="BUS-001" />
+                            tools:text="BUS-001 • WAA 1001 X" />
 
                     </LinearLayout>
 
@@ -439,7 +339,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
-                    android:minHeight="48dp"
+                    android:minHeight="50dp"
                     android:orientation="horizontal"
                     android:visibility="gone">
 
@@ -448,12 +348,12 @@
                         android:layout_height="20dp"
                         android:contentDescription="Route"
                         android:src="@drawable/ic_profile_location"
-                        app:tint="#6B7280" />
+                        app:tint="@color/crimson_primary" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
+                        android:layout_marginStart="14dp"
                         android:layout_weight="1"
                         android:orientation="vertical">
 
@@ -469,7 +369,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/text_primary"
-                            android:textSize="13.5sp"
+                            android:textSize="14sp"
                             android:textStyle="bold"
                             tools:text="Laluan 1" />
 
@@ -477,42 +377,107 @@
 
                 </LinearLayout>
 
-            </LinearLayout>
-
-            <!-- ══════════ SECURITY & ACTIONS CARD ══════════ -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_card"
-                android:elevation="2dp"
-                android:orientation="vertical"
-                android:padding="18dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:letterSpacing="0.1"
-                    android:text="ACCOUNT ACTIONS"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="10.5sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/btnSignOut"
+                <!-- Student Faculty Row -->
+                <View
+                    android:id="@+id/dividerFaculty"
                     android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:background="@drawable/bg_button_crimson"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground"
-                    android:gravity="center"
-                    android:text="@string/nav_sign_out"
-                    android:textColor="@color/text_white"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
+                    android:layout_height="1dp"
+                    android:background="@color/divider"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/rowFaculty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minHeight="50dp"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:contentDescription="Faculty"
+                        android:src="@drawable/ic_profile_faculty"
+                        app:tint="@color/crimson_primary" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Faculty"
+                            android:textColor="@color/text_hint"
+                            android:textSize="11sp" />
+
+                        <TextView
+                            android:id="@+id/tvFaculty"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            tools:text="FCI" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Student Program Row -->
+                <View
+                    android:id="@+id/dividerProgram"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/divider"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/rowProgram"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minHeight="50dp"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:contentDescription="Program"
+                        android:src="@drawable/ic_profile_faculty"
+                        app:tint="@color/crimson_primary" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Program"
+                            android:textColor="@color/text_hint"
+                            android:textSize="11sp" />
+
+                        <TextView
+                            android:id="@+id/tvProgram"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            tools:text="Software Engineering" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
 
             </LinearLayout>
 

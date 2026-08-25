@@ -33,16 +33,12 @@ object BusSelectorDialog {
         onAllBusesSelected: () -> Unit,
         onRouteSelected: (Route, Bus?) -> Unit
     ) {
-        val dialog = Dialog(context)
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(context)
         val binding = DialogBusSelectorBinding.inflate(LayoutInflater.from(context))
         dialog.setContentView(binding.root)
 
-        dialog.window?.apply {
-            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            val width = (context.resources.displayMetrics.widthPixels * 0.90).toInt().coerceAtMost(600)
-            setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
-        }
+        // Make background transparent so rounded top corners of the layout are crisp
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         var currentFilter = "ALL" // "ALL", "WEEKDAY", "SATURDAY"
 
@@ -83,7 +79,7 @@ object BusSelectorDialog {
 
         fun updateFilterUi() {
             val activeBg = R.drawable.bg_button_crimson
-            val inactiveBg = R.drawable.bg_filter_chip
+            val inactiveBg = R.drawable.bg_filter_tab_inactive
             val activeText = ContextCompat.getColor(context, R.color.text_white)
             val inactiveText = ContextCompat.getColor(context, R.color.text_secondary)
 
@@ -137,13 +133,13 @@ object BusSelectorDialog {
                     b.flBadgeContainer.setBackgroundResource(R.drawable.bg_circle_amber)
                     b.tvShortName.text = "★"
                     b.tvShortName.setTextColor(Color.WHITE)
-                    b.tvRouteName.text = "All Buses (All Active Buses)"
+                    b.tvRouteName.text = "All Buses (Fleet Overview)"
                     b.tvRouteName.setTextColor(ContextCompat.getColor(ctx, R.color.text_primary))
 
                     val activeCount = activeBuses.count {
                         it.status.equals("working", true) || it.status.equals("resting", true)
                     }
-                    b.tvStopChain.text = if (activeCount > 0) "$activeCount buses currently operating on map" else "No active buses running currently"
+                    b.tvStopChain.text = if (activeCount > 0) "$activeCount buses currently operating on live map" else "No active buses operating currently"
                     b.tvStopChain.setTextColor(ContextCompat.getColor(ctx, R.color.text_secondary))
 
                     b.llLivePill.visibility = if (activeCount > 0) View.VISIBLE else View.GONE
@@ -201,7 +197,7 @@ object BusSelectorDialog {
                         b.tvLiveStatus.setTextColor(ContextCompat.getColor(ctx, R.color.status_resting))
                     } else {
                         // Offline / Inactive -> Clean Grey appearance
-                        b.flBadgeContainer.setBackgroundResource(R.drawable.bg_filter_chip)
+                        b.flBadgeContainer.setBackgroundResource(R.drawable.bg_filter_tab_inactive)
                         b.tvShortName.setTextColor(ContextCompat.getColor(ctx, R.color.text_hint))
                         b.tvRouteName.setTextColor(ContextCompat.getColor(ctx, R.color.text_secondary))
                         b.tvStopChain.setTextColor(ContextCompat.getColor(ctx, R.color.text_hint))

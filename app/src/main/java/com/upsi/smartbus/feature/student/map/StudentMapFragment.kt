@@ -248,7 +248,12 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
                 else -> COLOR_OFFLINE
             }
 
-            val markerIcon = createDynamicCircleMarker(ctx, busColor, if (isSelected) 38 else 32)
+            val markerResult = com.upsi.smartbus.core.util.MapMarkerHelper.createBusMarkerWithInfoCard(
+                ctx = ctx,
+                bus = bus,
+                color = busColor,
+                isSelected = isSelected
+            )
             val plate = bus.plateNumber.ifEmpty { bus.licensePlate.ifEmpty { "--" } }
             val title = "${bus.routeName.ifEmpty { bus.name }} [$plate]"
             val snippet = "Status: ${bus.status.uppercase()} | Next: ${bus.nextStop.ifEmpty { "--" }}"
@@ -258,16 +263,17 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
                 animateMarkerTo(existing, pos)
                 existing.title = title
                 existing.snippet = snippet
-                existing.setIcon(markerIcon)
-                existing.setAnchor(0.5f, 0.5f)
+                existing.setIcon(markerResult.descriptor)
+                existing.setAnchor(markerResult.anchorX, markerResult.anchorY)
+                existing.zIndex = if (isSelected) 12f else 8f
             } else {
                 val marker = map.addMarker(
                     MarkerOptions()
                         .position(pos)
                         .title(title)
                         .snippet(snippet)
-                        .icon(markerIcon)
-                        .anchor(0.5f, 0.5f)
+                        .icon(markerResult.descriptor)
+                        .anchor(markerResult.anchorX, markerResult.anchorY)
                         .zIndex(if (isSelected) 12f else 8f)
                 )
                 if (marker != null) busMarkers[bus.id] = marker
@@ -287,13 +293,8 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
             return
         }
 
-        val bearing = com.upsi.smartbus.core.util.GeoSpatialCalculator.calculateBearing(
-            startPos.latitude, startPos.longitude,
-            targetPos.latitude, targetPos.longitude
-        )
-        if (bearing > 0.1f) {
-            marker.rotation = bearing
-        }
+        // Keep marker upright for clear horizontal card reading
+        marker.rotation = 0f
 
         val animator = ValueAnimator.ofFloat(0f, 1f)
         animator.duration = duration
@@ -479,19 +480,16 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
         if (bus == null) {
             binding.tvSelectedBus.text = "All Buses ($activeCount Active)"
             binding.busSelectorDot.setBackgroundResource(if (activeCount > 0) R.drawable.dot_green else R.drawable.dot_gray)
-            binding.statusDotLarge.setBackgroundResource(if (activeCount > 0) R.drawable.dot_green else R.drawable.dot_gray)
-            binding.tvRouteName.text = "SmartBus UPSI System"
-            binding.tvPlateBadge.text = "$activeCount Active Buses"
 
-            binding.tvNextStop.text = "Active Segments"
-            binding.tvNextStopFull.text = "Displaying live active segments between current bus GPS & next stop"
-            binding.tvDistance.text = "$activeCount Units"
-            binding.tvArrivalClock.text = "LIVE"
-            binding.tvEta.text = "Status"
-            binding.tvAiEta.text = "Active"
-
-            buildAllBusesSummaryTimeline()
+            // Hide bottom panel completely in All Buses overview
+            binding.etaCard.visibility = View.GONE
+            googleMap?.setPadding(0, 0, 0, 0)
         } else {
+            // Show bottom card for the selected bus
+            binding.etaCard.visibility = View.VISIBLE
+            val bottomPadding = (190 * resources.displayMetrics.density).toInt()
+            googleMap?.setPadding(0, 0, 0, bottomPadding)
+
             val isResting = bus.status.equals("resting", true)
             val h = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
             val speedEtaMins = if (bus.speed > 0) ((bus.distanceToNext / bus.speed) * 60).toInt().coerceAtLeast(1) else 1

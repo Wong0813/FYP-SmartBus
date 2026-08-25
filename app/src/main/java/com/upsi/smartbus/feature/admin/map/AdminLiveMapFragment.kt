@@ -99,15 +99,6 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
             (activity as? com.upsi.smartbus.feature.admin.AdminActivity)?.openDrawer()
         }
 
-        binding.btnBackToDashboard.setOnClickListener {
-            val adminAct = activity as? com.upsi.smartbus.feature.admin.AdminActivity
-            if (adminAct != null) {
-                adminAct.returnToDashboard()
-            } else {
-                activity?.onBackPressedDispatcher?.onBackPressed()
-            }
-        }
-
         binding.busSelector.setOnClickListener {
             showBusPickerDialog()
         }
@@ -265,7 +256,12 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
                 else -> COLOR_OFFLINE
             }
 
-            val markerIcon = createDynamicCircleMarker(ctx, busColor, if (isSelected) 38 else 32)
+            val markerResult = com.upsi.smartbus.core.util.MapMarkerHelper.createBusMarkerWithInfoCard(
+                ctx = ctx,
+                bus = bus,
+                color = busColor,
+                isSelected = isSelected
+            )
             val title = "${bus.routeName.ifEmpty { bus.name }} [${bus.plateNumber.ifEmpty { bus.licensePlate }}]"
             val snippet = "${bus.id} | Status: ${bus.status.uppercase()}"
 
@@ -274,16 +270,17 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
                 animateMarkerTo(existing, pos)
                 existing.title = title
                 existing.snippet = snippet
-                existing.setIcon(markerIcon)
-                existing.setAnchor(0.5f, 0.5f)
+                existing.setIcon(markerResult.descriptor)
+                existing.setAnchor(markerResult.anchorX, markerResult.anchorY)
+                existing.zIndex = if (isSelected) 12f else 8f
             } else {
                 val marker = gMap.addMarker(
                     MarkerOptions()
                         .position(pos)
                         .title(title)
                         .snippet(snippet)
-                        .icon(markerIcon)
-                        .anchor(0.5f, 0.5f)
+                        .icon(markerResult.descriptor)
+                        .anchor(markerResult.anchorX, markerResult.anchorY)
                         .zIndex(if (isSelected) 12f else 8f)
                 )
                 if (marker != null) busMarkers[bus.id] = marker
@@ -303,13 +300,8 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
             return
         }
 
-        val bearing = com.upsi.smartbus.core.util.GeoSpatialCalculator.calculateBearing(
-            startPos.latitude, startPos.longitude,
-            targetPos.latitude, targetPos.longitude
-        )
-        if (bearing > 0.1f) {
-            marker.rotation = bearing
-        }
+        // Keep marker rotation upright so floating card is always horizontal
+        marker.rotation = 0f
 
         val animator = ValueAnimator.ofFloat(0f, 1f)
         animator.duration = duration
@@ -501,15 +493,17 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
         if (bus == null) {
             binding.tvSelectedBus.text = "All Buses"
             binding.busSelectorDot.setBackgroundResource(if (active > 0) R.drawable.dot_green else R.drawable.dot_gray)
-            binding.tvPanelRouteName.text = "All Active Routes"
-            binding.tvPanelDriverInfo.text = "Monitoring all $active active buses in UPSI campus"
-            binding.panelStatusDot.setBackgroundResource(if (active > 0) R.drawable.dot_green else R.drawable.dot_gray)
-            binding.tvPanelStatus.text = if (active > 0) "LIVE" else "IDLE"
-            binding.tvPanelNextStop.text = "--"
-            binding.tvPanelSpeed.text = "-- km/h"
-            binding.tvPanelEta.text = "-- min"
-            binding.tvPanelStopsChain.text = "Tracking all live buses across UPSI campus"
+
+            // Hide bottom panel completely in All Buses mode
+            binding.cardBottomPanel.visibility = View.GONE
+            map?.setPadding(0, 0, 0, 0)
         } else {
+            // Show bottom card for the focused bus
+            binding.cardBottomPanel.visibility = View.VISIBLE
+            binding.llSingleBusMetrics.visibility = View.VISIBLE
+            val bottomPadding = (190 * resources.displayMetrics.density).toInt()
+            map?.setPadding(0, 0, 0, bottomPadding)
+
             val isResting = bus.status.equals("resting", true)
             val isWorking = bus.status.equals("working", true)
             val routeObj = RouteData.getAllRoutes().find { it.name.equals(bus.routeName, true) }
@@ -529,21 +523,56 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
 
             val plate = bus.plateNumber.ifEmpty { bus.licensePlate.ifEmpty { "--" } }
             binding.tvPanelDriverInfo.text = if (isResting) {
-                "Driver is resting at current location • Bus: ${bus.id} [$plate]"
+                "Driver resting • Bus: ${bus.id} [$plate]"
             } else if (isWorking) {
                 "Live Tracking • Bus: ${bus.id} [$plate]"
             } else {
                 "Offline in depot • Bus: ${bus.id} [$plate]"
             }
 
-            binding.tvPanelNextStop.text = bus.nextStop.ifEmpty { "--" }
-            binding.tvPanelSpeed.text = if (isWorking) "${bus.speed.toInt()} km/h" else "-- km/h"
+            // Unified next stop display: Next: SS (0.8 km)
             val dist = bus.distanceToNext
-            val etaMins = if (isWorking && bus.speed > 0 && dist > 0) ((dist / bus.speed) * 60).toInt().coerceAtLeast(1) else if (dist > 0) 4 else 0
-            binding.tvPanelEta.text = if (isWorking && etaMins > 0) "~$etaMins min" else "-- min"
+            val nextStopName = bus.nextStop.ifEmpty { "Depot" }
+            binding.tvPanelNextStop.text = if (dist > 0 && isWorking) {
+                "$nextStopName (${String.format(java.util.Locale.ENGLISH, "%.1f", dist)} km)"
+            } else {
+                nextStopName
+            }
 
+            binding.tvPanelSpeed.text = if (isWorking) "${bus.speed.toInt()} km/h" else "0 km/h"
+
+            val etaMins = if (isWorking && bus.speed > 0 && dist > 0) {
+                ((dist / bus.speed) * 60).toInt().coerceAtLeast(1)
+            } else if (dist > 0) {
+                4
+            } else {
+                0
+            }
+            binding.tvPanelEta.text = if (isWorking && etaMins > 0) "~$etaMins min" else "—"
+
+            // Pure green stop chain highlight matching Dashboard
             val stops = bus.routeStops.ifEmpty { routeObj?.stops ?: emptyList() }
-            binding.tvPanelStopsChain.text = if (stops.isNotEmpty()) stops.joinToString(" → ") else "KAB → PT → SS → KA → DKP → KAB"
+            if (stops.isNotEmpty()) {
+                val currentTarget = bus.nextStop.trim()
+                val targetIdx = stops.indexOfFirst { it.trim().equals(currentTarget, ignoreCase = true) }
+                val html = if (targetIdx >= 0) {
+                    val sb = StringBuilder()
+                    stops.forEachIndexed { idx, stopName ->
+                        if (idx > 0) sb.append(" <font color='#D1D5DB'>\u2192</font> ")
+                        when {
+                            idx == targetIdx -> sb.append("<font color='#059669'><b>$stopName</b></font>")
+                            idx < targetIdx -> sb.append("<font color='#9CA3AF'>$stopName</font>")
+                            else -> sb.append("<font color='#6B7280'>$stopName</font>")
+                        }
+                    }
+                    sb.toString()
+                } else {
+                    stops.joinToString(" <font color='#D1D5DB'>\u2192</font> ") { "<font color='#6B7280'>$it</font>" }
+                }
+                binding.tvPanelStopsChain.text = androidx.core.text.HtmlCompat.fromHtml(html, androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY)
+            } else {
+                binding.tvPanelStopsChain.text = "Tracking live bus route"
+            }
         }
     }
 

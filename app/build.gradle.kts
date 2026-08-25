@@ -60,8 +60,8 @@ dependencies {
     // CardView
     implementation("androidx.cardview:cardview:1.0.0")
 
-    // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:32.2.0"))
+    // Firebase — all versions managed by BOM (no duplicate direct version pins)
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
@@ -71,11 +71,10 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:18.1.0")
     implementation("com.google.android.gms:play-services-location:21.0.1")
     implementation("org.osmdroid:osmdroid-android:6.1.16")
-    implementation("com.google.firebase:firebase-auth:24.2.0")
+    // Google Identity / Credentials
     implementation("androidx.credentials:credentials:1.6.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.6.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.2.0")
-    implementation("com.google.firebase:firebase-firestore:26.5.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

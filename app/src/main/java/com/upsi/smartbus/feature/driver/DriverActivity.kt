@@ -38,9 +38,13 @@ class DriverActivity : AppCompatActivity() {
         }
     }
 
+    fun openDrawer() {
+        binding.drawerLayout.openDrawer(GravityCompat.START)
+    }
+
     private fun setupDrawer() {
         binding.btnDrawer.setOnClickListener {
-            binding.drawerLayout.openDrawer(GravityCompat.START)
+            openDrawer()
         }
 
         binding.navView.setNavigationItemSelectedListener { menuItem ->

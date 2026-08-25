@@ -158,35 +158,70 @@ class AdminDashboardFragment : Fragment() {
         val isWeekday = dayOfWeek in Calendar.MONDAY..Calendar.FRIDAY
         val isSaturday = dayOfWeek == Calendar.SATURDAY
 
+        android.util.Log.d("SMARTBUS_FLEET", "loadFleetData called. dayOfWeek=$dayOfWeek isWeekday=$isWeekday isSaturday=$isSaturday")
+
         RouteRepository.loadRoutes { routes ->
             if (_binding == null) return@loadRoutes
+            android.util.Log.d("SMARTBUS_FLEET", "Routes loaded: total=${routes.size}")
+            routes.forEach { android.util.Log.d("SMARTBUS_FLEET", "  Route: name=${it.name} scheduleType=${it.scheduleType}") }
+
             allFleetItems.clear()
             val canonical = AdminSortHelper.canonicalRoutes()
             val todayRoutes = when {
                 isSaturday -> routes.filter { it.scheduleType.equals("SATURDAY", true) }
                 isWeekday -> routes.filter { it.scheduleType.equals("WEEKDAY", true) }
-                else -> emptyList()
+                else -> routes // Show all routes even on Sunday so dashboard is never blank
             }.let { AdminSortHelper.sortRoutes(it) }
 
-            todayRoutes.forEach { route ->
-                val order = canonical.indexOfFirst { it.name == route.name }
-                    .let { if (it >= 0) it + 1 else AdminSortHelper.routeOrderKey(route) }
-                allFleetItems.add(
-                    FleetItem(
-                        route = route,
-                        routeOrder = order,
-                        driverName = "Unassigned",
-                        busId = "—",
-                        plateNumber = "—",
-                        isActiveDay = dayOfWeek != Calendar.SUNDAY
+            android.util.Log.d("SMARTBUS_FLEET", "Today's routes: ${todayRoutes.size}")
+
+            if (todayRoutes.isEmpty()) {
+                // Fallback: always show all canonical routes so dashboard is never fully blank
+                android.util.Log.w("SMARTBUS_FLEET", "No routes for today — showing all canonical routes as fallback")
+                val allRoutes = if (isWeekday) {
+                    AdminSortHelper.sortRoutes(routes.filter { it.scheduleType.equals("WEEKDAY", true) })
+                        .ifEmpty { AdminSortHelper.canonicalRoutes().filter { it.scheduleType.equals("WEEKDAY", true) } }
+                } else {
+                    AdminSortHelper.canonicalRoutes()
+                }
+                allRoutes.forEach { route ->
+                    val order = canonical.indexOfFirst { it.name == route.name }
+                        .let { if (it >= 0) it + 1 else AdminSortHelper.routeOrderKey(route) }
+                    allFleetItems.add(
+                        FleetItem(
+                            route = route,
+                            routeOrder = order,
+                            driverName = "Unassigned",
+                            busId = "—",
+                            plateNumber = "—",
+                            isActiveDay = dayOfWeek != Calendar.SUNDAY
+                        )
                     )
-                )
+                }
+            } else {
+                todayRoutes.forEach { route ->
+                    val order = canonical.indexOfFirst { it.name == route.name }
+                        .let { if (it >= 0) it + 1 else AdminSortHelper.routeOrderKey(route) }
+                    allFleetItems.add(
+                        FleetItem(
+                            route = route,
+                            routeOrder = order,
+                            driverName = "Unassigned",
+                            busId = "—",
+                            plateNumber = "—",
+                            isActiveDay = dayOfWeek != Calendar.SUNDAY
+                        )
+                    )
+                }
             }
+
+            android.util.Log.d("SMARTBUS_FLEET", "allFleetItems built: ${allFleetItems.size}")
 
             // Load driver assignments
             db.collection("users").whereEqualTo("role", "DRIVER").get()
                 .addOnSuccessListener { snapshot ->
                     if (_binding == null) return@addOnSuccessListener
+                    android.util.Log.d("SMARTBUS_FLEET", "Drivers from Firestore: ${snapshot.documents.size}")
                     for (doc in snapshot.documents) {
                         if (doc.id.startsWith("driver_laluan") || doc.id.startsWith("driver_shuttle")) continue
                         val assignedRoute = doc.getString("assignedRoute") ?: continue
@@ -201,6 +236,10 @@ class AdminDashboardFragment : Fragment() {
                             )
                         }
                     }
+                    filterFleetList()
+                }
+                .addOnFailureListener { e ->
+                    android.util.Log.e("SMARTBUS_FLEET", "Failed to load drivers: ${e.message}")
                     filterFleetList()
                 }
 
@@ -254,13 +293,12 @@ class AdminDashboardFragment : Fragment() {
                     val item = allFleetItems[i]
                     val bus = busMap[item.busId] ?: busMap[item.route.name]
 
-                    allFleetItems[i] = item.copy(
-                        status = bus?.status ?: "IDLE",
-                        speed = bus?.speed ?: 0.0,
-                        nextStop = bus?.nextStop ?: "",
-                        distanceToNext = bus?.distanceToNext ?: 0.0,
-                        lastUpdated = bus?.lastUpdated ?: 0L
-                    )
+                    // FleetItem has var fields — assign directly instead of copy()
+                    item.status = bus?.status ?: "IDLE"
+                    item.speed = bus?.speed ?: 0.0
+                    item.nextStop = bus?.nextStop ?: ""
+                    item.distanceToNext = bus?.distanceToNext ?: 0.0
+                    item.lastUpdated = bus?.lastUpdated ?: 0L
 
                     if (item.isActiveDay) {
                         when ((bus?.status ?: "IDLE").lowercase()) {
@@ -274,14 +312,24 @@ class AdminDashboardFragment : Fragment() {
                 }
 
                 // Sort: Speeding first → Active → Resting → Offline
-                allFleetItems.sortWith(compareBy<FleetItem> {
-                    when {
-                        it.isSpeeding -> 0
-                        it.isActive -> 1
-                        it.isResting -> 2
-                        else -> 3
+                allFleetItems.sortWith(
+                    Comparator { a, b ->
+                        val aPriority = when {
+                            a.isSpeeding -> 0
+                            a.isActive -> 1
+                            a.isResting -> 2
+                            else -> 3
+                        }
+                        val bPriority = when {
+                            b.isSpeeding -> 0
+                            b.isActive -> 1
+                            b.isResting -> 2
+                            else -> 3
+                        }
+                        if (aPriority != bPriority) aPriority - bPriority
+                        else a.routeOrder - b.routeOrder
                     }
-                }.thenBy { it.routeOrder })
+                )
 
                 binding.tvTotalFleetCount.text = "${allFleetItems.size}"
                 binding.tvStatOnlineCountSmall.text = "$online"
@@ -297,7 +345,10 @@ class AdminDashboardFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        rtdbListener?.let { com.upsi.smartbus.core.data.RealtimeDbHelper.liveBuses.removeEventListener(it) }
+        val listener = rtdbListener
+        if (listener != null) {
+            com.upsi.smartbus.core.data.RealtimeDbHelper.liveBuses.removeEventListener(listener)
+        }
         busListener?.remove()
         _binding = null
         super.onDestroyView()
@@ -426,7 +477,7 @@ class AdminDashboardFragment : Fragment() {
                     }
                     sb.toString()
                 } else {
-                    stops.joinToString(" <font color='#D1D5DB'>\u2192</font> ") { "<font color='#6B7280'>$it</font>" }
+                    stops.joinToString(" <font color='#D1D5DB'>\u2192</font> ") { stopName -> "<font color='#6B7280'>$stopName</font>" }
                 }
 
                 b.tvFleetStops.text = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)

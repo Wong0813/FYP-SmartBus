@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- Trust all system CAs (includes updated Google/Firebase CAs) -->
+            <certificates src="system" />
+            <!-- Also trust user-installed CAs (helps in some enterprise/VPN setups) -->
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+    <!-- Explicitly trust Google Firebase domains -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">firebaseapp.com</domain>
+        <domain includeSubdomains="true">googleapis.com</domain>
+        <domain includeSubdomains="true">firebase.io</domain>
+        <domain includeSubdomains="true">firebase.google.com</domain>
+        <domain includeSubdomains="true">firebasedatabase.app</domain>
+        <domain includeSubdomains="true">firestore.googleapis.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

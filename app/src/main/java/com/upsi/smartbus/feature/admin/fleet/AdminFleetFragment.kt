@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.ListenerRegistration
 import com.upsi.smartbus.R
+import com.upsi.smartbus.core.data.AppCache
 import com.upsi.smartbus.core.data.FirestoreHelper
 import com.upsi.smartbus.core.data.RouteRepository
 import com.upsi.smartbus.core.model.Bus
@@ -136,6 +137,13 @@ class AdminFleetFragment : Fragment() {
                 if (_binding == null) return@seedOfficialBuses
                 binding.btnSyncFleet.isEnabled = true
                 Toast.makeText(requireContext(), "Buses synced to Firestore", Toast.LENGTH_SHORT).show()
+
+                // After syncing, clean stale GPS fields from Firestore
+                // (GPS data now lives exclusively in Realtime Database)
+                com.upsi.smartbus.core.data.FirestoreCleanup.cleanBusGpsFields { success, failed ->
+                    if (_binding == null) return@cleanBusGpsFields
+                    android.util.Log.d("FleetSync", "GPS field cleanup: $success cleaned, $failed failed")
+                }
             }
         }
     }
@@ -177,13 +185,16 @@ class AdminFleetFragment : Fragment() {
     }
 
     private fun registerBus(busId: String, busName: String, plate: String, route: Route) {
+        // Only store static fields in Firestore; GPS/live data is in Realtime DB
         db.collection("buses").document(busId).set(mapOf(
-            "id" to busId, "name" to busName, "licensePlate" to plate, "plateNumber" to plate,
-            "routeName" to route.name, "routeStops" to route.stops,
-            "startStop" to route.stops.firstOrNull().orEmpty(), "status" to "IDLE",
-            "speed" to 0.0, "nextStop" to route.stops.getOrElse(1) { "" },
-            "lastUpdated" to System.currentTimeMillis()
+            "id"           to busId,
+            "name"         to busName,
+            "licensePlate" to plate,
+            "plateNumber"  to plate,
+            "routeName"    to route.name,
+            "capacity"     to 40
         )).addOnSuccessListener {
+            AppCache.invalidateBuses()
             Toast.makeText(requireContext(), "Bus registered", Toast.LENGTH_SHORT).show()
             binding.etBusId.text?.clear(); binding.etBusName.text?.clear(); binding.etLicensePlate.text?.clear()
             binding.llFleetForm.visibility = View.GONE
@@ -276,6 +287,19 @@ class AdminFleetFragment : Fragment() {
     }
 
     private fun listenToFleet() {
+        // Show cached data instantly if available (avoids blank on back-navigation)
+        com.upsi.smartbus.core.data.AppCache.getCachedBuses()?.let { cached ->
+            if (_binding == null) return
+            allBuses.clear()
+            allBuses.addAll(cached)
+            allBuses.sortBy { com.upsi.smartbus.feature.admin.seeder.AdminSortHelper.busOrderKey(it.id) }
+            val active = allBuses.count { it.status.equals("working", true) }
+            binding.tvFleetTotal.text = "${allBuses.size}"
+            binding.tvFleetActiveCount.text = "$active"
+            binding.tvFleetDepotCount.text = "${allBuses.size - active}"
+            filterBuses()
+        }
+
         fleetListener?.remove()
         fleetListener = db.collection("buses").addSnapshotListener { snap, err ->
             if (_binding == null) return@addSnapshotListener
@@ -292,6 +316,8 @@ class AdminFleetFragment : Fragment() {
             binding.tvFleetActiveCount.text = "$active"
             binding.tvFleetDepotCount.text = "$inDepot"
 
+            // Update cache for next visit
+            com.upsi.smartbus.core.data.AppCache.putBuses(allBuses.toList())
             filterBuses()
         }
     }

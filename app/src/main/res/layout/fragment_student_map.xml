@@ -105,7 +105,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- ═══ BOTTOM PANEL ═══ -->
+    <!-- ═══ BOTTOM PANEL (hidden in All Buses mode) ═══ -->
     <LinearLayout
         android:id="@+id/etaCard"
         android:layout_width="match_parent"
@@ -114,6 +114,7 @@
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
         android:layout_marginBottom="12dp"
+        android:visibility="gone"
         android:background="@drawable/bg_card"
         android:clickable="true"
         android:elevation="8dp"

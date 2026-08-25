@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- ══ TOP STATUS BAR ══ -->
+    <!-- ══ TOP FLOATING STATUS BAR ══ -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -35,40 +35,6 @@
             android:scaleType="centerInside"
             android:src="@drawable/ic_menu_burger"
             app:tint="@color/crimson_primary" />
-
-        <!-- Back to Dashboard button (Quick one-tap return) -->
-        <LinearLayout
-            android:id="@+id/btnBackToDashboard"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:background="@drawable/bg_capsule_white"
-            android:clickable="true"
-            android:elevation="6dp"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="8dp">
-
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@drawable/ic_arrow_back"
-                android:contentDescription="Back to Dashboard"
-                app:tint="@color/crimson_primary" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:text="Dashboard"
-                android:textColor="@color/crimson_primary"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-        </LinearLayout>
 
         <!-- Live count pill -->
         <LinearLayout
@@ -151,12 +117,14 @@
 
     </LinearLayout>
 
-    <!-- ══ BOTTOM PANEL: Clean compact status card ══ -->
+    <!-- ══ BOTTOM PANEL: Clean compact status card (hidden in All Buses mode) ══ -->
     <androidx.cardview.widget.CardView
+        android:id="@+id/cardBottomPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_margin="12dp"
+        android:visibility="gone"
         app:cardBackgroundColor="@color/card_bg"
         app:cardCornerRadius="16dp"
         app:cardElevation="10dp">
@@ -223,105 +191,114 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
-            <!-- Divider -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginVertical="10dp"
-                android:background="@color/divider" />
-
-            <!-- ETA & Next Stop detail strip -->
+            <!-- Single Bus Specific Metrics Container -->
             <LinearLayout
+                android:id="@+id/llSingleBusMetrics"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
-                <!-- Next stop item -->
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="10dp"
+                    android:background="@color/divider" />
+
+                <!-- ETA & Next Stop detail strip -->
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <!-- Next stop item (e.g. SS (0.8 km)) -->
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Next Stop"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="10sp" />
+                        android:layout_weight="1.2"
+                        android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/tvPanelNextStop"
-                        android:layout_width="wrap_content"
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Next Stop"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="10sp" />
+
+                        <TextView
+                            android:id="@+id/tvPanelNextStop"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="--"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Speed item -->
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="--"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
+                        android:layout_weight="0.9"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Speed"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="10sp" />
+
+                        <TextView
+                            android:id="@+id/tvPanelSpeed"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="-- km/h"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- ETA item -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.9"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="AI ETA"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="10sp" />
+
+                        <TextView
+                            android:id="@+id/tvPanelEta"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="-- min"
+                            android:textColor="@color/crimson_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
                 </LinearLayout>
 
-                <!-- Speed item -->
-                <LinearLayout
-                    android:layout_width="0dp"
+                <!-- Stop sequence chain with HTML highlight -->
+                <TextView
+                    android:id="@+id/tvPanelStopsChain"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Speed"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="10sp" />
-
-                    <TextView
-                        android:id="@+id/tvPanelSpeed"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="-- km/h"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <!-- ETA item -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="AI ETA"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="10sp" />
-
-                    <TextView
-                        android:id="@+id/tvPanelEta"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="-- min"
-                        android:textColor="@color/crimson_primary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
+                    android:layout_marginTop="8dp"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:text="KAB → PT → SS → KA → DKP → KAB"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="10.5sp" />
 
             </LinearLayout>
-
-            <!-- Stop sequence chain -->
-            <TextView
-                android:id="@+id/tvPanelStopsChain"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:ellipsize="end"
-                android:singleLine="true"
-                android:text="KAB → PT → SS → KA → DKP → KAB"
-                android:textColor="@color/text_secondary"
-                android:textSize="10sp" />
 
         </LinearLayout>
 

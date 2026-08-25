@@ -3,10 +3,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_card_20"
+    android:background="@drawable/bg_bottom_sheet_top_rounded"
     android:orientation="vertical"
-    android:paddingTop="18dp"
-    android:paddingBottom="16dp">
+    android:paddingTop="10dp"
+    android:paddingBottom="24dp">
+
+    <!-- Top Drag Handle Indicator -->
+    <View
+        android:layout_width="38dp"
+        android:layout_height="4.5dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/bg_bottom_sheet_handle" />
 
     <!-- Header Title Bar -->
     <LinearLayout
@@ -26,7 +35,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Select Bus / Route"
+                android:text="Select Route / Bus"
                 android:textColor="@color/text_primary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -35,87 +44,86 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Choose a route to view live map &amp; stops"
+                android:text="Tap to track live bus position &amp; route leg"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
         </LinearLayout>
 
-        <!-- Close Button (Standard Close X) -->
+        <!-- Close Button (Round X) -->
         <ImageButton
             android:id="@+id/btnCloseDialog"
-            android:layout_width="34dp"
-            android:layout_height="34dp"
-            android:background="@drawable/bg_filter_chip"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_filter_tab_inactive"
             android:contentDescription="Close"
-            android:padding="8dp"
+            android:padding="9dp"
             android:src="@drawable/ic_close"
             app:tint="@color/text_secondary" />
 
     </LinearLayout>
 
-    <!-- Filter Chips (All / Weekday / Saturday) -->
-    <HorizontalScrollView
+    <!-- Filter Chips Row (All / Weekday / Saturday) -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:paddingHorizontal="20dp"
-        android:scrollbars="none">
+        android:layout_marginBottom="12dp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="20dp">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/chipFilterAll"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_weight="1"
+            android:background="@drawable/bg_button_crimson"
+            android:gravity="center"
+            android:paddingVertical="9dp"
+            android:text="All Routes"
+            android:textColor="@color/text_white"
+            android:textSize="12sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/chipFilterAll"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_button_crimson"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="7dp"
-                android:text="All Routes"
-                android:textColor="@color/text_white"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+        <TextView
+            android:id="@+id/chipFilterWeekday"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_filter_tab_inactive"
+            android:gravity="center"
+            android:paddingVertical="9dp"
+            android:text="Weekdays"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/chipFilterWeekday"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:background="@drawable/bg_filter_chip"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="7dp"
-                android:text="Weekdays (Mon–Fri)"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
+        <TextView
+            android:id="@+id/chipFilterSaturday"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_filter_tab_inactive"
+            android:gravity="center"
+            android:paddingVertical="9dp"
+            android:text="Saturdays"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/chipFilterSaturday"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:background="@drawable/bg_filter_chip"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="7dp"
-                android:text="Saturdays"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
-
-        </LinearLayout>
-
-    </HorizontalScrollView>
+    </LinearLayout>
 
     <!-- Routes RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvRoutesList"
         android:layout_width="match_parent"
-        android:layout_height="360dp"
+        android:layout_height="390dp"
         android:clipToPadding="false"
+        android:overScrollMode="never"
         android:paddingHorizontal="16dp"
         android:paddingTop="2dp"
-        android:paddingBottom="8dp"
-        android:scrollbars="vertical" />
+        android:paddingBottom="12dp"
+        android:scrollbars="none" />
 
 </LinearLayout>

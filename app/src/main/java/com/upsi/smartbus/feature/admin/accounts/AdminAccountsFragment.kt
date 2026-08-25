@@ -214,6 +214,15 @@ class AdminAccountsFragment : Fragment() {
     }
 
     private fun listenToUsers() {
+        // Show cached data instantly if available (avoids blank on back-navigation)
+        com.upsi.smartbus.core.data.AppCache.getCachedUsers()?.let { cached ->
+            if (_binding == null) return
+            allUsers.clear()
+            allUsers.addAll(cached)
+            updateHeroStats()
+            rebuildDisplayList()
+        }
+
         usersListener?.remove()
         usersListener = db.collection("users").addSnapshotListener { snapshot, error ->
             if (_binding == null || error != null || snapshot == null) return@addSnapshotListener
@@ -223,6 +232,8 @@ class AdminAccountsFragment : Fragment() {
                     allUsers.add(user.copy(uid = doc.id))
                 }
             }
+            // Update cache for next visit
+            com.upsi.smartbus.core.data.AppCache.putUsers(allUsers.toList())
             updateHeroStats()
             rebuildDisplayList()
         }

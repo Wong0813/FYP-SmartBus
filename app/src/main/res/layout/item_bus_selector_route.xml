@@ -6,27 +6,28 @@
     android:id="@+id/cardRouteItem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="5dp"
-    android:layout_marginHorizontal="4dp"
+    android:layout_marginVertical="4dp"
+    android:layout_marginHorizontal="2dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="@color/card_bg"
     app:cardCornerRadius="14dp"
-    app:cardElevation="1dp">
+    app:cardElevation="1.5dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="12dp">
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="12dp">
 
         <!-- Short Name Badge (e.g. L1, L2, SC, ★) -->
         <FrameLayout
             android:id="@+id/flBadgeContainer"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:background="@drawable/bg_circle_crimson">
 
             <TextView
@@ -35,7 +36,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:textColor="@color/text_white"
-                android:textSize="13sp"
+                android:textSize="12.5sp"
                 android:textStyle="bold"
                 tools:text="L1" />
 
@@ -45,7 +46,8 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -54,7 +56,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_primary"
-                android:textSize="14sp"
+                android:textSize="13.5sp"
                 android:textStyle="bold"
                 tools:text="Laluan 1" />
 
@@ -62,11 +64,11 @@
                 android:id="@+id/tvStopChain"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
+                android:layout_marginTop="2dp"
                 android:ellipsize="end"
                 android:singleLine="true"
                 android:textColor="@color/text_secondary"
-                android:textSize="11sp"
+                android:textSize="10.5sp"
                 tools:text="KAB → PT → SS → KA → DKP → KAB" />
 
         </LinearLayout>
@@ -76,18 +78,17 @@
             android:id="@+id/llLivePill"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
             android:background="@drawable/bg_status_moving"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="4dp"
+            android:paddingHorizontal="7dp"
+            android:paddingVertical="3dp"
             android:visibility="gone"
             tools:visibility="visible">
 
             <View
-                android:layout_width="6dp"
-                android:layout_height="6dp"
+                android:layout_width="5dp"
+                android:layout_height="5dp"
                 android:background="@drawable/dot_green" />
 
             <TextView
@@ -97,7 +98,7 @@
                 android:layout_marginStart="4dp"
                 android:text="LIVE"
                 android:textColor="@color/status_moving"
-                android:textSize="10sp"
+                android:textSize="9.5sp"
                 android:textStyle="bold" />
 
         </LinearLayout>
@@ -105,9 +106,9 @@
         <!-- Selected Checkmark Icon -->
         <ImageView
             android:id="@+id/ivSelectedCheck"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginStart="8dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="6dp"
             android:src="@drawable/ic_status_active"
             android:visibility="gone"
             tools:visibility="visible" />
