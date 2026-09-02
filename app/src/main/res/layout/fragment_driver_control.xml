@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_screen">
@@ -11,203 +13,344 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- ══ NAVIGATION BANNER (Google Maps style, top-most) ══ -->
+    <!-- ══ TOP FLOATING CONTROLS LAYER ══ -->
     <LinearLayout
-        android:id="@+id/navBanner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="12dp"
-        android:background="@drawable/bg_nav_banner"
-        android:elevation="12dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="14dp"
-        android:paddingTop="12dp"
-        android:paddingEnd="14dp"
-        android:paddingBottom="12dp"
-        android:visibility="gone">
+        android:layout_marginStart="14dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="14dp"
+        android:orientation="vertical">
 
-        <!-- Turn direction icon -->
-        <ImageView
-            android:id="@+id/ivNavTurnIcon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_nav_straight"
-            android:contentDescription="Turn direction" />
-
-        <!-- Instruction details -->
+        <!-- ══ NAVIGATION BANNER (Full width permanent header, menu button inside) ══ -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:id="@+id/navBanner"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="12dp"
-            android:orientation="vertical">
+            android:background="@drawable/bg_nav_banner"
+            android:elevation="6dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="6dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="10dp"
+            android:visibility="visible">
 
-            <!-- Distance to next maneuver -->
-            <TextView
-                android:id="@+id/tvNavDistance"
+            <!-- Menu button inside nav card -->
+            <ImageButton
+                android:id="@+id/btnMenuInNav"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_nav_menu_btn"
+                android:contentDescription="Open Navigation Drawer"
+                android:padding="8dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_menu_burger"
+                app:tint="@color/text_white" />
+
+            <!-- Turn direction icon -->
+            <ImageView
+                android:id="@+id/ivNavTurnIcon"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginStart="6dp"
+                android:contentDescription="Turn direction"
+                android:src="@drawable/ic_nav_straight" />
+
+            <!-- Instruction details -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <!-- Distance to next maneuver -->
+                <TextView
+                    android:id="@+id/tvNavDistance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    tools:text="1.0 km" />
+
+                <!-- Instruction text -->
+                <TextView
+                    android:id="@+id/tvNavInstruction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="#E0FFFFFF"
+                    android:textSize="10sp"
+                    tools:text="Terus lurus ke Kolej Ungku Omar" />
+
+                <!-- Route cycle timer -->
+                <TextView
+                    android:id="@+id/tvCycleTimer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#B0FFFFFF"
+                    android:textSize="9sp"
+                    tools:text="Pusingan 1 · 59 min lagi" />
+
+            </LinearLayout>
+
+            <!-- Next stop name (right side) -->
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="200 m"
-                android:textColor="@color/text_white"
-                android:textSize="22sp"
-                android:textStyle="bold" />
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <!-- Instruction text (e.g. "Belok Kiri — Jalan Sultan Idris") -->
-            <TextView
-                android:id="@+id/tvNavInstruction"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="Terus Lurus"
-                android:textColor="#CCFFFFFF"
-                android:textSize="12sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.1"
+                    android:text="NEXT"
+                    android:textColor="#B0FFFFFF"
+                    android:textSize="7.5sp" />
 
-            <!-- Route cycle timer -->
-            <TextView
-                android:id="@+id/tvCycleTimer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="⏱ Cycle 1 — 60 min left"
-                android:textColor="#99FFFFFF"
-                android:textSize="10sp" />
+                <TextView
+                    android:id="@+id/tvNavNextStop"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    tools:text="KUO" />
 
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/tvNavEta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#E0FFFFFF"
+                    android:textSize="9sp"
+                    tools:text="~1 min" />
 
-        <!-- Next stop name (right side) -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="NEXT"
-                android:textColor="#99FFFFFF"
-                android:textSize="8sp"
-                android:letterSpacing="0.1" />
-
-            <TextView
-                android:id="@+id/tvNavNextStop"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="PT"
-                android:textColor="@color/text_white"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvNavEta"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="~3 min"
-                android:textColor="#CCFFFFFF"
-                android:textSize="10sp" />
+            </LinearLayout>
 
         </LinearLayout>
 
     </LinearLayout>
 
-    <!-- ══ TOP INFO BAR (Duty buttons floating below nav banner) ══ -->
+    <!-- ══ FLOATING D-PAD (Compact simulation controls, unobtrusive at bottom-right) ══ -->
     <LinearLayout
-        android:id="@+id/topInfoBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="260dp"
+        android:elevation="8dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <!-- UP -->
+        <TextView
+            android:id="@+id/btnMoveUp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_floating_menu_btn"
+            android:clickable="true"
+            android:elevation="2dp"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="↑"
+            android:textColor="@color/crimson_primary"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <!-- LEFT + CENTER + RIGHT -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="2dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btnMoveLeft"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@drawable/bg_floating_menu_btn"
+                android:clickable="true"
+                android:elevation="2dp"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="←"
+                android:textColor="@color/crimson_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="2dp"
+                android:layout_height="32dp" />
+
+            <TextView
+                android:id="@+id/btnMoveRight"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@drawable/bg_floating_menu_btn"
+                android:clickable="true"
+                android:elevation="2dp"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="→"
+                android:textColor="@color/crimson_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- DOWN -->
+        <TextView
+            android:id="@+id/btnMoveDown"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_floating_menu_btn"
+            android:clickable="true"
+            android:elevation="2dp"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="↓"
+            android:textColor="@color/crimson_primary"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <!-- Step size label -->
+        <TextView
+            android:id="@+id/tvStepSize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:background="@drawable/bg_floating_menu_btn"
+            android:clickable="true"
+            android:elevation="2dp"
+            android:focusable="true"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:text="~20m"
+            android:textColor="@color/text_secondary"
+            android:textSize="8sp" />
+
+    </LinearLayout>
+
+    <!-- ══ BOTTOM CONTAINER (Duty Status Capsule + Route Progress & Metrics Panel) ══ -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="top"
+        android:layout_gravity="bottom"
         android:layout_marginStart="12dp"
-        android:layout_marginTop="95dp"
         android:layout_marginEnd="12dp"
-        android:orientation="vertical"
-        android:elevation="8dp">
+        android:layout_marginBottom="12dp"
+        android:orientation="vertical">
 
-
-
-        <!-- Duty status buttons -->
+        <!-- ══ DUTY STATUS BUTTONS (Attached directly above the bottom card) ══ -->
         <LinearLayout
+            android:id="@+id/cardDutyStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:orientation="horizontal">
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_floating_menu_btn"
+            android:elevation="6dp"
+            android:orientation="horizontal"
+            android:padding="3dp">
 
             <TextView
                 android:id="@+id/btnWorking"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_marginEnd="5dp"
+                android:layout_height="34dp"
                 android:layout_weight="1"
-                android:background="@drawable/bg_status_moving"
+                android:background="@drawable/bg_duty_working_active"
                 android:gravity="center"
-                android:text="🟢 WORKING"
+                android:text="● WORKING"
                 android:textColor="@color/text_white"
-                android:textSize="11sp"
+                android:textSize="10.5sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/btnResting"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_marginEnd="5dp"
+                android:layout_height="34dp"
                 android:layout_weight="1"
-                android:background="@drawable/bg_card"
+                android:background="@android:color/transparent"
                 android:gravity="center"
-                android:text="🟡 RESTING"
-                android:textColor="@color/text_secondary"
-                android:textSize="11sp" />
+                android:text="● RESTING"
+                android:textColor="#9CA3AF"
+                android:textSize="10.5sp" />
 
             <TextView
                 android:id="@+id/btnOffDuty"
                 android:layout_width="0dp"
-                android:layout_height="36dp"
+                android:layout_height="34dp"
                 android:layout_weight="1"
-                android:text="⚫ OFF DUTY"
-                android:textColor="@color/text_secondary"
-                android:textSize="11sp" />
+                android:background="@android:color/transparent"
+                android:gravity="center"
+                android:text="● OFF DUTY"
+                android:textColor="#9CA3AF"
+                android:textSize="10.5sp" />
+
         </LinearLayout>
-    </LinearLayout>
 
-    <!-- ══ STREAMLINED BOTTOM PANEL (Single Unified Card) ══ -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_margin="12dp"
-        android:background="@drawable/bg_card"
-        android:elevation="8dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="14dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="14dp"
-        android:paddingBottom="8dp">
-
-        <!-- ROUTE PROGRESS (Left Side) -->
-        <LinearLayout
-            android:layout_width="0dp"
+        <!-- ══ BOTTOM ROUTE PROGRESS & METRICS PANEL (Unified Modern Card) ══ -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/bottomCard"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            app:cardBackgroundColor="@color/card_bg"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="8dp"
+            app:cardPreventCornerOverlap="true">
 
-            <TextView
-                android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp">
+
+            <!-- Card Header: Title + Live Status & Route Name -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="ROUTE PROGRESS"
-                android:textColor="@color/text_secondary"
-                android:textSize="8sp"
-                android:letterSpacing="0.08"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.08"
+                    android:text="ROUTE PROGRESS"
+                    android:textColor="#6B7280"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/tvBottomLiveRoute"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/status_moving"
+                    android:textSize="10.5sp"
+                    android:textStyle="bold"
+                    tools:text="● LIVE · LALUAN 1" />
+
+            </LinearLayout>
+
+            <!-- Stop Progression Timeline -->
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="12dp"
+                android:overScrollMode="never"
                 android:scrollbars="none">
 
                 <LinearLayout
@@ -219,233 +362,175 @@
 
             </HorizontalScrollView>
 
-        </LinearLayout>
-
-        <!-- Separator -->
-        <View
-            android:layout_width="1dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:background="@color/border_light" />
-
-        <!-- SPEED -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:paddingStart="4dp"
-            android:paddingEnd="4dp"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="SPEED"
-                android:textColor="@color/text_secondary"
-                android:textSize="8sp"
-                android:letterSpacing="0.06" />
-
-            <TextView
-                android:id="@+id/tvSpeed"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textColor="@color/text_primary"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="km/h"
-                android:textColor="@color/text_secondary"
-                android:textSize="8sp" />
-
-        </LinearLayout>
-
-        <!-- Separator -->
-        <View
-            android:layout_width="1dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:background="@color/border_light" />
-
-        <!-- ARRIVE AT / ETA -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:paddingStart="4dp"
-            android:paddingEnd="4dp"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ARRIVE AT"
-                android:textColor="@color/text_secondary"
-                android:textSize="8sp"
-                android:letterSpacing="0.06" />
-
-            <TextView
-                android:id="@+id/tvEtaDriver"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="--"
-                android:textColor="@color/crimson_primary"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvDistDriver"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0.0 km"
-                android:textColor="@color/text_secondary"
-                android:textSize="8sp" />
-
-        </LinearLayout>
-
-        <!-- Separator -->
-        <View
-            android:layout_width="1dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:background="@color/border_light" />
-
-        <!-- 🤖 AI GPS LOCATION CAPSULE -->
-        <LinearLayout
-            android:id="@+id/cardAiLocation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_eta_ai_capsule"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:paddingStart="10dp"
-            android:paddingTop="5dp"
-            android:paddingEnd="10dp"
-            android:paddingBottom="5dp">
-
-            <TextView
-                android:id="@+id/tvAiLocationLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🤖 AI GPS"
-                android:textColor="@color/text_white"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvAiLocationSub"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
-                android:text="Live Sync"
-                android:textColor="#E0FFFFFF"
-                android:textSize="8sp" />
-
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <!-- ══ FLOATING D-PAD (demo movement controls) ══ -->
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end|center_vertical"
-        android:layout_marginEnd="8dp"
-        android:elevation="12dp"
-        android:orientation="vertical"
-        android:gravity="center_horizontal">
-
-        <!-- UP -->
-        <TextView
-            android:id="@+id/btnMoveUp"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/bg_capsule_white"
-            android:gravity="center"
-            android:text="▲"
-            android:textColor="@color/crimson_primary"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:clickable="true"
-            android:focusable="true" />
-
-        <!-- LEFT + CENTER + RIGHT -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp">
-
-            <TextView
-                android:id="@+id/btnMoveLeft"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:background="@drawable/bg_capsule_white"
-                android:gravity="center"
-                android:text="◀"
-                android:textColor="@color/crimson_primary"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:clickable="true"
-                android:focusable="true" />
-
+            <!-- Separator Line -->
             <View
-                android:layout_width="4dp"
-                android:layout_height="50dp" />
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="10dp"
+                android:background="#F3F4F6" />
 
-            <TextView
-                android:id="@+id/btnMoveRight"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:background="@drawable/bg_capsule_white"
-                android:gravity="center"
-                android:text="▶"
-                android:textColor="@color/crimson_primary"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:clickable="true"
-                android:focusable="true" />
+            <!-- 4-Column Metrics: SPEED | ARRIVE | REMAINING | AI PREDICTION -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <!-- 1. SPEED -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.06"
+                        android:text="SPEED"
+                        android:textColor="#9CA3AF"
+                        android:textSize="8sp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:gravity="bottom"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvSpeed"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#111827"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            tools:text="0" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="2dp"
+                            android:layout_marginBottom="1dp"
+                            android:text="km/h"
+                            android:textColor="#9CA3AF"
+                            android:textSize="8.5sp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Divider 1 -->
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="32dp"
+                    android:background="#E5E7EB" />
+
+                <!-- 2. ARRIVE -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.06"
+                        android:text="ARRIVE"
+                        android:textColor="#9CA3AF"
+                        android:textSize="8sp" />
+
+                    <TextView
+                        android:id="@+id/tvEtaDriver"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="#111827"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        tools:text="16:56" />
+
+                </LinearLayout>
+
+                <!-- Divider 2 -->
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="32dp"
+                    android:background="#E5E7EB" />
+
+                <!-- 3. REMAINING -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.06"
+                        android:text="REMAINING"
+                        android:textColor="#9CA3AF"
+                        android:textSize="8sp" />
+
+                    <TextView
+                        android:id="@+id/tvDistDriver"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="#111827"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        tools:text="1.0 km" />
+
+                </LinearLayout>
+
+                <!-- Divider 3 -->
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="32dp"
+                    android:background="#E5E7EB" />
+
+                <!-- 4. AI PREDICTION -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.2"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.04"
+                        android:text="🤖 AI PREDICT"
+                        android:textColor="@color/crimson_primary"
+                        android:textSize="8sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvAiPrediction"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/crimson_primary"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        tools:text="~1 min" />
+
+                </LinearLayout>
+
+            </LinearLayout>
 
         </LinearLayout>
 
-        <!-- DOWN -->
-        <TextView
-            android:id="@+id/btnMoveDown"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/bg_capsule_white"
-            android:gravity="center"
-            android:text="▼"
-            android:textColor="@color/crimson_primary"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:clickable="true"
-            android:focusable="true" />
-
-        <!-- Step size label -->
-        <TextView
-            android:id="@+id/tvStepSize"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:background="@drawable/bg_capsule_white"
-            android:paddingStart="8dp"
-            android:paddingTop="4dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="4dp"
-            android:text="~20m"
-            android:textColor="@color/text_secondary"
-            android:textSize="9sp"
-            android:clickable="true"
-            android:focusable="true" />
+    </androidx.cardview.widget.CardView>
 
     </LinearLayout>
 
 </FrameLayout>
+

@@ -76,14 +76,27 @@ class ActiveBusesFragment : Fragment() {
      * Consumes 0 Firestore read/write quota.
      */
     private fun listenToFirestore() {
-        // 1. One-time load of static bus metadata from Firestore
+        // ✅ Use cache first — avoid Firestore reads every time the fragment opens
+        if (com.upsi.smartbus.core.data.AppCache.hasStaticBuses()) {
+            staticBusesMap.clear()
+            com.upsi.smartbus.core.data.AppCache.getStaticBusesList().forEach { bus ->
+                staticBusesMap[bus.id] = bus
+            }
+            bindRealtimeDatabaseListener()
+            return
+        }
+        // Cache miss — read from Firestore once, then populate cache
         db.collection("buses").get().addOnSuccessListener { snapshot ->
             if (_binding == null) return@addOnSuccessListener
             staticBusesMap.clear()
+            val busList = mutableListOf<Bus>()
             for (doc in snapshot.documents) {
                 val bus = doc.toObject(Bus::class.java) ?: continue
-                staticBusesMap[doc.id] = bus.copy(id = doc.id)
+                val b = bus.copy(id = doc.id)
+                staticBusesMap[doc.id] = b
+                busList.add(b)
             }
+            com.upsi.smartbus.core.data.AppCache.putStaticBuses(busList)
             bindRealtimeDatabaseListener()
         }.addOnFailureListener {
             bindRealtimeDatabaseListener()

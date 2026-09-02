@@ -24,9 +24,10 @@ class RouteCardAdapter(
     override fun onBindViewHolder(holder: RouteCardViewHolder, position: Int) {
         val route = routes[position]
         with(holder.binding) {
-            tvShortName.text = route.shortName
             tvRouteName.text = route.name
             tvStopChain.text = route.stops.joinToString(" ➔ ")
+            btnEditRoute.visibility = android.view.View.GONE
+            btnDeleteRoute.visibility = android.view.View.GONE
         }
     }
 

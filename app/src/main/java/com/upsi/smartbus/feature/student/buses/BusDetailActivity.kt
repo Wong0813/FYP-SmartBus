@@ -81,7 +81,7 @@ class BusDetailActivity : AppCompatActivity() {
                     routeName = finalRoute,
                     plateNumber = s?.plateNumber ?: busId,
                     licensePlate = s?.licensePlate ?: s?.plateNumber ?: busId,
-                    routeStops = s?.routeStops ?: RouteData.getAllRoutes().find { it.name.equals(finalRoute, true) }?.stops ?: listOf("KAB", "PT", "SS", "KA", "DKP", "KAB"),
+                    routeStops = s?.routeStops ?: com.upsi.smartbus.core.data.RouteRepository.findRoute(finalRoute)?.stops ?: listOf("KAB", "PT", "SS", "KA", "DKP", "KAB"),
                     startStop = s?.startStop ?: "KAB",
                     location = GeoPoint(lat, lng),
                     speed = speed,

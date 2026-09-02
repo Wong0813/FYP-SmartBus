@@ -25,13 +25,13 @@
                 android:gravity="center_horizontal"
                 android:orientation="vertical">
 
-                <!-- Official SmartBus App Logo -->
+                <!-- Official SmartBus App Logo (Transparent PNG) -->
                 <ImageView
                     android:id="@+id/ivAppLogo"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
+                    android:layout_width="108dp"
+                    android:layout_height="108dp"
                     android:contentDescription="SmartBus Logo"
-                    android:elevation="6dp"
+                    android:scaleType="fitCenter"
                     android:src="@drawable/app_logo" />
 
                 <!-- SMARTBUS Title -->

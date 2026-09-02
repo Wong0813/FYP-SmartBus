@@ -114,38 +114,42 @@ class LoginActivity : AppCompatActivity() {
     private fun syncUserDocumentOnLogin(email: String) {
         val currentUid = auth.currentUser?.uid ?: return navigateToMain()
 
-        // Match existing driver or student document in Firestore and sync UID
-        db.collection("users").whereEqualTo("email", email).get()
-            .addOnSuccessListener { snap ->
-                if (!snap.isEmpty) {
-                    val doc = snap.documents.first()
-                    val data = doc.data?.toMutableMap() ?: mutableMapOf()
-                    data["authUid"] = currentUid
-                    // Duplicate/link record with Auth UID for lightning-fast lookups
-                    db.collection("users").document(currentUid).set(data)
+        // 1. If document for currentUid already exists, skip write
+        db.collection("users").document(currentUid).get()
+            .addOnSuccessListener { doc ->
+                if (doc.exists()) {
+                    navigateToMain()
                 } else {
-                    // Create basic record if missing
-                    val isDriver = email.startsWith("driver")
-                    val isAdmin = email.startsWith("admin")
-                    val role = when {
-                        isAdmin -> "ADMIN"
-                        isDriver -> "DRIVER"
-                        else -> "STUDENT"
-                    }
-                    val initialData = mapOf(
-                        "uid" to currentUid,
-                        "email" to email,
-                        "role" to role,
-                        "name" to email.substringBefore("@").replaceFirstChar { it.uppercase() },
-                        "accountType" to "PORTAL"
-                    )
-                    db.collection("users").document(currentUid).set(initialData)
+                    // 2. Check if this account already exists by email (e.g. admin_01, driver_01, student_01)
+                    db.collection("users").whereEqualTo("email", email).get()
+                        .addOnSuccessListener { snap ->
+                            if (!snap.isEmpty) {
+                                // Account already exists in Firestore! Do NOT duplicate.
+                                navigateToMain()
+                            } else {
+                                // Only create new document for genuinely new users
+                                val isDriver = email.startsWith("driver")
+                                val isAdmin = email.startsWith("admin")
+                                val role = when {
+                                    isAdmin -> "ADMIN"
+                                    isDriver -> "DRIVER"
+                                    else -> "STUDENT"
+                                }
+                                val initialData = mapOf(
+                                    "uid" to currentUid,
+                                    "email" to email,
+                                    "role" to role,
+                                    "name" to email.substringBefore("@").replaceFirstChar { it.uppercase() },
+                                    "accountType" to "OFFICIAL"
+                                )
+                                db.collection("users").document(currentUid).set(initialData)
+                                    .addOnCompleteListener { navigateToMain() }
+                            }
+                        }
+                        .addOnFailureListener { navigateToMain() }
                 }
-                navigateToMain()
             }
-            .addOnFailureListener {
-                navigateToMain()
-            }
+            .addOnFailureListener { navigateToMain() }
     }
 
     private fun setupHowToAccess() {

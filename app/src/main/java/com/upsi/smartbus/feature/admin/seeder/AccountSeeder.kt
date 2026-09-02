@@ -12,7 +12,7 @@ import org.json.JSONObject
 object AccountSeeder {
 
     private const val PREFS = "smartbus_admin"
-    private const val KEY_ACCOUNTS_SEEDED = "accounts_seeded_v7"
+    private const val KEY_ACCOUNTS_SEEDED = "accounts_seeded_v8"
 
     var appContext: Context? = null
     private var cachedSeedPhotos: Map<String, String>? = null
@@ -284,12 +284,31 @@ object AccountSeeder {
         }
     }
 
+    fun seedAdminProfile(onComplete: (() -> Unit)? = null) {
+        val db = FirestoreHelper.db
+        val adminData = mapOf(
+            "uid" to "admin_01",
+            "name" to "UPSI Bus Admin",
+            "email" to "admin@upsi.edu.my",
+            "role" to "ADMIN",
+            "staffNo" to "ADM-01",
+            "accountType" to "OFFICIAL"
+        )
+        db.collection("users").document("admin_01")
+            .set(adminData, SetOptions.merge())
+            .addOnCompleteListener { onComplete?.invoke() }
+    }
+
     fun seedEverything(context: Context? = null, onComplete: (() -> Unit)? = null) {
         if (context != null) appContext = context.applicationContext
         seedOfficialRoutes {
             seedOfficialDrivers(context) { _, _ ->
                 seedOfficialBuses(context) {
-                    seedDemoStudents(context) { onComplete?.invoke() }
+                    seedDemoStudents(context) {
+                        seedAdminProfile {
+                            onComplete?.invoke()
+                        }
+                    }
                 }
             }
         }

@@ -107,7 +107,7 @@
             android:background="@drawable/bg_filter_tab_inactive"
             android:gravity="center"
             android:paddingVertical="9dp"
-            android:text="Saturdays"
+            android:text="Weekend"
             android:textColor="@color/text_secondary"
             android:textSize="12sp"
             android:textStyle="bold" />

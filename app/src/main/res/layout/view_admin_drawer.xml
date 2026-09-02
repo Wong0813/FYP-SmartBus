@@ -21,23 +21,14 @@
         android:paddingTop="44dp"
         android:paddingBottom="22dp">
 
-        <!-- Official SmartBus Brand Logo Box -->
-        <FrameLayout
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:background="@drawable/bg_avatar_circle"
-            android:elevation="4dp"
-            android:padding="2dp">
-
-            <ImageView
-                android:id="@+id/ivDrawerAvatar"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                android:contentDescription="SmartBus Official Logo"
-                android:src="@drawable/app_logo" />
-
-        </FrameLayout>
+        <!-- Official SmartBus Brand Logo -->
+        <ImageView
+            android:id="@+id/ivDrawerAvatar"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:contentDescription="SmartBus Official Logo"
+            android:scaleType="fitCenter"
+            android:src="@drawable/app_logo" />
 
         <!-- Admin Name -->
         <TextView

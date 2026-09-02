@@ -71,4 +71,95 @@ object AdminSortHelper {
     }
 
     fun driverNumberLabel(number: Int): String = "Driver ${String.format("%02d", number)}"
+
+    /** 24 official canonical users (1 Admin + 20 Drivers + 3 Demo Students) */
+    fun defaultCanonicalUsers(): List<UserProfile> {
+        val list = mutableListOf<UserProfile>()
+        // 1. Admin
+        list.add(
+            UserProfile(
+                uid = "admin_01",
+                name = "UPSI Bus Admin",
+                email = "admin@upsi.edu.my",
+                role = "ADMIN",
+                staffNo = "ADM-01",
+                accountType = "OFFICIAL"
+            )
+        )
+        // 2. 20 Drivers
+        val entries = AccountSeeder.alignedEntries()
+        entries.forEach { entry ->
+            list.add(
+                UserProfile(
+                    uid = AccountSeeder.driverDocId(entry.number),
+                    name = entry.driver.driverName,
+                    email = entry.driver.email,
+                    role = "DRIVER",
+                    staffNo = "DRV-${String.format("%02d", entry.number)}",
+                    driverNumber = entry.number,
+                    assignedBus = entry.driver.busId,
+                    assignedRoute = entry.route.name,
+                    plateNumber = entry.driver.plateNumber,
+                    accountType = "OFFICIAL"
+                )
+            )
+        }
+        // 3. 3 Demo Students
+        list.add(
+            UserProfile(
+                uid = "student_demo_01",
+                name = "Ahmad Bin Ali",
+                email = "student1@upsi.edu.my",
+                role = "STUDENT",
+                faculty = "FCI",
+                program = "Software Engineering",
+                staffNo = "STU-001",
+                accountType = "OFFICIAL"
+            )
+        )
+        list.add(
+            UserProfile(
+                uid = "student_demo_02",
+                name = "Siti Nurhaliza",
+                email = "student2@upsi.edu.my",
+                role = "STUDENT",
+                faculty = "FPM",
+                program = "Pendidikan",
+                staffNo = "STU-002",
+                accountType = "OFFICIAL"
+            )
+        )
+        list.add(
+            UserProfile(
+                uid = "student_demo_03",
+                name = "Muhammad Hafiz",
+                email = "student3@upsi.edu.my",
+                role = "STUDENT",
+                faculty = "FSS",
+                program = "Pengurusan",
+                staffNo = "STU-003",
+                accountType = "OFFICIAL"
+            )
+        )
+        return list
+    }
+
+    /** 20 official canonical buses (BUS-001 .. BUS-020) */
+    fun defaultCanonicalBuses(): List<com.upsi.smartbus.core.model.Bus> {
+        val entries = AccountSeeder.alignedEntries()
+        return entries.map { entry ->
+            com.upsi.smartbus.core.model.Bus(
+                id = entry.driver.busId,
+                name = entry.route.name,
+                licensePlate = entry.driver.plateNumber,
+                plateNumber = entry.driver.plateNumber,
+                routeName = entry.route.name,
+                routeStops = entry.route.stops,
+                startStop = entry.route.stops.firstOrNull().orEmpty(),
+                nextStop = entry.route.stops.getOrElse(1) { "" },
+                status = "IDLE",
+                capacity = 40
+            )
+        }
+    }
 }

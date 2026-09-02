@@ -228,7 +228,7 @@
 
             </LinearLayout>
 
-            <!-- ══════════ ACTION ROW (Sync Fleet + Register Bus) ══════════ -->
+            <!-- ══════════ ACTION ROW (+ Register Bus) ══════════ -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -236,14 +236,12 @@
                 android:layout_marginTop="14dp"
                 android:orientation="horizontal">
 
-                <!-- Sync Fleet Button -->
+                <!-- + Register Bus Button -->
                 <LinearLayout
-                    android:id="@+id/btnSyncFleet"
-                    android:layout_width="0dp"
+                    android:id="@+id/btnToggleFleetForm"
+                    android:layout_width="match_parent"
                     android:layout_height="44dp"
-                    android:layout_marginEnd="5dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_btn_sync_white"
+                    android:background="@drawable/bg_btn_new_account"
                     android:clickable="true"
                     android:elevation="1dp"
                     android:focusable="true"
@@ -252,55 +250,13 @@
                     android:orientation="horizontal"
                     android:paddingHorizontal="12dp">
 
-                    <ImageView
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:contentDescription="Sync"
-                        android:src="@drawable/ic_sync_white"
-                        app:tint="#C0181A" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:text="Sync 20 Buses"
-                        android:textColor="#1A1A2E"
-                        android:textSize="12.5sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <!-- + Register Bus Button -->
-                <LinearLayout
-                    android:id="@+id/btnToggleFleetForm"
-                    android:layout_width="0dp"
-                    android:layout_height="44dp"
-                    android:layout_marginStart="5dp"
-                    android:layout_weight="1.2"
-                    android:background="@drawable/bg_btn_new_account"
-                    android:clickable="true"
-                    android:elevation="3dp"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="14dp">
-
-                    <ImageView
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:contentDescription="Add Bus"
-                        android:src="@drawable/ic_add_white"
-                        app:tint="@color/text_white" />
-
                     <TextView
                         android:id="@+id/tvRegisterBusBtnText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
                         android:text="+ Register Bus"
-                        android:textColor="@color/text_white"
-                        android:textSize="12.5sp"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>

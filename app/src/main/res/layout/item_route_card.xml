@@ -5,71 +5,69 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="10dp"
+    android:layout_marginBottom="8dp"
     android:clickable="true"
     android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="@color/card_bg"
-    app:cardCornerRadius="14dp"
-    app:cardElevation="2dp">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="1.5dp"
+    app:cardPreventCornerOverlap="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="14dp">
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="12dp">
 
-        <!-- Short name badge (Laluan number circle) -->
-        <FrameLayout
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:background="@drawable/bg_circle_crimson">
+        <!-- Route Icon Badge -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            app:cardBackgroundColor="#FEF2F2"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:cardPreventCornerOverlap="true">
 
-            <TextView
-                android:id="@+id/tvShortName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <ImageView
+                android:id="@+id/ivRouteIcon"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
                 android:layout_gravity="center"
-                android:textColor="@color/text_white"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                tools:text="L1" />
+                android:contentDescription="Route Icon"
+                android:src="@drawable/ic_route_badge" />
 
-            <TextView
-                android:id="@+id/tvRouteOrder"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|center_horizontal"
-                android:layout_marginBottom="3dp"
-                android:textColor="@color/white_alpha_80"
-                android:textSize="8sp"
-                android:visibility="gone"
-                tools:text="#01" />
-
-        </FrameLayout>
+        </androidx.cardview.widget.CardView>
 
         <!-- Info section -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
+            <!-- Route Name -->
             <TextView
                 android:id="@+id/tvRouteName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="#111827"
+                android:textSize="13.5sp"
                 android:textStyle="bold"
-                tools:text="Laluan 1 — Kolej Aminuddin Baki" />
+                tools:text="Laluan 1" />
 
             <!-- Stop chain scrollable -->
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="5dp"
+                android:overScrollMode="never"
                 android:scrollbars="none">
 
                 <TextView
@@ -77,27 +75,48 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_filter_chip"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
                     android:textColor="@color/text_secondary"
-                    android:textSize="11sp"
+                    android:textSize="10.5sp"
                     tools:text="KAB → PT → SS → KA → DKP → KAB" />
 
             </HorizontalScrollView>
 
         </LinearLayout>
 
-        <!-- Edit button -->
-        <ImageButton
-            android:id="@+id/btnEditRoute"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:layout_marginStart="8dp"
-            android:background="@drawable/bg_icon_btn_edit"
-            android:contentDescription="Edit Route"
-            android:padding="9dp"
-            android:src="@drawable/ic_edit" />
+        <!-- Vertical Action Buttons (Edit & Delete) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btnEditRoute"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@drawable/bg_icon_btn_edit"
+                android:contentDescription="Edit Route"
+                android:padding="7dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_edit"
+                app:tint="#9CA3AF" />
+
+            <ImageButton
+                android:id="@+id/btnDeleteRoute"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/bg_icon_btn_delete"
+                android:contentDescription="Delete Route"
+                android:padding="7dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_delete"
+                app:tint="#EF4444" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>
+

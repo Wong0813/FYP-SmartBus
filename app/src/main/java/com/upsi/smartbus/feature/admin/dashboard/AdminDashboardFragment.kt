@@ -217,31 +217,59 @@ class AdminDashboardFragment : Fragment() {
 
             android.util.Log.d("SMARTBUS_FLEET", "allFleetItems built: ${allFleetItems.size}")
 
-            // Load driver assignments
-            db.collection("users").whereEqualTo("role", "DRIVER").get()
-                .addOnSuccessListener { snapshot ->
-                    if (_binding == null) return@addOnSuccessListener
-                    android.util.Log.d("SMARTBUS_FLEET", "Drivers from Firestore: ${snapshot.documents.size}")
-                    for (doc in snapshot.documents) {
-                        if (doc.id.startsWith("driver_laluan") || doc.id.startsWith("driver_shuttle")) continue
-                        val assignedRoute = doc.getString("assignedRoute") ?: continue
-                        val idx = allFleetItems.indexOfFirst { it.route.name == assignedRoute }
-                        if (idx >= 0) {
-                            val item = allFleetItems[idx]
-                            allFleetItems[idx] = item.copy(
-                                driverName = doc.getString("name") ?: item.driverName,
-                                driverUid = doc.id,
-                                busId = doc.getString("assignedBus").orEmpty().ifEmpty { item.busId },
-                                plateNumber = doc.getString("plateNumber").orEmpty().ifEmpty { item.plateNumber }
-                            )
-                        }
+            // Load driver assignments from cache or Firestore
+            val cachedUsers = com.upsi.smartbus.core.data.AppCache.getCachedUsers()
+            if (cachedUsers != null) {
+                val drivers = cachedUsers.filter { it.role.equals("DRIVER", true) }
+                for (d in drivers) {
+                    if (d.uid.startsWith("driver_laluan") || d.uid.startsWith("driver_shuttle")) continue
+                    val assignedRoute = d.assignedRoute.ifEmpty { null } ?: continue
+                    val idx = allFleetItems.indexOfFirst { it.route.name == assignedRoute }
+                    if (idx >= 0) {
+                        val item = allFleetItems[idx]
+                        allFleetItems[idx] = item.copy(
+                            driverName = d.name.ifEmpty { item.driverName },
+                            driverUid = d.uid,
+                            busId = d.assignedBus.ifEmpty { item.busId },
+                            plateNumber = d.plateNumber.ifEmpty { item.plateNumber }
+                        )
                     }
-                    filterFleetList()
                 }
-                .addOnFailureListener { e ->
-                    android.util.Log.e("SMARTBUS_FLEET", "Failed to load drivers: ${e.message}")
-                    filterFleetList()
-                }
+                filterFleetList()
+            } else {
+                db.collection("users").whereEqualTo("role", "DRIVER").get()
+                    .addOnSuccessListener { snapshot ->
+                        if (_binding == null || snapshot == null || snapshot.isEmpty) return@addOnSuccessListener
+                        val usersList = mutableListOf<com.upsi.smartbus.core.model.UserProfile>()
+                        for (doc in snapshot.documents) {
+                            doc.toObject(com.upsi.smartbus.core.model.UserProfile::class.java)?.let {
+                                usersList.add(it.copy(uid = doc.id))
+                            }
+                            if (doc.id.startsWith("driver_laluan") || doc.id.startsWith("driver_shuttle")) continue
+                            val assignedRoute = doc.getString("assignedRoute") ?: continue
+                            val idx = allFleetItems.indexOfFirst { it.route.name == assignedRoute }
+                            if (idx >= 0) {
+                                val item = allFleetItems[idx]
+                                allFleetItems[idx] = item.copy(
+                                    driverName = doc.getString("name") ?: item.driverName,
+                                    driverUid = doc.id,
+                                    busId = doc.getString("assignedBus").orEmpty().ifEmpty { item.busId },
+                                    plateNumber = doc.getString("plateNumber").orEmpty().ifEmpty { item.plateNumber }
+                                )
+                            }
+                        }
+                        if (usersList.isNotEmpty()) {
+                            com.upsi.smartbus.core.data.AppCache.putUsers(usersList)
+                        }
+                        filterFleetList()
+                    }
+            }
+
+            // Immediately initialize top stats so it renders instantly
+            binding.tvTotalFleetCount.text = "${allFleetItems.size}"
+            binding.tvStatOnlineCountSmall.text = "0"
+            binding.tvStatRestingCount.text = "0"
+            binding.tvStatOfflineCount.text = "${allFleetItems.size}"
 
             filterFleetList()
         }

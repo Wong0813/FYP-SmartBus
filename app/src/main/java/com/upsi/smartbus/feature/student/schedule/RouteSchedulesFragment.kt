@@ -14,7 +14,7 @@ class RouteSchedulesFragment : Fragment() {
     private var _binding: FragmentRouteSchedulesBinding? = null
     private val binding get() = _binding!!
 
-    private val tabTitles = listOf("Weekdays (Mon-Fri)", "Saturdays")
+    private val tabTitles = listOf("Weekdays (Mon-Fri)", "Weekend")
 
     override fun onCreateView(
         inflater: LayoutInflater,

@@ -158,15 +158,6 @@ class AdminAccountsFragment : Fragment() {
     }
 
     private fun setupActionButtons() {
-        binding.btnSyncOfficial.setOnClickListener {
-            binding.btnSyncOfficial.isEnabled = false
-            AccountSeeder.seedEverything(requireContext()) {
-                if (_binding == null) return@seedEverything
-                binding.btnSyncOfficial.isEnabled = true
-                Toast.makeText(requireContext(), "Official accounts synced", Toast.LENGTH_SHORT).show()
-            }
-        }
-
         binding.btnToggleCreate.setOnClickListener {
             val show = binding.llCreateForm.visibility != View.VISIBLE
             binding.llCreateForm.visibility = if (show) View.VISIBLE else View.GONE
@@ -214,29 +205,29 @@ class AdminAccountsFragment : Fragment() {
     }
 
     private fun listenToUsers() {
-        // Show cached data instantly if available (avoids blank on back-navigation)
+        // Show cached real data first if present
         com.upsi.smartbus.core.data.AppCache.getCachedUsers()?.let { cached ->
-            if (_binding == null) return
             allUsers.clear()
             allUsers.addAll(cached)
             updateHeroStats()
             rebuildDisplayList()
         }
 
-        usersListener?.remove()
-        usersListener = db.collection("users").addSnapshotListener { snapshot, error ->
-            if (_binding == null || error != null || snapshot == null) return@addSnapshotListener
-            allUsers.clear()
-            for (doc in snapshot.documents) {
-                doc.toObject(UserProfile::class.java)?.let { user ->
-                    allUsers.add(user.copy(uid = doc.id))
+        // Fetch real collection from Firestore
+        usersListener = null
+        db.collection("users").get()
+            .addOnSuccessListener { snapshot ->
+                if (_binding == null || snapshot == null) return@addOnSuccessListener
+                allUsers.clear()
+                for (doc in snapshot.documents) {
+                    doc.toObject(UserProfile::class.java)?.let { user ->
+                        allUsers.add(user.copy(uid = doc.id))
+                    }
                 }
+                com.upsi.smartbus.core.data.AppCache.putUsers(allUsers.toList())
+                updateHeroStats()
+                rebuildDisplayList()
             }
-            // Update cache for next visit
-            com.upsi.smartbus.core.data.AppCache.putUsers(allUsers.toList())
-            updateHeroStats()
-            rebuildDisplayList()
-        }
     }
 
     private fun updateHeroStats() {
@@ -281,7 +272,6 @@ class AdminAccountsFragment : Fragment() {
                 admins.forEach { displayItems.add(AccountListItem.User(it)) }
             }
             if (drivers.isNotEmpty()) {
-                // Pure clean header title
                 displayItems.add(AccountListItem.Header("DRIVERS", drivers.size))
                 drivers.forEach { displayItems.add(AccountListItem.User(it)) }
             }
@@ -330,14 +320,11 @@ class AdminAccountsFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            binding.btnCreateAccount.isEnabled = false
-            binding.btnCreateAccount.text = "Creating..."
-
             val uid = "user_${System.currentTimeMillis()}"
             val user = UserProfile(
                 uid = uid,
                 name = name,
-                email = email,
+                email = if (email.contains("@")) email else "$email@upsi.edu.my",
                 role = role.name,
                 staffNo = staffNo,
                 faculty = if (role == UserRole.STUDENT) binding.etFaculty.text.toString().trim() else "",
@@ -348,22 +335,23 @@ class AdminAccountsFragment : Fragment() {
                 accountType = "OFFICIAL"
             )
 
+            // 1. Immediately update UI (instant feedback)
+            allUsers.add(user)
+            updateHeroStats()
+            rebuildDisplayList()
+            clearCreateForm()
+            binding.llCreateForm.visibility = View.GONE
+            binding.tvNewAccountBtnText.text = "+ New Account"
+            binding.btnCreateAccount.isEnabled = true
+            binding.btnCreateAccount.text = "Create Account"
+            Toast.makeText(requireContext(), "Account created successfully", Toast.LENGTH_SHORT).show()
+
+            // 2. Persist to Firestore & cache in background
+            com.upsi.smartbus.core.data.AppCache.putUsers(allUsers.toList())
             db.collection("users").document(uid).set(user)
-                .addOnSuccessListener {
-                    clearCreateForm()
-                    binding.llCreateForm.visibility = View.GONE
-                    binding.tvNewAccountBtnText.text = "+ New Account"
-                    binding.btnCreateAccount.isEnabled = true
-                    binding.btnCreateAccount.text = "Create Account"
-                    Toast.makeText(requireContext(), "Account created successfully", Toast.LENGTH_SHORT).show()
-                }
-                .addOnFailureListener {
-                    binding.btnCreateAccount.isEnabled = true
-                    binding.btnCreateAccount.text = "Create Account"
-                    Toast.makeText(requireContext(), "Failed: ${it.message}", Toast.LENGTH_LONG).show()
-                }
         }
     }
+
 
     private fun clearCreateForm() {
         binding.etName.setText("")
@@ -381,13 +369,14 @@ class AdminAccountsFragment : Fragment() {
             .setTitle("Delete Account")
             .setMessage("Are you sure you want to delete ${user.name} (${user.email})?")
             .setPositiveButton("Delete") { _, _ ->
+                // Immediately update UI
+                allUsers.removeAll { it.uid == user.uid }
+                com.upsi.smartbus.core.data.AppCache.putUsers(allUsers.toList())
+                updateHeroStats()
+                rebuildDisplayList()
+                Toast.makeText(requireContext(), "Account deleted", Toast.LENGTH_SHORT).show()
+                // Persist to Firestore in background
                 db.collection("users").document(user.uid).delete()
-                    .addOnSuccessListener {
-                        Toast.makeText(requireContext(), "Account deleted", Toast.LENGTH_SHORT).show()
-                    }
-                    .addOnFailureListener {
-                        Toast.makeText(requireContext(), "Failed to delete: ${it.message}", Toast.LENGTH_SHORT).show()
-                    }
             }
             .setNegativeButton("Cancel", null)
             .show()

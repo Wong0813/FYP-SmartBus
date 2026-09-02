@@ -15,7 +15,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.firestore.ListenerRegistration
 import com.upsi.smartbus.R
 import com.upsi.smartbus.core.data.FirestoreHelper
 import com.upsi.smartbus.core.data.RouteRepository
@@ -37,7 +36,6 @@ class AdminRoutesFragment : Fragment() {
     private val allRoutes = mutableListOf<Route>()
     private val displayItems = mutableListOf<RouteListItem>()
     private lateinit var routeAdapter: RouteSectionAdapter
-    private var routesListener: ListenerRegistration? = null
     private val selectedStops = mutableListOf<String>()
     private var tabFilter = "ALL"
     private var searchQuery = ""
@@ -62,10 +60,9 @@ class AdminRoutesFragment : Fragment() {
         setupSave()
         setupSearch()
         setupTabs()
-        setupSync()
         setupToggleForm()
         setupRecyclerView()
-        RouteRepository.loadRoutes { listenToRoutes() }
+        loadRoutesData()
     }
 
     private fun setupSearch() {
@@ -92,19 +89,6 @@ class AdminRoutesFragment : Fragment() {
         }
     }
 
-    private fun setupSync() {
-        binding.btnSyncRoutes.setOnClickListener {
-            binding.btnSyncRoutes.isEnabled = false
-            AccountSeeder.seedOfficialRoutes {
-                if (_binding == null) return@seedOfficialRoutes
-                RouteRepository.invalidateCache()
-                RouteRepository.loadRoutes {
-                    binding.btnSyncRoutes.isEnabled = true
-                    Toast.makeText(requireContext(), "20 Routes synced to Firestore", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
 
     private fun setupTabs() {
         val tabs = listOf(
@@ -198,6 +182,8 @@ class AdminRoutesFragment : Fragment() {
                 renderStopChips()
                 binding.llRouteForm.visibility = View.GONE
                 binding.tvNewRouteBtnText.text = "+ New Route"
+                RouteRepository.invalidateCache()
+                loadRoutesData()
             }
         }
     }
@@ -212,14 +198,11 @@ class AdminRoutesFragment : Fragment() {
         binding.rvRoutes.adapter = routeAdapter
     }
 
-    private fun listenToRoutes() {
-        routesListener?.remove()
-        routesListener = db.collection("routes").addSnapshotListener { snap, err ->
-            if (_binding == null) return@addSnapshotListener
+    private fun loadRoutesData() {
+        RouteRepository.loadRoutes { routes ->
+            if (_binding == null) return@loadRoutes
             allRoutes.clear()
-            for (doc in snap?.documents.orEmpty()) {
-                doc.toObject(Route::class.java)?.let { allRoutes.add(it.copy(id = doc.id)) }
-            }
+            allRoutes.addAll(routes)
 
             val weekday = allRoutes.count { it.scheduleType.equals("WEEKDAY", true) }
             val saturday = allRoutes.count { it.scheduleType.equals("SATURDAY", true) }
@@ -264,7 +247,7 @@ class AdminRoutesFragment : Fragment() {
             }
             "SATURDAY" -> {
                 if (saturdayRoutes.isNotEmpty()) {
-                    displayItems.add(RouteListItem.Header("SATURDAY ROUTES (LALUAN 9–18)", saturdayRoutes.size))
+                    displayItems.add(RouteListItem.Header("WEEKEND ROUTES (LALUAN 9–18)", saturdayRoutes.size))
                     saturdayRoutes.forEach { r ->
                         val order = canonical.indexOfFirst { it.name == r.name }.let { if (it >= 0) it + 1 else AdminSortHelper.routeOrderKey(r) }
                         displayItems.add(RouteListItem.RouteItem(r, order))
@@ -280,7 +263,7 @@ class AdminRoutesFragment : Fragment() {
                     }
                 }
                 if (saturdayRoutes.isNotEmpty()) {
-                    displayItems.add(RouteListItem.Header("SATURDAY ROUTES", saturdayRoutes.size))
+                    displayItems.add(RouteListItem.Header("WEEKEND ROUTES", saturdayRoutes.size))
                     saturdayRoutes.forEach { r ->
                         val order = canonical.indexOfFirst { it.name == r.name }.let { if (it >= 0) it + 1 else AdminSortHelper.routeOrderKey(r) }
                         displayItems.add(RouteListItem.RouteItem(r, order))
@@ -310,6 +293,15 @@ class AdminRoutesFragment : Fragment() {
             .setPositiveButton("Save") { _, _ ->
                 val newName = et.text.toString().trim()
                 if (newName.isNotEmpty()) {
+                    // Immediately update local list
+                    val idx = allRoutes.indexOfFirst { it.id == route.id }
+                    if (idx >= 0) {
+                        allRoutes[idx] = allRoutes[idx].copy(name = newName)
+                    }
+                    RouteRepository.invalidateCache()
+                    rebuildList()
+                    Toast.makeText(ctx, "Route updated", Toast.LENGTH_SHORT).show()
+                    // Persist to Firestore in background
                     db.collection("routes").document(route.id).update("name", newName)
                 }
             }
@@ -322,6 +314,20 @@ class AdminRoutesFragment : Fragment() {
             .setTitle("Delete ${route.name}")
             .setMessage("Are you sure?")
             .setPositiveButton("Delete") { _, _ ->
+                // Immediately update local list
+                allRoutes.removeAll { it.id == route.id }
+                RouteRepository.invalidateCache()
+                rebuildList()
+                // Update stats
+                val weekday = allRoutes.count { it.scheduleType.equals("WEEKDAY", true) }
+                val saturday = allRoutes.count { it.scheduleType.equals("SATURDAY", true) }
+                val shuttle = allRoutes.count { it.name.contains("Shuttle", true) }
+                binding.tvRouteTotal.text = "${allRoutes.size}"
+                binding.tvRouteWeekdayCount.text = "$weekday"
+                binding.tvRouteSaturdayCount.text = "$saturday"
+                binding.tvRouteShuttleCount.text = "$shuttle"
+                Toast.makeText(requireContext(), "${route.name} deleted", Toast.LENGTH_SHORT).show()
+                // Persist to Firestore in background
                 db.collection("routes").document(route.id).delete()
             }
             .setNegativeButton("Cancel", null)
@@ -329,7 +335,6 @@ class AdminRoutesFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        routesListener?.remove()
         _binding = null
         super.onDestroyView()
     }
@@ -370,13 +375,10 @@ class AdminRoutesFragment : Fragment() {
                 is RouteListItem.RouteItem -> {
                     val b = (holder as RouteVH).binding
                     val r = item.route
-                    b.tvShortName.text = r.shortName
-                    b.tvRouteOrder.visibility = View.VISIBLE
-                    b.tvRouteOrder.text = AdminSortHelper.routeNumberLabel(r)
-                    b.tvRouteName.text = "${AdminSortHelper.routeNumberLabel(r)} ${r.name}"
+                    b.tvRouteName.text = r.name
                     b.tvStopChain.text = r.stops.joinToString(" → ")
                     b.btnEditRoute.setOnClickListener { onEdit(r) }
-                    holder.itemView.setOnLongClickListener { onDelete(r); true }
+                    b.btnDeleteRoute.setOnClickListener { onDelete(r) }
                 }
             }
         }
@@ -384,3 +386,4 @@ class AdminRoutesFragment : Fragment() {
         override fun getItemCount() = items.size
     }
 }
+

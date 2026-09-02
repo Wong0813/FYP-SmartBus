@@ -173,7 +173,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
-                        android:text="Saturday"
+                        android:text="Weekend"
                         android:textColor="#FECACA"
                         android:textSize="10.5sp" />
 
@@ -253,7 +253,7 @@
 
             </LinearLayout>
 
-            <!-- ══════════ ACTION ROW (Sync Routes + New Route) ══════════ -->
+            <!-- ══════════ ACTION ROW (+ New Route) ══════════ -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -261,14 +261,12 @@
                 android:layout_marginTop="14dp"
                 android:orientation="horizontal">
 
-                <!-- Sync Routes Button -->
+                <!-- + New Route Button -->
                 <LinearLayout
-                    android:id="@+id/btnSyncRoutes"
-                    android:layout_width="0dp"
+                    android:id="@+id/btnToggleRouteForm"
+                    android:layout_width="match_parent"
                     android:layout_height="44dp"
-                    android:layout_marginEnd="5dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_btn_sync_white"
+                    android:background="@drawable/bg_btn_new_account"
                     android:clickable="true"
                     android:elevation="1dp"
                     android:focusable="true"
@@ -277,55 +275,13 @@
                     android:orientation="horizontal"
                     android:paddingHorizontal="12dp">
 
-                    <ImageView
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:contentDescription="Sync"
-                        android:src="@drawable/ic_sync_white"
-                        app:tint="#C0181A" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:text="Sync 20 Laluan"
-                        android:textColor="#1A1A2E"
-                        android:textSize="12.5sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <!-- + New Route Button -->
-                <LinearLayout
-                    android:id="@+id/btnToggleRouteForm"
-                    android:layout_width="0dp"
-                    android:layout_height="44dp"
-                    android:layout_marginStart="5dp"
-                    android:layout_weight="1.2"
-                    android:background="@drawable/bg_btn_new_account"
-                    android:clickable="true"
-                    android:elevation="3dp"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="14dp">
-
-                    <ImageView
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:contentDescription="Add Route"
-                        android:src="@drawable/ic_add_white"
-                        app:tint="@color/text_white" />
-
                     <TextView
                         android:id="@+id/tvNewRouteBtnText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
                         android:text="+ New Route"
-                        android:textColor="@color/text_white"
-                        android:textSize="12.5sp"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
@@ -379,7 +335,7 @@
                         android:background="@drawable/bg_filter_tab_inactive"
                         android:gravity="center"
                         android:paddingHorizontal="16dp"
-                        android:text="Saturday"
+                        android:text="Weekend"
                         android:textColor="#6B7280"
                         android:textSize="12sp"
                         android:textStyle="bold" />

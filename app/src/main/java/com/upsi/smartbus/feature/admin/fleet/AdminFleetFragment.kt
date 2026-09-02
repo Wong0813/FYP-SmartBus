@@ -80,7 +80,6 @@ class AdminFleetFragment : Fragment() {
         setupSearch()
         setupRecyclerView()
         setupRegisterButton()
-        setupSync()
         setupToggleForm()
         listenToFleet()
     }
@@ -127,24 +126,6 @@ class AdminFleetFragment : Fragment() {
             val show = binding.llFleetForm.visibility != View.VISIBLE
             binding.llFleetForm.visibility = if (show) View.VISIBLE else View.GONE
             binding.tvRegisterBusBtnText.text = if (show) "✕ Close Form" else "+ Register Bus"
-        }
-    }
-
-    private fun setupSync() {
-        binding.btnSyncFleet.setOnClickListener {
-            binding.btnSyncFleet.isEnabled = false
-            AccountSeeder.seedOfficialBuses(requireContext()) {
-                if (_binding == null) return@seedOfficialBuses
-                binding.btnSyncFleet.isEnabled = true
-                Toast.makeText(requireContext(), "Buses synced to Firestore", Toast.LENGTH_SHORT).show()
-
-                // After syncing, clean stale GPS fields from Firestore
-                // (GPS data now lives exclusively in Realtime Database)
-                com.upsi.smartbus.core.data.FirestoreCleanup.cleanBusGpsFields { success, failed ->
-                    if (_binding == null) return@cleanBusGpsFields
-                    android.util.Log.d("FleetSync", "GPS field cleanup: $success cleaned, $failed failed")
-                }
-            }
         }
     }
 
@@ -287,12 +268,11 @@ class AdminFleetFragment : Fragment() {
     }
 
     private fun listenToFleet() {
-        // Show cached data instantly if available (avoids blank on back-navigation)
+        // Show cached data if present
         com.upsi.smartbus.core.data.AppCache.getCachedBuses()?.let { cached ->
-            if (_binding == null) return
             allBuses.clear()
             allBuses.addAll(cached)
-            allBuses.sortBy { com.upsi.smartbus.feature.admin.seeder.AdminSortHelper.busOrderKey(it.id) }
+            allBuses.sortBy { AdminSortHelper.busOrderKey(it.id) }
             val active = allBuses.count { it.status.equals("working", true) }
             binding.tvFleetTotal.text = "${allBuses.size}"
             binding.tvFleetActiveCount.text = "$active"
@@ -300,34 +280,44 @@ class AdminFleetFragment : Fragment() {
             filterBuses()
         }
 
-        fleetListener?.remove()
-        fleetListener = db.collection("buses").addSnapshotListener { snap, err ->
-            if (_binding == null) return@addSnapshotListener
-            allBuses.clear()
-            for (doc in snap?.documents.orEmpty()) {
-                doc.toObject(Bus::class.java)?.let { allBuses.add(it.copy(id = doc.id)) }
+        // Fetch real buses collection from Firestore
+        fleetListener = null
+        db.collection("buses").get()
+            .addOnSuccessListener { snap ->
+                if (_binding == null || snap == null) return@addOnSuccessListener
+                allBuses.clear()
+                for (doc in snap.documents) {
+                    doc.toObject(Bus::class.java)?.let { allBuses.add(it.copy(id = doc.id)) }
+                }
+                allBuses.sortBy { AdminSortHelper.busOrderKey(it.id) }
+                val active = allBuses.count { it.status.equals("working", true) }
+                binding.tvFleetTotal.text = "${allBuses.size}"
+                binding.tvFleetActiveCount.text = "$active"
+                binding.tvFleetDepotCount.text = "${allBuses.size - active}"
+                com.upsi.smartbus.core.data.AppCache.putBuses(allBuses.toList())
+                filterBuses()
             }
-            allBuses.sortBy { AdminSortHelper.busOrderKey(it.id) }
-
-            val active = allBuses.count { it.status.equals("working", true) }
-            val inDepot = allBuses.size - active
-
-            binding.tvFleetTotal.text = "${allBuses.size}"
-            binding.tvFleetActiveCount.text = "$active"
-            binding.tvFleetDepotCount.text = "$inDepot"
-
-            // Update cache for next visit
-            com.upsi.smartbus.core.data.AppCache.putBuses(allBuses.toList())
-            filterBuses()
-        }
     }
 
     private fun deleteBus(bus: Bus) {
-        val busRef = db.collection("buses").document(bus.id)
-        busRef.get().addOnSuccessListener { snapshot ->
-            busRef.delete()
-            Toast.makeText(requireContext(), "${bus.id} removed", Toast.LENGTH_SHORT).show()
-        }
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Delete Bus")
+            .setMessage("Are you sure you want to delete ${bus.id} (${bus.licensePlate})?")
+            .setPositiveButton("Delete") { _, _ ->
+                // Immediately update UI
+                allBuses.removeAll { it.id == bus.id }
+                val active = allBuses.count { it.status.equals("working", true) }
+                binding.tvFleetTotal.text = "${allBuses.size}"
+                binding.tvFleetActiveCount.text = "$active"
+                binding.tvFleetDepotCount.text = "${allBuses.size - active}"
+                com.upsi.smartbus.core.data.AppCache.putBuses(allBuses.toList())
+                filterBuses()
+                Toast.makeText(requireContext(), "${bus.id} removed", Toast.LENGTH_SHORT).show()
+                // Persist to Firestore in background
+                db.collection("buses").document(bus.id).delete()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     override fun onDestroyView() {

@@ -136,14 +136,27 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
     private val staticBusesMap = mutableMapOf<String, Bus>()
 
     private fun listenToAllBuses() {
-        // 1. One-time load of static bus metadata from Firestore
+        // ✅ Use cache first — avoid Firestore reads every time the fragment opens
+        if (com.upsi.smartbus.core.data.AppCache.hasStaticBuses()) {
+            staticBusesMap.clear()
+            com.upsi.smartbus.core.data.AppCache.getStaticBusesList().forEach { bus ->
+                staticBusesMap[bus.id] = bus
+            }
+            bindRealtimeDatabaseListener()
+            return
+        }
+        // Cache miss — read from Firestore once, then populate cache
         db.collection("buses").get().addOnSuccessListener { snapshot ->
             if (_binding == null) return@addOnSuccessListener
             staticBusesMap.clear()
+            val busList = mutableListOf<Bus>()
             for (doc in snapshot.documents) {
                 val bus = doc.toObject(Bus::class.java) ?: continue
-                staticBusesMap[doc.id] = bus.copy(id = doc.id)
+                val b = bus.copy(id = doc.id)
+                staticBusesMap[doc.id] = b
+                busList.add(b)
             }
+            com.upsi.smartbus.core.data.AppCache.putStaticBuses(busList)
             bindRealtimeDatabaseListener()
         }.addOnFailureListener {
             bindRealtimeDatabaseListener()
@@ -170,7 +183,7 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
 
                     val staticBus = staticBusesMap[busId]
                     val finalRouteName = routeName.ifEmpty { staticBus?.routeName.orEmpty() }
-                    val finalRouteStops = staticBus?.routeStops ?: (RouteData.getAllRoutes().find { it.name.equals(finalRouteName, true) }?.stops ?: emptyList())
+                    val finalRouteStops = staticBus?.routeStops ?: (com.upsi.smartbus.core.data.RouteRepository.findRoute(finalRouteName)?.stops ?: emptyList())
 
                     val mergedBus = Bus(
                         id = busId,
@@ -509,7 +522,7 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
             binding.statusDotLarge.setBackgroundResource(dotRes)
             binding.busSelectorDot.setBackgroundResource(dotRes)
 
-            val routeObj = RouteData.getAllRoutes().find { it.name.equals(bus.routeName, true) || it.name.equals(bus.name, true) }
+            val routeObj = com.upsi.smartbus.core.data.RouteRepository.findRoute(bus.routeName) ?: com.upsi.smartbus.core.data.RouteRepository.findRoute(bus.name)
             val desc = routeObj?.shortName ?: ""
             binding.tvRouteName.text = bus.routeName.ifEmpty { bus.name }
             binding.tvPlateBadge.text = if (isResting) "$plate (RESTING)" else plate
@@ -587,7 +600,7 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
         container.removeAllViews()
 
         val stops = if (bus.routeStops.isNotEmpty()) bus.routeStops
-                    else RouteData.getAllRoutes().find { it.name.equals(bus.routeName, true) }?.stops
+                    else com.upsi.smartbus.core.data.RouteRepository.findRoute(bus.routeName)?.stops
                     ?: listOf("KAB", "PT", "SS", "KA", "DKP", "KAB")
 
         val nextIdx = stops.indexOf(bus.nextStop).let { if (it == -1) 1 else it }

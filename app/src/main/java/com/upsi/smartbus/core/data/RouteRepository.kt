@@ -31,6 +31,10 @@ object RouteRepository {
         }
 
     fun loadRoutes(onResult: (List<Route>) -> Unit) {
+        if (cachedRoutes.isNotEmpty()) {
+            onResult(cachedRoutes)
+            return
+        }
         FirestoreHelper.db.collection("routes").get()
             .addOnSuccessListener { snapshot ->
                 val fromFirestore = snapshot.documents.mapNotNull { doc ->

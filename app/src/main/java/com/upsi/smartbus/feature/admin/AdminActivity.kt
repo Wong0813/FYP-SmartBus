@@ -273,7 +273,7 @@ class AdminActivity : AppCompatActivity() {
     override fun onBackPressed() {
         if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
             binding.drawerLayout.closeDrawer(GravityCompat.START)
-        } else if (isBackMode) {
+        } else if (currentDestination != AdminNavDestination.DASHBOARD) {
             returnToDashboard()
         } else {
             super.onBackPressed()

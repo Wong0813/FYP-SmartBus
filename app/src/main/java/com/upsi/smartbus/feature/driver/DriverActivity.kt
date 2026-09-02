@@ -33,7 +33,7 @@ class DriverActivity : AppCompatActivity() {
 
         // Default fragment
         if (savedInstanceState == null) {
-            loadFragment(DriverControlFragment(), getString(R.string.nav_control_desk))
+            loadFragment(DriverControlFragment())
             binding.navView.setCheckedItem(R.id.nav_control_desk)
         }
     }
@@ -43,19 +43,15 @@ class DriverActivity : AppCompatActivity() {
     }
 
     private fun setupDrawer() {
-        binding.btnDrawer.setOnClickListener {
-            openDrawer()
-        }
-
         binding.navView.setNavigationItemSelectedListener { menuItem ->
             binding.drawerLayout.closeDrawer(GravityCompat.START)
             when (menuItem.itemId) {
                 R.id.nav_control_desk -> {
-                    loadFragment(DriverControlFragment(), getString(R.string.nav_control_desk))
+                    loadFragment(DriverControlFragment())
                     true
                 }
                 R.id.nav_profile -> {
-                    loadFragment(ProfileFragment(), getString(R.string.nav_profile))
+                    loadFragment(ProfileFragment())
                     true
                 }
                 R.id.nav_sign_out -> {
@@ -71,17 +67,42 @@ class DriverActivity : AppCompatActivity() {
         val headerView = binding.navView.getHeaderView(0)
         val tvName = headerView.findViewById<TextView>(R.id.tvDrawerName)
         val tvRole = headerView.findViewById<TextView>(R.id.tvDrawerRole)
+        val ivAvatar = headerView.findViewById<android.widget.ImageView>(R.id.ivDrawerAvatar)
 
         val uid = auth.currentUser?.uid ?: return
         db.collection("users").document(uid).get()
             .addOnSuccessListener { doc ->
                 tvName.text = doc.getString("name") ?: "Driver"
                 tvRole.text = doc.getString("role") ?: "DRIVER"
+                val photoUrl = doc.getString("photoUrl").orEmpty()
+                loadAvatar(ivAvatar, photoUrl)
             }
     }
 
-    private fun loadFragment(fragment: Fragment, title: String) {
-        binding.tvToolbarTitle.text = title
+    private fun loadAvatar(iv: android.widget.ImageView?, photoUrl: String) {
+        if (iv == null) return
+        if (photoUrl.startsWith("data:image")) {
+            try {
+                val base64Part = photoUrl.substringAfter("base64,")
+                val decodedBytes = android.util.Base64.decode(base64Part, android.util.Base64.DEFAULT)
+                val bitmap = android.graphics.BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                if (bitmap != null) {
+                    iv.setImageBitmap(bitmap)
+                    iv.setPadding(0, 0, 0, 0)
+                    iv.imageTintList = null
+                    iv.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
+                    return
+                }
+            } catch (_: Exception) {}
+        }
+        iv.setImageResource(R.drawable.ic_nav_profile)
+        val p = (iv.resources.displayMetrics.density * 12).toInt()
+        iv.setPadding(p, p, p, p)
+        iv.imageTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#64748B"))
+        iv.scaleType = android.widget.ImageView.ScaleType.CENTER_INSIDE
+    }
+
+    private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.contentFrame, fragment)
             .commit()

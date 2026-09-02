@@ -12,41 +12,42 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- ══ TOP FLOATING STATUS BAR ══ -->
+    <!-- ══ TOP FLOATING STATUS BAR (Exact Match with Dashboard / Profile) ══ -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
-        android:layout_marginHorizontal="12dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="20dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <!-- Open Drawer button -->
         <ImageButton
             android:id="@+id/btnMapDrawer"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_marginEnd="8dp"
-            android:background="@drawable/bg_capsule_white"
-            android:elevation="6dp"
+            android:background="@drawable/bg_floating_menu_btn"
+            android:elevation="4dp"
             android:contentDescription="Open Menu"
-            android:padding="9dp"
+            android:padding="10dp"
             android:scaleType="centerInside"
             android:src="@drawable/ic_menu_burger"
-            app:tint="@color/crimson_primary" />
+            app:tint="@color/text_primary" />
 
         <!-- Live count pill -->
         <LinearLayout
             android:id="@+id/pillLiveCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_capsule_white"
-            android:elevation="6dp"
+            android:background="@drawable/bg_floating_role_badge"
+            android:elevation="4dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="8dp">
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="7dp">
 
             <View
                 android:id="@+id/livePulseDot"
@@ -76,9 +77,9 @@
             android:id="@+id/busSelector"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_capsule_white"
+            android:background="@drawable/bg_floating_role_badge"
             android:clickable="true"
-            android:elevation="6dp"
+            android:elevation="4dp"
             android:focusable="true"
             android:gravity="center_vertical"
             android:orientation="horizontal"

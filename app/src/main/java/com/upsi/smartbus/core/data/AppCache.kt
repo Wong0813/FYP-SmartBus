@@ -6,7 +6,8 @@ import com.upsi.smartbus.core.model.UserProfile
 /**
  * In-memory cache for Firestore static data.
  * Prevents re-fetching every time a Fragment is re-created.
- * TTL = 5 minutes — stale data is refreshed automatically.
+ * - users: TTL 5 minutes (may be edited by admin)
+ * - buses (static metadata): no TTL — only invalidated on manual Sync
  */
 object AppCache {
 
@@ -30,7 +31,33 @@ object AppCache {
         usersTimestamp = 0L
     }
 
-    // ── Buses ──────────────────────────────────────────────────────
+    // ── Buses (fleet metadata / static) ────────────────────────────
+    // No TTL — static data only changes when admin explicitly syncs fleet.
+    // Keyed by busId for fast lookup.
+    private var staticBusesMap: Map<String, Bus> = emptyMap()
+    private var staticBusesLoaded = false
+
+    /** Returns true if we have a cached copy ready to use */
+    fun hasStaticBuses(): Boolean = staticBusesLoaded && staticBusesMap.isNotEmpty()
+
+    /** Returns the full list of cached static buses */
+    fun getStaticBusesList(): List<Bus> = staticBusesMap.values.toList()
+
+    /** Returns a single bus by id, or null if not cached */
+    fun getStaticBusById(id: String): Bus? = staticBusesMap[id]
+
+    /** Store the list from Firestore — indexed by id */
+    fun putStaticBuses(buses: List<Bus>) {
+        staticBusesMap = buses.associateBy { it.id }
+        staticBusesLoaded = true
+    }
+
+    fun invalidateStaticBuses() {
+        staticBusesMap = emptyMap()
+        staticBusesLoaded = false
+    }
+
+    // ── Legacy buses cache (with TTL) kept for AdminFleetFragment ──
     private var busesData: List<Bus> = emptyList()
     private var busesTimestamp = 0L
 
@@ -41,11 +68,14 @@ object AppCache {
     fun putBuses(buses: List<Bus>) {
         busesData = buses
         busesTimestamp = System.currentTimeMillis()
+        // Also update the static map
+        putStaticBuses(buses)
     }
 
     fun invalidateBuses() {
         busesData = emptyList()
         busesTimestamp = 0L
+        invalidateStaticBuses()
     }
 
     // ── Clear all ──────────────────────────────────────────────────

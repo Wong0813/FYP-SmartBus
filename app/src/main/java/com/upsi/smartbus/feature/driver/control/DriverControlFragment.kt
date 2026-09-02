@@ -1,8 +1,10 @@
 package com.upsi.smartbus.feature.driver.control
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
@@ -32,7 +34,13 @@ import com.upsi.smartbus.core.model.Route
 import com.upsi.smartbus.core.model.RouteData
 import com.upsi.smartbus.core.util.EtaPredictor
 import com.upsi.smartbus.core.util.RouteRoadFetcher
+import com.upsi.smartbus.core.util.RouteSegmentHelper
+import com.google.firebase.firestore.GeoPoint
+import com.upsi.smartbus.core.model.Bus
+import com.upsi.smartbus.core.util.MapMarkerHelper
 import com.upsi.smartbus.databinding.FragmentDriverControlBinding
+import com.upsi.smartbus.feature.driver.DriverActivity
+import androidx.core.graphics.ColorUtils
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,10 +53,8 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
 
     private val auth by lazy { FirebaseAuth.getInstance() }
     private val db by lazy { FirestoreHelper.db }
-
-    private val etaPredictor = EtaPredictor()
+    private val etaPredictor by lazy { EtaPredictor() }
     private val handler = Handler(Looper.getMainLooper())
-    private var currentStatus = "WORKING"
     private val terminalLines = ArrayDeque<String>()
     private val timeFormat    = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
 
@@ -59,15 +65,16 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     private val stopMarkers = mutableListOf<Marker>()
     private val segmentCache = mutableMapOf<String, List<LatLng>>()
 
-    // Route state
-    private var assignedBusId    = "BUS-001"
-    private var assignedRouteName = "Laluan 1"
-    private var driverName       = "Driver"
+    // Driver & Route state
+    private var driverName       = ""
     private var driverEmail      = ""
+    private var assignedBusId    = ""
     private var plateNumber      = ""
+    private var assignedRouteName = "Laluan 1"
     private var routeStops       = listOf("KAB", "PT", "SS", "KA", "DKP", "KAB")
+    private var currentStatus    = "WORKING"
 
-    // Current bus position — starts at KAB (first stop of Laluan 1)
+    // Simulation GPS state
     private var currentLat       = 3.722061
     private var currentLon       = 101.516966
     private var nextStopAbbr     = "PT"
@@ -103,10 +110,31 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     }
     private var currentMoveAction: (() -> Unit)? = null
 
-    // Colors (Google Maps style)
-    private val COLOR_ACTIVE   = Color.parseColor("#1A73E8")
-    private val COLOR_DONE     = Color.parseColor("#90CAF9")
-    private val COLOR_INACTIVE = Color.parseColor("#BDBDBD")
+    // Exact glowing color palette strictly unified with Admin Live Map
+    private val TECH_ROUTE_COLORS = listOf(
+        Color.parseColor("#00E5FF"), // 0: Cyber Cyan (Laluan 1)
+        Color.parseColor("#00E676"), // 1: Neon Green (Laluan 2)
+        Color.parseColor("#FF9100"), // 2: Amber Blaze (Laluan 3)
+        Color.parseColor("#E040FB"), // 3: Neon Magenta (Laluan 4)
+        Color.parseColor("#2979FF"), // 4: Electric Blue (Laluan 5)
+        Color.parseColor("#FFD600"), // 5: Cyber Gold (Laluan 6)
+        Color.parseColor("#FF5252")  // 6: Laser Coral
+    )
+    private val COLOR_RESTING = Color.parseColor("#FF9800")
+    private val COLOR_OFFLINE = Color.parseColor("#78909C")
+
+    private fun getActiveRouteColor(): Int {
+        val index = when {
+            assignedRouteName.contains("1") -> 0
+            assignedRouteName.contains("2") -> 1
+            assignedRouteName.contains("3") -> 2
+            assignedRouteName.contains("4") -> 3
+            assignedRouteName.contains("5") -> 4
+            assignedRouteName.contains("6") -> 5
+            else -> 0
+        }
+        return TECH_ROUTE_COLORS[index % TECH_ROUTE_COLORS.size]
+    }
 
     // Periodic Firestore push (every 2 seconds while WORKING)
     private val firestorePushRunnable = object : Runnable {
@@ -126,9 +154,13 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.btnMenuInNav.setOnClickListener {
+            (activity as? DriverActivity)?.openDrawer()
+        }
         setupDutyButtons()
         setupDPad()
         selectStatus("WORKING")
+        updateNavBanner()
 
         val mapFrag = childFragmentManager.findFragmentById(R.id.driverMapView) as? SupportMapFragment
         mapFrag?.getMapAsync(this)
@@ -309,6 +341,25 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun applyFallbackByEmail(email: String) {
+        val prefs = requireContext().getSharedPreferences("driver_cached_profile", android.content.Context.MODE_PRIVATE)
+        val cachedName = prefs.getString("name_$email", null)
+        val cachedRoute = prefs.getString("route_$email", null)
+        val cachedBus = prefs.getString("bus_$email", null)
+        val cachedPlate = prefs.getString("plate_$email", null)
+
+        if (!cachedName.isNullOrEmpty() && !cachedRoute.isNullOrEmpty()) {
+            // Priority 1: Use last known modified data from Firestore
+            applyDriverProfile(
+                route = cachedRoute,
+                bus = cachedBus.orEmpty(),
+                name = cachedName,
+                plate = cachedPlate.orEmpty(),
+                email = email
+            )
+            return
+        }
+
+        // Priority 2: Only on brand-new first install without internet, use template
         val numMatch = Regex("driver(\\d+)@").find(email)?.groupValues?.get(1)?.toIntOrNull()
         val defaultAccount = when (numMatch) {
             19 -> RouteData.defaultDrivers.find { it.routeName.contains("KAB", true) }
@@ -327,6 +378,19 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun applyDriverProfile(route: String, bus: String, name: String, plate: String, email: String) {
+        // Persist to local prefs so offline fallback always has the latest modified Firestore data
+        if (email.isNotEmpty() && isAdded) {
+            try {
+                val prefs = requireContext().getSharedPreferences("driver_cached_profile", android.content.Context.MODE_PRIVATE)
+                prefs.edit()
+                    .putString("name_$email", name)
+                    .putString("route_$email", route)
+                    .putString("bus_$email", bus)
+                    .putString("plate_$email", plate)
+                    .apply()
+            } catch (_: Exception) {}
+        }
+
         assignedBusId     = bus.ifEmpty { "BUS-001" }
         assignedRouteName = route.ifEmpty { "Laluan 1" }
         driverName        = name
@@ -334,7 +398,6 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
         plateNumber       = plate
 
         val matched = RouteRepository.findRoute(assignedRouteName)
-            ?: RouteData.getAllRoutes().find { it.name.equals(assignedRouteName, true) || it.shortName.equals(assignedRouteName, true) }
         if (matched != null && matched.stops.isNotEmpty()) routeStops = matched.stops
 
         val firstStop = RouteData.getStopByAbbreviation(routeStops.firstOrNull() ?: "KAB")
@@ -357,125 +420,164 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     // MAP: DRAW ROUTE WITH PER-SEGMENT COLORING (road-following)
     // ════════════════════════════════════════════════════════════════════
 
+    // Route rendering state
+    private var activePolyline: Polyline? = null
+    private var nextStopMarker: Marker? = null
+    private var currentRenderToken = 0L
+
     private fun drawRouteOnDriverMap() {
-        val map = googleMap ?: return
+        val gMap = googleMap ?: return
+        val color = getActiveRouteColor()
+        val busPos = LatLng(currentLat, currentLon)
+        val targetAbbr = nextStopAbbr.ifEmpty { routeStops.getOrNull(nextStopIndex) ?: "PT" }
+        val nextStop = RouteData.getStopByAbbreviation(targetAbbr) ?: return
+        val nextStopPos = LatLng(nextStop.latitude, nextStop.longitude)
 
-        segmentPolylines.forEach { it.remove() }
-        segmentPolylines.clear()
-        stopMarkers.forEach { it.remove() }
-        stopMarkers.clear()
+        currentRenderToken++
+        val token = currentRenderToken
 
-        val curSegIdx = (nextStopIndex - 1).coerceAtLeast(0)
-
-        // Draw stop markers
-        for ((idx, abbr) in routeStops.withIndex()) {
-            val stop = RouteData.getStopByAbbreviation(abbr) ?: continue
-            val pos  = LatLng(stop.latitude, stop.longitude)
-
-            val isNext  = (idx == nextStopIndex)
-            val isDone  = (idx < nextStopIndex)
-            val iconRes = when {
-                isNext -> R.drawable.ic_map_stop_next
-                idx == 0 -> R.drawable.ic_map_stop_start
-                else -> R.drawable.ic_map_stop_default
+        fun applyRoadPoints(roadPts: List<LatLng>) {
+            val poly = activePolyline
+            if (poly != null) {
+                poly.color = color
+                poly.points = roadPts
+            } else {
+                activePolyline = gMap.addPolyline(
+                    PolylineOptions()
+                        .addAll(roadPts)
+                        .color(color)
+                        .width(14f)
+                        .geodesic(true)
+                        .jointType(JointType.ROUND)
+                        .startCap(RoundCap())
+                        .endCap(RoundCap())
+                        .zIndex(5f)
+                )
             }
-
-            val m = map.addMarker(
-                MarkerOptions()
-                    .position(pos)
-                    .title("${stop.abbreviation} — ${stop.fullName}")
-                    .snippet(when {
-                        isNext -> "🎯 Next Stop"
-                        isDone -> "✅ Passed"
-                        idx == 0 -> "🏁 Start"
-                        else -> "Upcoming"
-                    })
-                    .icon(vectorToBitmap(iconRes))
-                    .anchor(0.5f, 0.5f)
-                    .zIndex(if (isNext) 4f else 2f)
-            )
-            if (m != null) stopMarkers.add(m)
         }
 
-        // Draw per-segment polylines (road-following via OSRM)
-        for (i in 0 until routeStops.size - 1) {
-            val fromStop = RouteData.getStopByAbbreviation(routeStops[i]) ?: continue
-            val toStop   = RouteData.getStopByAbbreviation(routeStops[i + 1]) ?: continue
-            val fromPt   = LatLng(fromStop.latitude, fromStop.longitude)
-            val toPt     = LatLng(toStop.latitude, toStop.longitude)
+        // 1. Check if cached road points exist for instant display (guarantees zero straight-line jump)
+        val cachedRoad = RouteSegmentHelper.getCachedRoad(busPos, targetAbbr)
+        if (cachedRoad != null && cachedRoad.size >= 2) {
+            applyRoadPoints(cachedRoad)
+        }
 
-            val isActive = (i == curSegIdx)
-            val isDone   = (i < curSegIdx)
-            val segKey   = "${routeStops[i]}_${routeStops[i+1]}"
-
-            val cached = segmentCache[segKey]
-            if (cached != null && cached.isNotEmpty()) {
-                val poly = buildSegmentPoly(map, cached, isActive, isDone)
-                segmentPolylines.add(poly)
-            } else {
-                val fallback = listOf(fromPt, toPt)
-                val poly = buildSegmentPoly(map, fallback, isActive, isDone)
-                segmentPolylines.add(poly)
-
-                RouteRoadFetcher.fetchRoadPoints(fallback) { road ->
-                    handler.post {
-                        if (_binding == null) return@post
-                        if (road.size > 2) {
-                            segmentCache[segKey] = road
-                            drawRouteOnDriverMap()
-                        }
-                    }
-                }
+        // 2. Query true street road engine with token protection
+        RouteSegmentHelper.dynamicallyRouteBusToNextStop(
+            busId = assignedBusId,
+            busPos = busPos,
+            nextStopAbbr = targetAbbr,
+            requestToken = token,
+            onRoadPointsReady = { respToken, roadPts ->
+                if (_binding == null || respToken != currentRenderToken) return@dynamicallyRouteBusToNextStop
+                applyRoadPoints(roadPts)
             }
+        )
+
+        // 3. Update target next stop dot (clean matching ring strictly unified with Admin Live Map)
+        val existingStop = nextStopMarker
+        if (existingStop != null) {
+            existingStop.position = nextStopPos
+            existingStop.title = "${nextStop.abbreviation} — ${nextStop.fullName}"
+            existingStop.setIcon(createNextStopMarker(requireContext(), color))
+        } else {
+            nextStopMarker = gMap.addMarker(
+                MarkerOptions()
+                    .position(nextStopPos)
+                    .title("${nextStop.abbreviation} — ${nextStop.fullName}")
+                    .snippet("🎯 Next Destination Stop")
+                    .icon(createNextStopMarker(requireContext(), color))
+                    .anchor(0.5f, 0.5f)
+                    .zIndex(6f)
+            )
         }
     }
 
-    private fun buildSegmentPoly(map: GoogleMap, pts: List<LatLng>, active: Boolean, done: Boolean): Polyline {
-        return when {
-            active -> map.addPolyline(PolylineOptions().addAll(pts)
-                .color(COLOR_ACTIVE).width(18f).zIndex(5f).geodesic(true)
-                .jointType(JointType.ROUND).startCap(RoundCap()).endCap(RoundCap()))
-            done   -> map.addPolyline(PolylineOptions().addAll(pts)
-                .color(COLOR_DONE).width(10f).zIndex(3f).geodesic(true)
-                .jointType(JointType.ROUND).startCap(RoundCap()).endCap(RoundCap()))
-            else   -> map.addPolyline(PolylineOptions().addAll(pts)
-                .color(COLOR_INACTIVE).width(10f).zIndex(2f).geodesic(true)
-                .pattern(listOf(Dash(25f), Gap(12f)))
-                .jointType(JointType.ROUND).startCap(RoundCap()).endCap(RoundCap()))
+    /**
+     * Creates a clean matching next stop dot (Strictly copied from Admin Live Map)
+     */
+    private fun createNextStopMarker(ctx: Context, color: Int): BitmapDescriptor {
+        val density = ctx.resources.displayMetrics.density
+        val sizePx = (16 * density).toInt()
+        val bm = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bm)
+        val center = sizePx / 2f
+
+        val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = Color.WHITE
+            style = Paint.Style.FILL
         }
+        canvas.drawCircle(center, center, center - (1 * density), bgPaint)
+
+        val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = color
+            style = Paint.Style.STROKE
+            strokeWidth = 2.5f * density
+        }
+        canvas.drawCircle(center, center, center - (1 * density), borderPaint)
+
+        val innerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = color
+            style = Paint.Style.FILL
+        }
+        canvas.drawCircle(center, center, center - (4.5f * density), innerPaint)
+
+        return BitmapDescriptorFactory.fromBitmap(bm)
     }
 
     // ════════════════════════════════════════════════════════════════════
-    // BUS MARKER
+    // BUS MARKER — Composite vehicle marker with floating info card
     // ════════════════════════════════════════════════════════════════════
 
     private fun updateBusMarkerPosition() {
         val map = googleMap ?: return
         val pos = LatLng(currentLat, currentLon)
 
+        val tempBus = Bus(
+            id = assignedBusId,
+            name = assignedRouteName,
+            routeName = assignedRouteName,
+            plateNumber = plateNumber,
+            licensePlate = plateNumber,
+            routeStops = routeStops,
+            startStop = routeStops.firstOrNull().orEmpty(),
+            location = GeoPoint(currentLat, currentLon),
+            speed = currentSpeed.toDouble(),
+            nextStop = nextStopAbbr,
+            distanceToNext = distanceToNextKm,
+            status = currentStatus,
+            lastUpdated = System.currentTimeMillis()
+        )
+
+        // Exact match with Admin Live Map color scheme
+        val color = when {
+            currentStatus.equals("resting", true) -> COLOR_RESTING
+            currentStatus.equals("working", true) -> getActiveRouteColor()
+            else -> COLOR_OFFLINE
+        }
+
+        val markerResult = MapMarkerHelper.createBusMarkerWithInfoCard(
+            requireContext(), tempBus, color, true
+        )
+
         if (driverBusMarker == null) {
             driverBusMarker = map.addMarker(
                 MarkerOptions()
                     .position(pos)
-                    .icon(vectorToBitmap(R.drawable.ic_map_bus_marker))
-                    .anchor(0.5f, 0.5f)
+                    .icon(markerResult.descriptor)
+                    .anchor(markerResult.anchorX, markerResult.anchorY)
                     .zIndex(10f)
             )
         } else {
             driverBusMarker?.position = pos
+            driverBusMarker?.setIcon(markerResult.descriptor)
+            driverBusMarker?.setAnchor(markerResult.anchorX, markerResult.anchorY)
         }
-        driverBusMarker?.title = "$assignedBusId — $assignedRouteName"
-        driverBusMarker?.snippet = "Next: $nextStopAbbr | ${currentSpeed} km/h"
 
-        // Follow camera smoothly (Google Maps navigation style: high zoom 18.5f + 45° tilt)
+        // Clean 2D tracking camera strictly matching Admin Live Map & Student Map
         map.animateCamera(
-            CameraUpdateFactory.newCameraPosition(
-                CameraPosition.Builder()
-                    .target(pos)
-                    .zoom(18.5f)
-                    .tilt(45f)
-                    .build()
-            ), 500, null
+            CameraUpdateFactory.newLatLngZoom(pos, 17.0f),
+            500, null
         )
     }
 
@@ -511,7 +613,7 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     }
 
     // ════════════════════════════════════════════════════════════════════
-    // DRIVER PANEL UI
+    // DRIVER PANEL UI (Speed, Arrive Clock, Remaining Dist, AI Predict)
     // ════════════════════════════════════════════════════════════════════
 
     private fun updateDriverPanel() {
@@ -520,13 +622,26 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
         val clockFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
         val arrivalTimeClock = clockFormat.format(Date(System.currentTimeMillis() + etaMins * 60 * 1000L))
 
-        binding.tvSpeed.text     = currentSpeed.toString()
+        binding.tvSpeed.text = currentSpeed.toString()
         binding.tvEtaDriver.text = arrivalTimeClock
         binding.tvDistDriver.text = if (distanceToNextKm < 1.0 && distanceToNextKm > 0) {
-            "${(distanceToNextKm * 1000).toInt()} m (${etaMins}m)"
+            "${(distanceToNextKm * 1000).toInt()} m"
         } else {
-            "%.1f km (${etaMins}m)".format(distanceToNextKm)
+            "%.1f km".format(distanceToNextKm)
         }
+
+        // AI ETA prediction calculation (Peak-hour & distance heuristic AI engine)
+        val currentHour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+        val aiEtaMinutes = if (distanceToNextKm > 0) {
+            etaPredictor.predictEta(distanceToNextKm, currentHour).coerceAtLeast(1)
+        } else {
+            1
+        }
+        val aiFormatted = "~$aiEtaMinutes min"
+        binding.tvAiPrediction.text = aiFormatted
+
+        // Top-right Live status on bottom card
+        binding.tvBottomLiveRoute.text = "● LIVE · ${assignedRouteName.uppercase()}"
     }
 
     private fun logTerminal(msg: String) {
@@ -540,6 +655,9 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
 
         val ctx = requireContext()
         val dp  = { n: Int -> TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, n.toFloat(), resources.displayMetrics).toInt() }
+        val routeColor = getActiveRouteColor()
+        val colorDone = ColorUtils.setAlphaComponent(routeColor, 120)
+        val colorInactive = Color.parseColor("#CBD5E1")
 
         for ((idx, abbr) in routeStops.withIndex()) {
             val isPassed = idx < nextStopIndex
@@ -551,14 +669,14 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
                 gravity     = Gravity.CENTER
             }
 
-            val dotSize = if (isNext) dp(12) else dp(8)
+            val dotSize = if (isNext) dp(14) else dp(9)
             val dot = View(ctx).apply {
                 layoutParams = LinearLayout.LayoutParams(dotSize, dotSize).also { it.gravity = Gravity.CENTER_HORIZONTAL }
                 background = when {
                     isNext   -> ContextCompat.getDrawable(ctx, R.drawable.ic_map_stop_next)
-                    isPassed -> createCircle(COLOR_DONE)
-                    isActive -> createCircle(COLOR_ACTIVE)
-                    else     -> createCircle(COLOR_INACTIVE)
+                    isPassed -> createCircle(colorDone)
+                    isActive -> createCircle(routeColor)
+                    else     -> createCircle(colorInactive)
                 }
             }
 
@@ -567,13 +685,13 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
                 ).also { it.topMargin = dp(3); it.gravity = Gravity.CENTER_HORIZONTAL }
                 text      = abbr
-                textSize  = 9f
+                textSize  = if (isNext) 10f else 9f
                 gravity   = Gravity.CENTER
                 typeface  = if (isNext) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
                 setTextColor(when {
-                    isNext   -> COLOR_ACTIVE
-                    isPassed -> COLOR_DONE
-                    else     -> COLOR_INACTIVE
+                    isNext   -> routeColor
+                    isPassed -> colorDone
+                    else     -> colorInactive
                 })
             }
 
@@ -583,7 +701,7 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
             val wrapper = LinearLayout(ctx).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity     = Gravity.CENTER_VERTICAL
-                setPadding(dp(2), 0, dp(2), 0)
+                setPadding(dp(3), 0, dp(3), 0)
             }
             wrapper.addView(stopLayout)
             container.addView(wrapper)
@@ -595,9 +713,9 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT, dp(20)
                     ).also { it.gravity = Gravity.CENTER_VERTICAL }
-                    text      = " ➜ "
-                    textSize  = if (isArrowActive) 16f else 12f
-                    setTextColor(when { isArrowActive -> COLOR_ACTIVE; isArrowDone -> COLOR_DONE; else -> COLOR_INACTIVE })
+                    text      = " ➔ "
+                    textSize  = if (isArrowActive) 14f else 11f
+                    setTextColor(when { isArrowActive -> routeColor; isArrowDone -> colorDone; else -> colorInactive })
                     typeface = if (isArrowActive) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
                 }
                 container.addView(arrow)
@@ -624,20 +742,27 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     private fun selectStatus(status: String) {
         currentStatus = status
 
-        val inactive = R.drawable.bg_card
-        binding.btnWorking.apply { setBackgroundResource(inactive); setTextColor(resources.getColor(R.color.text_secondary, null)); typeface = Typeface.DEFAULT }
-        binding.btnResting.apply { setBackgroundResource(inactive); setTextColor(resources.getColor(R.color.text_secondary, null)); typeface = Typeface.DEFAULT }
-        binding.btnOffDuty.apply { setBackgroundResource(inactive); setTextColor(resources.getColor(R.color.text_secondary, null)); typeface = Typeface.DEFAULT }
-
-        val white = resources.getColor(R.color.text_white, null)
-        when (status) {
-            "WORKING"  -> binding.btnWorking.apply { setBackgroundResource(R.drawable.bg_status_moving);  setTextColor(white); typeface = Typeface.DEFAULT_BOLD }
-            "RESTING"  -> binding.btnResting.apply { setBackgroundResource(R.drawable.bg_status_resting); setTextColor(white); typeface = Typeface.DEFAULT_BOLD }
-            "OFF_DUTY" -> binding.btnOffDuty.apply { setBackgroundResource(R.drawable.bg_status_offline); setTextColor(white); typeface = Typeface.DEFAULT_BOLD }
+        binding.btnWorking.apply {
+            setBackgroundResource(if (status == "WORKING") R.drawable.bg_duty_working_active else android.R.color.transparent)
+            setTextColor(if (status == "WORKING") Color.WHITE else Color.parseColor("#9CA3AF"))
+            typeface = if (status == "WORKING") Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+        }
+        binding.btnResting.apply {
+            setBackgroundResource(if (status == "RESTING") R.drawable.bg_duty_resting_active else android.R.color.transparent)
+            setTextColor(if (status == "RESTING") Color.WHITE else Color.parseColor("#9CA3AF"))
+            typeface = if (status == "RESTING") Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+        }
+        binding.btnOffDuty.apply {
+            setBackgroundResource(if (status == "OFF_DUTY") R.drawable.bg_duty_offline_active else android.R.color.transparent)
+            setTextColor(if (status == "OFF_DUTY") Color.WHITE else Color.parseColor("#9CA3AF"))
+            typeface = if (status == "OFF_DUTY") Typeface.DEFAULT_BOLD else Typeface.DEFAULT
         }
 
         currentSpeed = if (status == "WORKING") 0 else 0
         logTerminal("STATUS >> $status")
+
+        updateBusMarkerPosition()
+        updateDriverPanel()
 
         if (assignedBusId.isNotEmpty()) pushToFirestore()
     }
@@ -691,7 +816,6 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
                 navSteps = steps
                 currentNavStepIndex = 0
                 if (steps.isNotEmpty()) {
-                    binding.navBanner.visibility = View.VISIBLE
                     updateNavBanner()
                 }
             }
@@ -700,7 +824,6 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
 
     private fun updateNavBanner() {
         if (_binding == null) return
-        binding.navBanner.visibility = View.VISIBLE
 
         // 1. Target stop
         val targetAbbr = nextStopAbbr.ifEmpty { routeStops.getOrNull(nextStopIndex) ?: "PT" }
