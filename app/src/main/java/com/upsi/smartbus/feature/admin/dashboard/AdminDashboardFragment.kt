@@ -18,6 +18,8 @@ import com.upsi.smartbus.core.data.FirestoreHelper
 import com.upsi.smartbus.core.data.RouteRepository
 import com.upsi.smartbus.core.model.Bus
 import com.upsi.smartbus.core.model.Route
+import com.upsi.smartbus.core.util.BusEtaCalculator
+import com.upsi.smartbus.core.util.BusSpeedCalculator
 import com.upsi.smartbus.core.util.EtaPredictor
 import com.upsi.smartbus.databinding.FragmentAdminDashboardBinding
 import com.upsi.smartbus.databinding.ItemFleetMonitorRowBinding
@@ -410,13 +412,8 @@ class AdminDashboardFragment : Fragment() {
                 if (item.plateNumber != "—") append(" (${item.plateNumber})")
             }
 
-            val hourOfDay = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-            val aiEta = etaPredictor.predictEta(item.distanceToNext, hourOfDay)
-            val etaMinutes = if (item.speed > 5.0) {
-                kotlin.math.ceil(item.distanceToNext / item.speed * 60.0).toInt().coerceAtLeast(1)
-            } else {
-                aiEta
-            }
+            val aiEta = EtaPredictor.predict(item.distanceToNext)
+            val etaMinutes = BusEtaCalculator.calculateStandardEtaMinutes(item.distanceToNext, item.speed)
 
             when {
                 item.isSpeeding -> {
@@ -431,8 +428,8 @@ class AdminDashboardFragment : Fragment() {
                         com.upsi.smartbus.core.util.DriverSafetyEvaluator.DEFAULT_CAMPUS_SPEED_LIMIT
                     )
                     b.tvFleetSpeed.setTextColor(ContextCompat.getColor(ctx, R.color.crimson_primary))
-                    b.tvFleetSpeed.text = "${String.format(Locale.ENGLISH, "%.0f", item.speed)} km/h"
-                    b.tvFleetNextStop.text = "Next: ${item.nextStop.ifEmpty { "En Route" }} (${String.format(Locale.ENGLISH, "%.1f", item.distanceToNext)} km)"
+                    b.tvFleetSpeed.text = BusSpeedCalculator.formatSpeed(item.speed)
+                    b.tvFleetNextStop.text = "Next: ${item.nextStop.ifEmpty { "En Route" }} (${BusEtaCalculator.formatDistance(item.distanceToNext)})"
                     b.tvFleetEta.text = "ETA: $etaMinutes min"
                     b.tvFleetAiEta.text = "AI: ~$aiEta min"
                 }
@@ -445,8 +442,8 @@ class AdminDashboardFragment : Fragment() {
                     b.llStatusPill.setBackgroundResource(R.drawable.bg_status_moving)
                     b.llSpeedAlert.visibility = View.GONE
                     b.tvFleetSpeed.setTextColor(ContextCompat.getColor(ctx, R.color.status_moving))
-                    b.tvFleetSpeed.text = "${String.format(Locale.ENGLISH, "%.0f", item.speed)} km/h"
-                    b.tvFleetNextStop.text = "Next: ${item.nextStop.ifEmpty { "En Route" }} (${String.format(Locale.ENGLISH, "%.1f", item.distanceToNext)} km)"
+                    b.tvFleetSpeed.text = BusSpeedCalculator.formatSpeed(item.speed)
+                    b.tvFleetNextStop.text = "Next: ${item.nextStop.ifEmpty { "En Route" }} (${BusEtaCalculator.formatDistance(item.distanceToNext)})"
                     b.tvFleetEta.text = "ETA: $etaMinutes min"
                     b.tvFleetAiEta.text = "AI: ~$aiEta min"
                 }

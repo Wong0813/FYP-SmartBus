@@ -32,7 +32,10 @@ import com.upsi.smartbus.core.data.RouteRepository
 import com.upsi.smartbus.core.model.NavStep
 import com.upsi.smartbus.core.model.Route
 import com.upsi.smartbus.core.model.RouteData
+import com.upsi.smartbus.core.util.BusEtaCalculator
+import com.upsi.smartbus.core.util.BusSpeedCalculator
 import com.upsi.smartbus.core.util.EtaPredictor
+import com.upsi.smartbus.core.util.NavigationMathHelper
 import com.upsi.smartbus.core.util.RouteRoadFetcher
 import com.upsi.smartbus.core.util.RouteSegmentHelper
 import com.google.firebase.firestore.GeoPoint
@@ -263,12 +266,7 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun onBusPositionChanged() {
-        currentSpeed = when (stepSizeIndex) {
-            0 -> 25  // ~20m steps
-            1 -> 40  // ~50m steps
-            2 -> 60  // ~100m steps
-            else -> 30
-        }
+        currentSpeed = BusSpeedCalculator.determineSimulatedSpeed(stepSizeIndex, currentStatus)
 
         findNextStop()
         updateBusMarkerPosition()
@@ -594,7 +592,7 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
         val targetStop = RouteData.getStopByAbbreviation(currentTargetAbbr) ?: return
 
         // Distance from current bus position to the target next stop
-        val distToTarget = etaPredictor.calculateDistance(currentLat, currentLon, targetStop.latitude, targetStop.longitude)
+        val distToTarget = EtaPredictor.calculateDistanceKm(currentLat, currentLon, targetStop.latitude, targetStop.longitude)
         distanceToNextKm = (distToTarget * 10.0).roundToInt() / 10.0
         nextStopAbbr = currentTargetAbbr
 
@@ -617,28 +615,16 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     // ════════════════════════════════════════════════════════════════════
 
     private fun updateDriverPanel() {
-        val etaMins = if (currentSpeed > 0) ((distanceToNextKm / currentSpeed) * 60).toInt().coerceAtLeast(1) else 1
-
-        val clockFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-        val arrivalTimeClock = clockFormat.format(Date(System.currentTimeMillis() + etaMins * 60 * 1000L))
+        val etaMins = BusEtaCalculator.calculateStandardEtaMinutes(distanceToNextKm, currentSpeed.toDouble())
+        val arrivalTimeClock = BusEtaCalculator.calculateArrivalClock(etaMins)
 
         binding.tvSpeed.text = currentSpeed.toString()
         binding.tvEtaDriver.text = arrivalTimeClock
-        binding.tvDistDriver.text = if (distanceToNextKm < 1.0 && distanceToNextKm > 0) {
-            "${(distanceToNextKm * 1000).toInt()} m"
-        } else {
-            "%.1f km".format(distanceToNextKm)
-        }
+        binding.tvDistDriver.text = BusEtaCalculator.formatDistance(distanceToNextKm)
 
         // AI ETA prediction calculation (Peak-hour & distance heuristic AI engine)
-        val currentHour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
-        val aiEtaMinutes = if (distanceToNextKm > 0) {
-            etaPredictor.predictEta(distanceToNextKm, currentHour).coerceAtLeast(1)
-        } else {
-            1
-        }
-        val aiFormatted = "~$aiEtaMinutes min"
-        binding.tvAiPrediction.text = aiFormatted
+        val aiEtaMinutes = EtaPredictor.predict(distanceToNextKm)
+        binding.tvAiPrediction.text = BusEtaCalculator.formatEtaBadge(aiEtaMinutes)
 
         // Top-right Live status on bottom card
         binding.tvBottomLiveRoute.text = "● LIVE · ${assignedRouteName.uppercase()}"
@@ -832,43 +818,32 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
 
         // 2. UNIFIED DISTANCE — Strictly synchronized with bottom panel!
         val currentDistKm = distanceToNextKm
-        binding.tvNavDistance.text = if (currentDistKm < 1.0) {
-            "${(currentDistKm * 1000).toInt()} m"
-        } else {
-            "%.1f km".format(currentDistKm)
-        }
+        binding.tvNavDistance.text = BusEtaCalculator.formatDistance(currentDistKm)
 
-        // 3. Compute relative angle to determine exact turn direction
+        // 3. Compute relative angle and navigation maneuver
         val targetLat = targetStop?.latitude ?: currentLat
         val targetLon = targetStop?.longitude ?: currentLon
 
-        val relativeAngle = calculateRelativeBearing(currentLat, currentLon, targetLat, targetLon)
+        val maneuver = NavigationMathHelper.determineManeuver(
+            currentLat, currentLon, targetLat, targetLon, currentDistKm, targetFullName
+        )
 
-        val (iconRes, instruction) = when {
-            currentDistKm < 0.04 -> {
-                Pair(R.drawable.ic_nav_arrive, "Tiba di $targetFullName")
-            }
-            relativeAngle in -25.0..25.0 -> {
-                Pair(R.drawable.ic_nav_straight, "Terus Lurus ke $targetFullName")
-            }
-            relativeAngle in 25.0..135.0 -> {
-                Pair(R.drawable.ic_nav_turn_right, "Belok Kanan ke $targetFullName")
-            }
-            relativeAngle in -135.0..-25.0 -> {
-                Pair(R.drawable.ic_nav_turn_left, "Belok Kiri ke $targetFullName")
-            }
-            else -> {
-                Pair(R.drawable.ic_nav_uturn, "Pusing Balik ke $targetFullName")
-            }
+        val iconRes = when (maneuver.type) {
+            NavigationMathHelper.ManeuverType.ARRIVED -> R.drawable.ic_nav_arrive
+            NavigationMathHelper.ManeuverType.STRAIGHT -> R.drawable.ic_nav_straight
+            NavigationMathHelper.ManeuverType.TURN_RIGHT -> R.drawable.ic_nav_turn_right
+            NavigationMathHelper.ManeuverType.TURN_LEFT -> R.drawable.ic_nav_turn_left
+            NavigationMathHelper.ManeuverType.U_TURN -> R.drawable.ic_nav_uturn
+            else -> R.drawable.ic_nav_straight
         }
 
         binding.ivNavTurnIcon.setImageResource(iconRes)
-        binding.tvNavInstruction.text = instruction
+        binding.tvNavInstruction.text = maneuver.instruction
 
         // Next stop info
         binding.tvNavNextStop.text = targetAbbr
-        val etaMins = if (currentSpeed > 0) ((distanceToNextKm / currentSpeed) * 60).toInt().coerceAtLeast(1) else 1
-        binding.tvNavEta.text = "~${etaMins} min"
+        val etaMins = BusEtaCalculator.calculateStandardEtaMinutes(distanceToNextKm, currentSpeed.toDouble())
+        binding.tvNavEta.text = BusEtaCalculator.formatEtaBadge(etaMins)
 
         updateCycleTimer()
     }

@@ -34,6 +34,8 @@ import com.upsi.smartbus.core.data.RouteRepository
 import com.upsi.smartbus.core.model.Bus
 import com.upsi.smartbus.core.model.Route
 import com.upsi.smartbus.core.model.RouteData
+import com.upsi.smartbus.core.util.BusEtaCalculator
+import com.upsi.smartbus.core.util.BusSpeedCalculator
 import com.upsi.smartbus.core.util.EtaPredictor
 import com.upsi.smartbus.core.util.RouteRoadFetcher
 import com.upsi.smartbus.core.util.RouteSegmentHelper
@@ -506,14 +508,10 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
 
             val isResting = bus.status.equals("resting", true)
             val isWorking = bus.status.equals("working", true)
-            val h = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-            val speedEtaMins = if (bus.speed > 0) ((bus.distanceToNext / bus.speed) * 60).toInt().coerceAtLeast(1) else 1
-            val aiEtaMins    = etaPredictor.predictEta(bus.distanceToNext, h)
+            val speedEtaMins = BusEtaCalculator.calculateStandardEtaMinutes(bus.distanceToNext, if (isWorking) bus.speed else 0.0)
+            val aiEtaMins    = EtaPredictor.predict(bus.distanceToNext)
             val plate        = bus.plateNumber.ifEmpty { bus.licensePlate.ifEmpty { "--" } }
-
-            val clockFormat = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
-            val nowMs = System.currentTimeMillis()
-            val stdArrivalClock = clockFormat.format(java.util.Date(nowMs + speedEtaMins * 60 * 1000L))
+            val stdArrivalClock = BusEtaCalculator.calculateArrivalClock(speedEtaMins)
 
             val dotRes = when {
                 isResting -> R.drawable.dot_orange
@@ -559,15 +557,14 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
 
             if (isResting) {
                 binding.tvPanelNextStop.text = "RESTING"
-                binding.tvPanelDistance.text = "0 km"
+                binding.tvPanelDistance.text = "0 m"
                 binding.tvPanelArriveClock.text = "--:--"
                 binding.tvPanelAiEta.text = "Resting"
             } else {
                 binding.tvPanelNextStop.text = bus.nextStop.ifEmpty { "--" }
-                val distKm = bus.distanceToNext
-                binding.tvPanelDistance.text = if (distKm < 1.0 && distKm > 0) "${(distKm * 1000).toInt()} m" else "%.1f km".format(distKm)
+                binding.tvPanelDistance.text = BusEtaCalculator.formatDistance(bus.distanceToNext)
                 binding.tvPanelArriveClock.text = stdArrivalClock
-                binding.tvPanelAiEta.text = "~$aiEtaMins min"
+                binding.tvPanelAiEta.text = BusEtaCalculator.formatEtaBadge(aiEtaMins)
             }
 
             buildStopTimeline(bus)

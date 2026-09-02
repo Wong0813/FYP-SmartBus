@@ -24,6 +24,8 @@ import com.upsi.smartbus.core.data.RouteRepository
 import com.upsi.smartbus.core.model.Bus
 import com.upsi.smartbus.core.model.Route
 import com.upsi.smartbus.core.model.RouteData
+import com.upsi.smartbus.core.util.BusEtaCalculator
+import com.upsi.smartbus.core.util.BusSpeedCalculator
 import com.upsi.smartbus.core.util.RouteRoadFetcher
 import com.upsi.smartbus.core.util.RouteSegmentHelper
 import com.upsi.smartbus.databinding.FragmentAdminLiveMapBinding
@@ -547,21 +549,15 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
             val dist = bus.distanceToNext
             val nextStopName = bus.nextStop.ifEmpty { "Depot" }
             binding.tvPanelNextStop.text = if (dist > 0 && isWorking) {
-                "$nextStopName (${String.format(java.util.Locale.ENGLISH, "%.1f", dist)} km)"
+                "$nextStopName (${BusEtaCalculator.formatDistance(dist)})"
             } else {
                 nextStopName
             }
 
-            binding.tvPanelSpeed.text = if (isWorking) "${bus.speed.toInt()} km/h" else "0 km/h"
+            binding.tvPanelSpeed.text = if (isWorking) BusSpeedCalculator.formatSpeed(bus.speed) else "0 km/h"
 
-            val etaMins = if (isWorking && bus.speed > 0 && dist > 0) {
-                ((dist / bus.speed) * 60).toInt().coerceAtLeast(1)
-            } else if (dist > 0) {
-                4
-            } else {
-                0
-            }
-            binding.tvPanelEta.text = if (isWorking && etaMins > 0) "~$etaMins min" else "—"
+            val etaMins = BusEtaCalculator.calculateStandardEtaMinutes(dist, if (isWorking) bus.speed else 0.0)
+            binding.tvPanelEta.text = if (isWorking && dist > 0) BusEtaCalculator.formatEtaBadge(etaMins) else "—"
 
             // Pure green stop chain highlight matching Dashboard
             val stops = bus.routeStops.ifEmpty { routeObj?.stops ?: emptyList() }
