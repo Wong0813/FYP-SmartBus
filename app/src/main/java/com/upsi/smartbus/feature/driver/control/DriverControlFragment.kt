@@ -265,8 +265,50 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
         onBusPositionChanged()
     }
 
+    private var lastMoveTimestampMs = 0L
+    private var lastMoveLat = 0.0
+    private var lastMoveLon = 0.0
+
+    // Auto-idle decay: drops speed to 0 km/h after 2.5s of no user movement
+    private val autoIdleDecayRunnable = Runnable {
+        if (_binding == null) return@Runnable
+        if (currentStatus == "WORKING" && currentSpeed > 0) {
+            currentSpeed = 0
+            updateDriverPanel()
+            pushToFirestore()
+        }
+    }
+
     private fun onBusPositionChanged() {
-        currentSpeed = BusSpeedCalculator.determineSimulatedSpeed(stepSizeIndex, currentStatus)
+        val now = System.currentTimeMillis()
+
+        if (currentStatus != "WORKING") {
+            currentSpeed = 0
+        } else if (lastMoveTimestampMs > 0 && (lastMoveLat != 0.0 || lastMoveLon != 0.0)) {
+            // Real physical displacement velocity calculation based on delta time & delta distance
+            val rawMeasuredSpeed = BusSpeedCalculator.calculateGpsSpeedKmh(
+                lastMoveLat, lastMoveLon, lastMoveTimestampMs,
+                currentLat, currentLon, now
+            )
+            val baseProfileSpeed = BusSpeedCalculator.determineSimulatedSpeed(stepSizeIndex, currentStatus)
+
+            // If calculated speed is within a valid range, smooth it; otherwise use base step speed
+            currentSpeed = if (rawMeasuredSpeed in 10.0..75.0) {
+                BusSpeedCalculator.smoothSpeed(baseProfileSpeed.toDouble(), rawMeasuredSpeed, 0.6).roundToInt()
+            } else {
+                baseProfileSpeed
+            }
+        } else {
+            currentSpeed = BusSpeedCalculator.determineSimulatedSpeed(stepSizeIndex, currentStatus)
+        }
+
+        lastMoveTimestampMs = now
+        lastMoveLat = currentLat
+        lastMoveLon = currentLon
+
+        // Reset auto-idle decay timer (stops moving -> speed naturally returns to 0 km/h)
+        handler.removeCallbacks(autoIdleDecayRunnable)
+        handler.postDelayed(autoIdleDecayRunnable, 2500)
 
         findNextStop()
         updateBusMarkerPosition()
