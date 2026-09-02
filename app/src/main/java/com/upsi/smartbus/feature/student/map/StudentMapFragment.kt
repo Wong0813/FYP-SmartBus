@@ -38,6 +38,7 @@ import com.upsi.smartbus.core.util.EtaPredictor
 import com.upsi.smartbus.core.util.RouteRoadFetcher
 import com.upsi.smartbus.core.util.RouteSegmentHelper
 import com.upsi.smartbus.databinding.FragmentStudentMapBinding
+import com.upsi.smartbus.feature.student.StudentActivity
 import com.upsi.smartbus.feature.student.buses.BusDetailActivity
 import java.util.Calendar
 
@@ -495,15 +496,16 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
             binding.busSelectorDot.setBackgroundResource(if (activeCount > 0) R.drawable.dot_green else R.drawable.dot_gray)
 
             // Hide bottom panel completely in All Buses overview
-            binding.etaCard.visibility = View.GONE
+            binding.cardBottomPanel.visibility = View.GONE
             googleMap?.setPadding(0, 0, 0, 0)
         } else {
             // Show bottom card for the selected bus
-            binding.etaCard.visibility = View.VISIBLE
-            val bottomPadding = (190 * resources.displayMetrics.density).toInt()
+            binding.cardBottomPanel.visibility = View.VISIBLE
+            val bottomPadding = (200 * resources.displayMetrics.density).toInt()
             googleMap?.setPadding(0, 0, 0, bottomPadding)
 
             val isResting = bus.status.equals("resting", true)
+            val isWorking = bus.status.equals("working", true)
             val h = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
             val speedEtaMins = if (bus.speed > 0) ((bus.distanceToNext / bus.speed) * 60).toInt().coerceAtLeast(1) else 1
             val aiEtaMins    = etaPredictor.predictEta(bus.distanceToNext, h)
@@ -512,20 +514,42 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
             val clockFormat = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
             val nowMs = System.currentTimeMillis()
             val stdArrivalClock = clockFormat.format(java.util.Date(nowMs + speedEtaMins * 60 * 1000L))
-            val aiArrivalClock  = clockFormat.format(java.util.Date(nowMs + aiEtaMins * 60 * 1000L))
 
             val dotRes = when {
                 isResting -> R.drawable.dot_orange
-                bus.status.equals("working", true) -> R.drawable.dot_green
+                isWorking -> R.drawable.dot_green
                 else -> R.drawable.dot_gray
             }
-            binding.statusDotLarge.setBackgroundResource(dotRes)
+            binding.panelStatusDot.setBackgroundResource(dotRes)
             binding.busSelectorDot.setBackgroundResource(dotRes)
+
+            binding.panelStatusPill.setBackgroundResource(
+                when {
+                    isResting -> R.drawable.bg_status_resting
+                    isWorking -> R.drawable.bg_status_moving
+                    else -> R.drawable.bg_status_offline
+                }
+            )
+            binding.tvPanelStatus.text = when {
+                isResting -> "RESTING"
+                isWorking -> "LIVE"
+                else -> "OFFLINE"
+            }
+            binding.tvPanelStatus.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    when {
+                        isResting -> R.color.status_resting
+                        isWorking -> R.color.status_moving
+                        else -> R.color.status_offline
+                    }
+                )
+            )
 
             val routeObj = com.upsi.smartbus.core.data.RouteRepository.findRoute(bus.routeName) ?: com.upsi.smartbus.core.data.RouteRepository.findRoute(bus.name)
             val desc = routeObj?.shortName ?: ""
-            binding.tvRouteName.text = bus.routeName.ifEmpty { bus.name }
-            binding.tvPlateBadge.text = if (isResting) "$plate (RESTING)" else plate
+            binding.tvPanelRouteName.text = bus.routeName.ifEmpty { bus.name }
+            binding.tvPanelDriverInfo.text = "${bus.driverName.ifEmpty { "UPSI Driver" }} • ${bus.id} ($plate)"
 
             binding.tvSelectedBus.text = if (desc.isNotEmpty()) {
                 "${bus.routeName.ifEmpty { bus.name }} — $desc"
@@ -534,69 +558,24 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
             }
 
             if (isResting) {
-                binding.tvNextStop.text = "RESTING"
-                binding.tvNextStopFull.text = "Driver is resting at current/last known location"
-                binding.tvDistance.text = "0 km"
-                binding.tvArrivalClock.text = "RESTING"
-                binding.tvEta.text = "Status"
-                binding.tvAiEta.text = "Rest"
+                binding.tvPanelNextStop.text = "RESTING"
+                binding.tvPanelDistance.text = "0 km"
+                binding.tvPanelArriveClock.text = "--:--"
+                binding.tvPanelAiEta.text = "Resting"
             } else {
-                val nextStop = RouteData.getStopByAbbreviation(bus.nextStop)
-                binding.tvNextStop.text = bus.nextStop.ifEmpty { "--" }
-                binding.tvNextStopFull.text = nextStop?.fullName ?: "Heading to next destination stop"
-
+                binding.tvPanelNextStop.text = bus.nextStop.ifEmpty { "--" }
                 val distKm = bus.distanceToNext
-                binding.tvDistance.text = if (distKm < 1.0 && distKm > 0) "${(distKm * 1000).toInt()} m" else "%.1f km".format(distKm)
-                binding.tvArrivalClock.text = stdArrivalClock
-                binding.tvEta.text = "($speedEtaMins m)"
-                binding.tvAiEta.text = aiArrivalClock
+                binding.tvPanelDistance.text = if (distKm < 1.0 && distKm > 0) "${(distKm * 1000).toInt()} m" else "%.1f km".format(distKm)
+                binding.tvPanelArriveClock.text = stdArrivalClock
+                binding.tvPanelAiEta.text = "~$aiEtaMins min"
             }
 
             buildStopTimeline(bus)
         }
     }
 
-    private fun buildAllBusesSummaryTimeline() {
-        val container = binding.llStopTimeline
-        container.removeAllViews()
-        val ctx = requireContext()
-
-        val activeList = availableBuses.filter {
-            it.status.equals("working", true) || it.status.equals("resting", true)
-        }
-
-        if (activeList.isEmpty()) {
-            val tv = TextView(ctx).apply {
-                text = "No active buses operating right now. Please check route schedules."
-                setTextColor(ContextCompat.getColor(ctx, R.color.text_secondary))
-                textSize = 12f
-            }
-            container.addView(tv)
-            return
-        }
-
-        activeList.forEachIndexed { index, b ->
-            val isResting = b.status.equals("resting", true)
-            val color = if (isResting) COLOR_RESTING else TECH_ROUTE_COLORS[index % TECH_ROUTE_COLORS.size]
-            val pill = TextView(ctx).apply {
-                text = "● ${b.routeName.ifEmpty { b.id }}: ${b.status.uppercase()}"
-                setBackgroundResource(R.drawable.bg_capsule_white)
-                setTextColor(color)
-                textSize = 11f
-                setTypeface(null, Typeface.BOLD)
-                setPadding(24, 12, 24, 12)
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply { marginEnd = 12 }
-                setOnClickListener { selectBus(b) }
-            }
-            container.addView(pill)
-        }
-    }
-
     private fun buildStopTimeline(bus: Bus) {
-        val container = binding.llStopTimeline
+        val container = binding.llPanelStopsTimeline
         container.removeAllViews()
 
         val stops = if (bus.routeStops.isNotEmpty()) bus.routeStops
@@ -675,7 +654,10 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun setupClickListeners() {
-        binding.etaCard.setOnClickListener {
+        binding.btnMapDrawer.setOnClickListener {
+            (activity as? StudentActivity)?.openDrawer()
+        }
+        binding.cardBottomPanel.setOnClickListener {
             val b = selectedBus
             if (b != null) {
                 startActivity(Intent(requireContext(), BusDetailActivity::class.java).apply {

@@ -1,40 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Google Maps fills the whole screen -->
+    <!-- Full-screen Google Map -->
     <fragment
         android:id="@+id/mapView"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- ═══ TOP BAR ═══ -->
+    <!-- ══ TOP FLOATING STATUS BAR (Exact Match with Admin Live Map / Dashboard) ══ -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="12dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="20dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <!-- Weather capsule -->
+        <!-- Open Drawer button (Standard 40dp Squircle) -->
+        <ImageButton
+            android:id="@+id/btnMapDrawer"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_floating_menu_btn"
+            android:elevation="4dp"
+            android:contentDescription="Open Menu"
+            android:padding="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_menu_burger"
+            app:tint="@color/text_primary" />
+
+        <!-- Weather / Live count pill -->
         <LinearLayout
             android:id="@+id/weatherCapsule"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_capsule_white"
-            android:elevation="6dp"
+            android:background="@drawable/bg_floating_role_badge"
+            android:elevation="4dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingStart="10dp"
-            android:paddingTop="7dp"
-            android:paddingEnd="10dp"
-            android:paddingBottom="7dp">
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="7dp">
 
             <TextView
                 android:id="@+id/tvWeatherEmoji"
@@ -50,13 +63,14 @@
                 android:layout_marginStart="5dp"
                 android:text="SUNNY"
                 android:textColor="@color/text_primary"
-                android:textSize="10sp"
+                android:textSize="11sp"
                 android:textStyle="bold" />
+
         </LinearLayout>
 
         <View
             android:layout_width="0dp"
-            android:layout_height="1dp"
+            android:layout_height="0dp"
             android:layout_weight="1" />
 
         <!-- Bus selector capsule (top-right) -->
@@ -64,16 +78,16 @@
             android:id="@+id/busSelector"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_capsule_white"
+            android:background="@drawable/bg_floating_role_badge"
             android:clickable="true"
-            android:elevation="6dp"
+            android:elevation="4dp"
             android:focusable="true"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingStart="10dp"
-            android:paddingTop="7dp"
-            android:paddingEnd="10dp"
-            android:paddingBottom="7dp">
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="8dp">
 
             <View
                 android:id="@+id/busSelectorDot"
@@ -89,11 +103,10 @@
                 android:maxWidth="160dp"
                 android:ellipsize="end"
                 android:singleLine="true"
-                android:text="Laluan 1"
+                android:text="All Buses"
                 android:textColor="@color/text_primary"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                tools:text="Laluan 1 (WAA 1234 A)" />
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -103,227 +116,224 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="8sp" />
         </LinearLayout>
+
     </LinearLayout>
 
-    <!-- ═══ BOTTOM PANEL (hidden in All Buses mode) ═══ -->
-    <LinearLayout
-        android:id="@+id/etaCard"
+    <!-- ══ BOTTOM PANEL: Modern Unified CardView (hidden in All Buses mode) ══ -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardBottomPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginBottom="12dp"
+        android:layout_margin="12dp"
         android:visibility="gone"
-        android:background="@drawable/bg_card"
-        android:clickable="true"
-        android:elevation="8dp"
-        android:focusable="true"
-        android:orientation="vertical"
-        android:paddingStart="16dp"
-        android:paddingTop="14dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="14dp">
+        app:cardBackgroundColor="@color/card_bg"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="10dp">
 
-        <!-- ── Row 1: Route name + plate + status dot ── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <View
-                android:id="@+id/statusDotLarge"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:background="@drawable/dot_green" />
-
-            <TextView
-                android:id="@+id/tvRouteName"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1"
-                android:textColor="@color/text_primary"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                tools:text="Laluan 1" />
-
-            <TextView
-                android:id="@+id/tvPlateBadge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_route_chip"
-                android:paddingStart="10dp"
-                android:paddingTop="3dp"
-                android:paddingEnd="10dp"
-                android:paddingBottom="3dp"
-                android:textColor="@color/crimson_primary"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                tools:text="WAA 1234 A" />
-        </LinearLayout>
-
-        <!-- ── Row 2: Live metrics (Next Stop / Distance / Arrival Clock / AI ETA) ── -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="@color/divider"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp">
-
-            <!-- Next stop -->
+            <!-- Route title & status row -->
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.2"
-                android:gravity="center"
-                android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="NEXT STOP"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="8sp"
-                    android:letterSpacing="0.05" />
-                <TextView
-                    android:id="@+id/tvNextStop"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/text_primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    tools:text="PT" />
-                <TextView
-                    android:id="@+id/tvNextStopFull"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="9sp"
-                    tools:text="Pintu Timur" />
-            </LinearLayout>
-
-            <View android:layout_width="1dp" android:layout_height="32dp" android:background="@color/border_light" />
-
-            <!-- Distance -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="DISTANCE"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="8sp"
-                    android:letterSpacing="0.05" />
-                <TextView
-                    android:id="@+id/tvDistance"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/text_primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    tools:text="1.2 km" />
-            </LinearLayout>
-
-            <View android:layout_width="1dp" android:layout_height="32dp" android:background="@color/border_light" />
-
-            <!-- Arrive At (Clock time) -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.2"
-                android:gravity="center"
-                android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="ARRIVE AT"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="8sp"
-                    android:letterSpacing="0.05" />
-                <TextView
-                    android:id="@+id/tvArrivalClock"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/crimson_primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    tools:text="14:28" />
-                <TextView
-                    android:id="@+id/tvEta"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="9sp"
-                    tools:text="(in 3m)" />
-            </LinearLayout>
-
-            <View android:layout_width="1dp" android:layout_height="32dp" android:background="@color/border_light" />
-
-            <!-- AI ETA -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/bg_eta_ai_capsule"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="6dp">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="AI ETA"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="8sp" />
-                <TextView
-                    android:id="@+id/tvAiEta"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/crimson_primary"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    tools:text="14:27" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- ── Row 3: Full stop chain timeline ── -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="ROUTE STOPS"
-            android:textColor="@color/text_secondary"
-            android:textSize="8sp"
-            android:letterSpacing="0.08"
-            android:textStyle="bold" />
-
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:scrollbars="none">
-
-            <LinearLayout
-                android:id="@+id/llStopTimeline"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingBottom="4dp" />
+                android:orientation="horizontal">
 
-        </HorizontalScrollView>
+                <TextView
+                    android:id="@+id/tvPanelRouteName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    tools:text="Laluan 1" />
 
-    </LinearLayout>
+                <!-- Status pill -->
+                <LinearLayout
+                    android:id="@+id/panelStatusPill"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_status_moving"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp">
+
+                    <View
+                        android:id="@+id/panelStatusDot"
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:background="@drawable/dot_green" />
+
+                    <TextView
+                        android:id="@+id/tvPanelStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5dp"
+                        android:text="LIVE"
+                        android:textColor="@color/status_moving"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Driver & plate info row -->
+            <TextView
+                android:id="@+id/tvPanelDriverInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                tools:text="Encik Azman • BUS-001 (WAA 1234 A)" />
+
+            <!-- Single Bus Specific Metrics Container -->
+            <LinearLayout
+                android:id="@+id/llSingleBusMetrics"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="10dp"
+                    android:background="@color/divider" />
+
+                <!-- ETA & Next Stop detail strip -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <!-- Next stop item -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1.2"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Next Stop"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="10sp" />
+
+                        <TextView
+                            android:id="@+id/tvPanelNextStop"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            tools:text="PT" />
+                    </LinearLayout>
+
+                    <!-- Distance item -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.9"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Distance"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="10sp" />
+
+                        <TextView
+                            android:id="@+id/tvPanelDistance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            tools:text="1.2 km" />
+                    </LinearLayout>
+
+                    <!-- Arrive Clock -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1.1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Arrive At"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="10sp" />
+
+                        <TextView
+                            android:id="@+id/tvPanelArriveClock"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            tools:text="14:35" />
+                    </LinearLayout>
+
+                    <!-- AI Prediction -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1.1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🤖 AI Predict"
+                            android:textColor="@color/crimson_primary"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvPanelAiEta"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/crimson_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            tools:text="~4 min" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Stops progression timeline -->
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:overScrollMode="never"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/llPanelStopsTimeline"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal" />
+
+                </HorizontalScrollView>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
 
 </FrameLayout>

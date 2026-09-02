@@ -18,6 +18,7 @@ data class Bus(
     val capacity: Int = 40,
     val status: String = "IDLE",
     val photoUrl: String = "",
+    val driverName: String = "",
     val lastUpdated: Long = System.currentTimeMillis()
 )
 

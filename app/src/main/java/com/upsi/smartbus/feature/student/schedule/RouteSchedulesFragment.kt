@@ -27,6 +27,9 @@ class RouteSchedulesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.btnHeroDrawer.setOnClickListener {
+            (activity as? com.upsi.smartbus.feature.student.StudentActivity)?.openDrawer()
+        }
         setupViewPager()
     }
 

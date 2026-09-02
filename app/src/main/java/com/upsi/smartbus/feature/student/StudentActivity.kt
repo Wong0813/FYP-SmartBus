@@ -33,7 +33,7 @@ class StudentActivity : AppCompatActivity() {
 
         // Default fragment
         if (savedInstanceState == null) {
-            loadFragment(StudentMapFragment(), getString(R.string.nav_home_map))
+            loadFragment(StudentMapFragment())
             binding.navView.setCheckedItem(R.id.nav_home_map)
         }
     }
@@ -43,27 +43,23 @@ class StudentActivity : AppCompatActivity() {
     }
 
     private fun setupDrawer() {
-        binding.btnDrawer.setOnClickListener {
-            openDrawer()
-        }
-
         binding.navView.setNavigationItemSelectedListener { menuItem ->
             binding.drawerLayout.closeDrawer(GravityCompat.START)
             when (menuItem.itemId) {
                 R.id.nav_home_map -> {
-                    loadFragment(StudentMapFragment(), getString(R.string.nav_home_map))
+                    loadFragment(StudentMapFragment())
                     true
                 }
                 R.id.nav_active_buses -> {
-                    loadFragment(ActiveBusesFragment(), getString(R.string.nav_active_buses))
+                    loadFragment(ActiveBusesFragment())
                     true
                 }
                 R.id.nav_route_schedules -> {
-                    loadFragment(RouteSchedulesFragment(), getString(R.string.nav_route_schedules))
+                    loadFragment(RouteSchedulesFragment())
                     true
                 }
                 R.id.nav_profile -> {
-                    loadFragment(ProfileFragment(), getString(R.string.nav_profile))
+                    loadFragment(ProfileFragment())
                     true
                 }
                 R.id.nav_sign_out -> {
@@ -114,8 +110,7 @@ class StudentActivity : AppCompatActivity() {
         iv.scaleType = android.widget.ImageView.ScaleType.CENTER_INSIDE
     }
 
-    private fun loadFragment(fragment: Fragment, title: String) {
-        binding.tvToolbarTitle.text = title
+    private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.contentFrame, fragment)
             .commit()

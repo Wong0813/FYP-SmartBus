@@ -15,6 +15,7 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.upsi.smartbus.core.data.FirestoreHelper
 import com.upsi.smartbus.core.model.Bus
 import com.upsi.smartbus.databinding.FragmentActiveBusesBinding
+import com.upsi.smartbus.feature.student.StudentActivity
 import com.upsi.smartbus.ui.adapter.BusCardAdapter
 
 class ActiveBusesFragment : Fragment() {
@@ -41,6 +42,12 @@ class ActiveBusesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.btnHeroDrawer.setOnClickListener {
+            (activity as? StudentActivity)?.openDrawer()
+        }
+        binding.btnClearSearch.setOnClickListener {
+            binding.etSearch.text?.clear()
+        }
         setupRecyclerView()
         setupSearch()
         listenToFirestore()
@@ -61,7 +68,9 @@ class ActiveBusesFragment : Fragment() {
         binding.etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                filterBuses(s?.toString().orEmpty())
+                val q = s?.toString().orEmpty()
+                binding.btnClearSearch.visibility = if (q.isNotEmpty()) View.VISIBLE else View.GONE
+                filterBuses(q)
             }
             override fun afterTextChanged(s: Editable?) {}
         })
@@ -167,17 +176,23 @@ class ActiveBusesFragment : Fragment() {
     }
 
     private fun filterBuses(query: String) {
-        if (query.isBlank()) {
-            adapter.updateList(allBuses)
+        val workingCount = allBuses.count { it.status.equals("working", true) || it.status.equals("resting", true) }
+        binding.tvActiveBusCount.text = workingCount.toString()
+        binding.tvLiveStatusSubtitle.text = "$workingCount buses active · ${allBuses.size} in fleet"
+
+        val filtered = if (query.isBlank()) {
+            allBuses
         } else {
-            val filtered = allBuses.filter { bus ->
+            allBuses.filter { bus ->
                 bus.name.contains(query, ignoreCase = true) ||
                 bus.routeName.contains(query, ignoreCase = true) ||
                 bus.nextStop.contains(query, ignoreCase = true) ||
-                bus.plateNumber.contains(query, ignoreCase = true)
+                bus.plateNumber.contains(query, ignoreCase = true) ||
+                bus.driverName.contains(query, ignoreCase = true)
             }
-            adapter.updateList(filtered)
         }
+        adapter.updateList(filtered)
+        binding.llEmptyState.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
     }
 
     /** Fallback demo buses shown when Firestore is empty or unreachable */
