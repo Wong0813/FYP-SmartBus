@@ -61,7 +61,9 @@ class RouteListFragment : Fragment() {
                 routes.filter { it.scheduleType.equals("SATURDAY", ignoreCase = true) }
             }
             binding.rvRoutes.layoutManager = LinearLayoutManager(requireContext())
-            binding.rvRoutes.adapter = RouteCardAdapter(filtered)
+            binding.rvRoutes.adapter = RouteCardAdapter(filtered) { route ->
+                (activity as? com.upsi.smartbus.feature.student.StudentActivity)?.navigateToMap(route.name)
+            }
         }
     }
 

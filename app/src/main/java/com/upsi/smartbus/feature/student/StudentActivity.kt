@@ -42,6 +42,12 @@ class StudentActivity : AppCompatActivity() {
         binding.drawerLayout.openDrawer(GravityCompat.START)
     }
 
+    fun navigateToMap(targetRouteName: String? = null) {
+        val fragment = StudentMapFragment.newInstance(targetRouteName)
+        loadFragment(fragment)
+        binding.navView.setCheckedItem(R.id.nav_home_map)
+    }
+
     private fun setupDrawer() {
         binding.navView.setNavigationItemSelectedListener { menuItem ->
             binding.drawerLayout.closeDrawer(GravityCompat.START)

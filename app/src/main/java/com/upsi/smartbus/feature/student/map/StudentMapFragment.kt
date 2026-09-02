@@ -46,6 +46,17 @@ import java.util.Calendar
 
 class StudentMapFragment : Fragment(), OnMapReadyCallback {
 
+    companion object {
+        private const val ARG_TARGET_ROUTE = "arg_target_route"
+        fun newInstance(targetRouteName: String? = null): StudentMapFragment {
+            return StudentMapFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_TARGET_ROUTE, targetRouteName)
+                }
+            }
+        }
+    }
+
     private var _binding: FragmentStudentMapBinding? = null
     private val binding get() = _binding!!
 
@@ -214,6 +225,14 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
                 availableBuses = fetched
 
                 updateAllBusMarkers()
+
+                val targetRoute = arguments?.getString(ARG_TARGET_ROUTE)
+                if (!targetRoute.isNullOrEmpty() && selectedBus == null) {
+                    val targetBus = fetched.find { it.routeName.equals(targetRoute, true) }
+                    if (targetBus != null) {
+                        selectBus(targetBus)
+                    }
+                }
 
                 val currentFocused = selectedBus
                 if (currentFocused != null) {

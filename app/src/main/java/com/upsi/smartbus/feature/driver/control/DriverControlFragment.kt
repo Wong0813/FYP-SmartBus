@@ -1,6 +1,10 @@
 package com.upsi.smartbus.feature.driver.control
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -17,6 +21,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -32,6 +38,7 @@ import com.upsi.smartbus.core.data.RouteRepository
 import com.upsi.smartbus.core.model.NavStep
 import com.upsi.smartbus.core.model.Route
 import com.upsi.smartbus.core.model.RouteData
+import com.upsi.smartbus.core.service.GpsTrackingService
 import com.upsi.smartbus.core.util.BusEtaCalculator
 import com.upsi.smartbus.core.util.BusSpeedCalculator
 import com.upsi.smartbus.core.util.EtaPredictor
@@ -162,6 +169,7 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
         }
         setupDutyButtons()
         setupDPad()
+        setupGpsToggle()
         selectStatus("WORKING")
         updateNavBanner()
 
@@ -170,8 +178,104 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
 
         loadDriverProfile()
 
+        // Register GPS broadcast receiver
+        val filter = IntentFilter(GpsTrackingService.BROADCAST_GPS_UPDATE)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            requireContext().registerReceiver(gpsReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            requireContext().registerReceiver(gpsReceiver, filter)
+        }
+
         // Start periodic Firestore push
         handler.postDelayed(firestorePushRunnable, 2000)
+    }
+
+    private var isRealGpsActive = false
+
+    private val gpsPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fineGranted = permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+        val coarseGranted = permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+        if (fineGranted || coarseGranted) {
+            startRealGpsTracking()
+        } else {
+            Toast.makeText(requireContext(), "Location permission is required for real GPS tracking", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private val gpsReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (_binding == null || !isRealGpsActive) return
+            val lat = intent?.getDoubleExtra(GpsTrackingService.EXTRA_LAT, 0.0) ?: 0.0
+            val lon = intent?.getDoubleExtra(GpsTrackingService.EXTRA_LON, 0.0) ?: 0.0
+            val spd = intent?.getDoubleExtra(GpsTrackingService.EXTRA_SPEED, 0.0) ?: 0.0
+
+            if (lat != 0.0 && lon != 0.0) {
+                currentLat = lat
+                currentLon = lon
+                currentSpeed = spd.roundToInt()
+
+                findNextStop()
+                updateBusMarkerPosition()
+                updateDriverPanel()
+                drawRouteOnDriverMap()
+                buildDriverStopTimeline()
+                updateNavBanner()
+            }
+        }
+    }
+
+    private fun setupGpsToggle() {
+        binding.btnGpsToggle.setOnClickListener {
+            if (!isRealGpsActive) {
+                checkAndStartGps()
+            } else {
+                stopRealGpsTracking()
+            }
+        }
+    }
+
+    private fun checkAndStartGps() {
+        val fine = ContextCompat.checkSelfPermission(
+            requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (fine) {
+            startRealGpsTracking()
+        } else {
+            gpsPermissionLauncher.launch(
+                arrayOf(
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
+
+    private fun startRealGpsTracking() {
+        isRealGpsActive = true
+        binding.dotGpsStatus.setBackgroundResource(R.drawable.dot_green)
+        binding.tvGpsModeLabel.text = "GPS LIVE"
+        binding.tvGpsModeLabel.setTextColor(ContextCompat.getColor(requireContext(), R.color.status_moving))
+
+        val targetBusId = assignedBusId.ifEmpty { "BUS-001" }
+        GpsTrackingService.start(
+            requireContext(), targetBusId, assignedRouteName, driverName, currentStatus
+        )
+        Toast.makeText(requireContext(), "🛰️ Real Hardware GPS Tracking Active!", Toast.LENGTH_SHORT).show()
+        logTerminal("🛰️ GPS LIVE BROADCAST STARTED: $targetBusId")
+    }
+
+    private fun stopRealGpsTracking() {
+        isRealGpsActive = false
+        binding.dotGpsStatus.setBackgroundResource(R.drawable.dot_gray)
+        binding.tvGpsModeLabel.text = "GPS OFF"
+        binding.tvGpsModeLabel.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary))
+
+        GpsTrackingService.stop(requireContext())
+        Toast.makeText(requireContext(), "🎮 Switched to Manual D-PAD Mode", Toast.LENGTH_SHORT).show()
+        logTerminal("🎮 SWITCHED TO MANUAL SIMULATION")
     }
 
     override fun onMapReady(map: GoogleMap) {
@@ -956,8 +1060,17 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     }
 
     override fun onDestroyView() {
+        try {
+            requireContext().unregisterReceiver(gpsReceiver)
+        } catch (_: Exception) {}
+
+        if (isRealGpsActive) {
+            GpsTrackingService.stop(requireContext())
+        }
+
         handler.removeCallbacks(firestorePushRunnable)
         handler.removeCallbacks(repeatRunnable)
+        handler.removeCallbacks(autoIdleDecayRunnable)
         isRepeating = false
         if (assignedBusId.isNotEmpty()) {
             com.upsi.smartbus.core.data.RealtimeDbHelper.busRef(assignedBusId)

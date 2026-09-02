@@ -7,7 +7,8 @@ import com.upsi.smartbus.core.model.Route
 import com.upsi.smartbus.databinding.ItemRouteCardBinding
 
 class RouteCardAdapter(
-    private val routes: List<Route>
+    private val routes: List<Route>,
+    private val onItemClick: ((Route) -> Unit)? = null
 ) : RecyclerView.Adapter<RouteCardAdapter.RouteCardViewHolder>() {
 
     inner class RouteCardViewHolder(
@@ -28,6 +29,9 @@ class RouteCardAdapter(
             tvStopChain.text = route.stops.joinToString(" ➔ ")
             btnEditRoute.visibility = android.view.View.GONE
             btnDeleteRoute.visibility = android.view.View.GONE
+            root.setOnClickListener {
+                onItemClick?.invoke(route)
+            }
         }
     }
 

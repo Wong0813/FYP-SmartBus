@@ -5,6 +5,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -40,7 +43,10 @@
         <activity android:name="com.upsi.smartbus.feature.student.buses.BusDetailActivity" android:exported="false" />
         <activity android:name="com.upsi.smartbus.feature.profile.ProfileActivity" android:exported="false" />
 
-        <service android:name="com.upsi.smartbus.core.service.GpsTrackingService" android:exported="false" />
+        <service
+            android:name="com.upsi.smartbus.core.service.GpsTrackingService"
+            android:foregroundServiceType="location"
+            android:exported="false" />
 
     </application>
 </manifest>
