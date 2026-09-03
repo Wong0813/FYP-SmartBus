@@ -224,6 +224,10 @@ class StudentMapFragment : Fragment(), OnMapReadyCallback {
 
                 availableBuses = fetched
 
+                val activeCount = fetched.count { it.status.equals("WORKING", true) }
+                binding.tvLiveBusCount.text = "$activeCount Active Buses"
+                binding.livePulseDot.setBackgroundResource(if (activeCount > 0) R.drawable.dot_green else R.drawable.dot_gray)
+
                 updateAllBusMarkers()
 
                 val targetRoute = arguments?.getString(ARG_TARGET_ROUTE)

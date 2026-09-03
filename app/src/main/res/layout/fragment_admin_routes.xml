@@ -376,6 +376,13 @@
                     android:paddingHorizontal="14dp"
                     android:textSize="14sp" />
 
+                <Spinner
+                    android:id="@+id/spinnerScheduleType"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_input_field" />
+
                 <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

@@ -37,33 +37,32 @@
             android:src="@drawable/ic_menu_burger"
             app:tint="@color/text_primary" />
 
-        <!-- Weather / Live count pill -->
+        <!-- Live active bus count pill (100% unified with Admin Live Map) -->
         <LinearLayout
-            android:id="@+id/weatherCapsule"
+            android:id="@+id/pillLiveCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_floating_role_badge"
             android:elevation="4dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="12dp"
+            android:paddingHorizontal="14dp"
             android:paddingVertical="7dp">
 
-            <TextView
-                android:id="@+id/tvWeatherEmoji"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="☀️"
-                android:textSize="13sp" />
+            <View
+                android:id="@+id/livePulseDot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/dot_green" />
 
             <TextView
-                android:id="@+id/tvWeatherState"
+                android:id="@+id/tvLiveBusCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
-                android:text="SUNNY"
+                android:layout_marginStart="6dp"
+                android:text="0 Active Buses"
                 android:textColor="@color/text_primary"
-                android:textSize="11sp"
+                android:textSize="12sp"
                 android:textStyle="bold" />
 
         </LinearLayout>

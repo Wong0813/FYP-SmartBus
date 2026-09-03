@@ -44,6 +44,7 @@ class GpsTrackingService : Service() {
 
         const val ACTION_START_TRACKING = "com.upsi.smartbus.ACTION_START_GPS"
         const val ACTION_STOP_TRACKING = "com.upsi.smartbus.ACTION_STOP_GPS"
+        const val ACTION_UPDATE_STATUS = "com.upsi.smartbus.ACTION_UPDATE_STATUS"
         const val BROADCAST_GPS_UPDATE = "com.upsi.smartbus.BROADCAST_GPS_UPDATE"
 
         const val EXTRA_BUS_ID = "extra_bus_id"
@@ -74,6 +75,15 @@ class GpsTrackingService : Service() {
             } else {
                 context.startService(intent)
             }
+        }
+
+        fun updateStatus(context: Context, status: String) {
+            if (!isServiceRunning) return
+            val intent = Intent(context, GpsTrackingService::class.java).apply {
+                action = ACTION_UPDATE_STATUS
+                putExtra(EXTRA_STATUS, status)
+            }
+            context.startService(intent)
         }
 
         fun stop(context: Context) {
@@ -111,6 +121,13 @@ class GpsTrackingService : Service() {
             return START_NOT_STICKY
         }
 
+        if (intent?.action == ACTION_UPDATE_STATUS) {
+            val newStatus = intent.getStringExtra(EXTRA_STATUS)?.ifEmpty { "WORKING" } ?: "WORKING"
+            currentStatus = newStatus
+            Log.d(TAG, "GPS Service status updated to $currentStatus")
+            return START_STICKY
+        }
+
         busId = intent?.getStringExtra(EXTRA_BUS_ID)?.ifEmpty { "BUS-001" } ?: "BUS-001"
         routeName = intent?.getStringExtra(EXTRA_ROUTE_NAME)?.ifEmpty { "Laluan 1" } ?: "Laluan 1"
         driverName = intent?.getStringExtra(EXTRA_DRIVER_NAME)?.ifEmpty { "UPSI Driver" } ?: "UPSI Driver"
@@ -121,7 +138,17 @@ class GpsTrackingService : Service() {
             routeStops = routeObj.stops
         }
 
-        startForeground(NOTIFICATION_ID, buildForegroundNotification("Acquiring GPS Signal..."))
+        val initialNotif = buildForegroundNotification("Acquiring GPS Signal...")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_ID,
+                initialNotif,
+                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, initialNotif)
+        }
+
         startLocationUpdates()
         isServiceRunning = true
 
@@ -262,7 +289,7 @@ class GpsTrackingService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("SmartBus GPS Active • $routeName")
             .setContentText(contentText)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_bus_white)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)

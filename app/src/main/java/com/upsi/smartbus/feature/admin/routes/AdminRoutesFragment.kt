@@ -56,6 +56,7 @@ class AdminRoutesFragment : Fragment() {
             (activity as? AdminActivity)?.openDrawer()
         }
         setupStopsSpinner()
+        setupScheduleTypeSpinner()
         setupAddStop()
         setupSave()
         setupSearch()
@@ -63,6 +64,13 @@ class AdminRoutesFragment : Fragment() {
         setupToggleForm()
         setupRecyclerView()
         loadRoutesData()
+    }
+
+    private fun setupScheduleTypeSpinner() {
+        val types = listOf("Weekday (Mon-Fri)", "Weekend / Saturday")
+        binding.spinnerScheduleType.adapter = ArrayAdapter(
+            requireContext(), android.R.layout.simple_spinner_dropdown_item, types
+        )
     }
 
     private fun setupSearch() {
@@ -100,6 +108,11 @@ class AdminRoutesFragment : Fragment() {
             view.setOnClickListener {
                 tabFilter = filter
                 updateTabStyles()
+                if (filter == "SATURDAY") {
+                    binding.spinnerScheduleType.setSelection(1)
+                } else if (filter == "WEEKDAY") {
+                    binding.spinnerScheduleType.setSelection(0)
+                }
                 rebuildList()
             }
         }
@@ -173,7 +186,7 @@ class AdminRoutesFragment : Fragment() {
                 return@setOnClickListener
             }
             val short = name.split(" ").take(2).joinToString("") { it.take(1) }
-            val scheduleType = if (name.contains("Saturday", true)) "SATURDAY" else "WEEKDAY"
+            val scheduleType = if (binding.spinnerScheduleType.selectedItemPosition == 1) "SATURDAY" else "WEEKDAY"
             val route = Route(name = name, shortName = short, stops = selectedStops.toList(), scheduleType = scheduleType)
             db.collection("routes").add(route).addOnSuccessListener {
                 Toast.makeText(requireContext(), "Route created", Toast.LENGTH_SHORT).show()

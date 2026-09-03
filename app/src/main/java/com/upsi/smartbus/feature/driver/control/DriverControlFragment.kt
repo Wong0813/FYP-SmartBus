@@ -244,12 +244,14 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
         if (fine) {
             startRealGpsTracking()
         } else {
-            gpsPermissionLauncher.launch(
-                arrayOf(
-                    android.Manifest.permission.ACCESS_FINE_LOCATION,
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION
-                )
+            val perms = mutableListOf(
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
             )
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                perms.add(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+            gpsPermissionLauncher.launch(perms.toTypedArray())
         }
     }
 
@@ -892,6 +894,10 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
 
         currentSpeed = if (status == "WORKING") 0 else 0
         logTerminal("STATUS >> $status")
+
+        if (isRealGpsActive) {
+            GpsTrackingService.updateStatus(requireContext(), status)
+        }
 
         updateBusMarkerPosition()
         updateDriverPanel()
