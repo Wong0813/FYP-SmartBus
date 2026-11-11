@@ -18,6 +18,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        com.upsi.smartbus.core.network.AiApiClient.init(applicationContext)
+        com.upsi.smartbus.core.network.AiApiClient.warmUpServerAsync()
 
         val currentUser = auth.currentUser
         if (currentUser == null) {

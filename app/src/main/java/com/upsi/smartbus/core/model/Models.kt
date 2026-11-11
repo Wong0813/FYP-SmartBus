@@ -19,6 +19,7 @@ data class Bus(
     val status: String = "IDLE",
     val photoUrl: String = "",
     val driverName: String = "",
+    val driverPhone: String = "",
     val lastUpdated: Long = System.currentTimeMillis()
 )
 
@@ -30,6 +31,7 @@ data class LiveBusLocation(
     val nextStop: String = "",
     val distanceToNext: Double = 0.0,
     val driverName: String = "",
+    val driverPhone: String = "",
     val routeName: String = "",
     val lastUpdated: Long = 0L
 )

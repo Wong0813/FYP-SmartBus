@@ -24,11 +24,10 @@ import com.upsi.smartbus.core.data.FirestoreHelper
 import com.upsi.smartbus.core.data.RouteRepository
 import com.upsi.smartbus.core.model.UserProfile
 import com.upsi.smartbus.core.model.UserRole
-import com.upsi.smartbus.databinding.DialogEditUserBinding
 import com.upsi.smartbus.databinding.FragmentAdminAccountsBinding
-import com.upsi.smartbus.databinding.ItemAccountSectionHeaderBinding
-import com.upsi.smartbus.databinding.ItemUserCardBinding
 import com.upsi.smartbus.feature.admin.AdminActivity
+import com.upsi.smartbus.ui.adapter.AccountListAdapter
+import com.upsi.smartbus.ui.adapter.AccountListItem
 import com.upsi.smartbus.feature.admin.seeder.AccountSeeder
 import com.upsi.smartbus.feature.admin.seeder.AdminSortHelper
 import java.io.ByteArrayOutputStream
@@ -65,10 +64,6 @@ class AdminAccountsFragment : Fragment() {
         }
     }
 
-    sealed class AccountListItem {
-        data class Header(val title: String, val count: Int) : AccountListItem()
-        data class User(val profile: UserProfile) : AccountListItem()
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -99,7 +94,9 @@ class AdminAccountsFragment : Fragment() {
             if (_binding == null) return@loadRoutes
             routeNames.clear()
             routeNames.addAll(routes.map { it.name })
-            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, routeNames)
+            val adapter = ArrayAdapter(requireContext(), com.upsi.smartbus.R.layout.item_custom_spinner_selected, routeNames).apply {
+                setDropDownViewResource(com.upsi.smartbus.R.layout.item_custom_spinner_dropdown)
+            }
             binding.spinnerDriverRoute.adapter = adapter
         }
     }
@@ -167,7 +164,9 @@ class AdminAccountsFragment : Fragment() {
 
     private fun setupRoleSpinner() {
         val roles = listOf("Student", "Driver", "Admin")
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, roles)
+        val adapter = ArrayAdapter(requireContext(), com.upsi.smartbus.R.layout.item_custom_spinner_selected, roles).apply {
+            setDropDownViewResource(com.upsi.smartbus.R.layout.item_custom_spinner_dropdown)
+        }
         binding.spinnerRole.adapter = adapter
 
         binding.spinnerRole.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
@@ -218,16 +217,115 @@ class AdminAccountsFragment : Fragment() {
         db.collection("users").get()
             .addOnSuccessListener { snapshot ->
                 if (_binding == null || snapshot == null) return@addOnSuccessListener
-                allUsers.clear()
-                for (doc in snapshot.documents) {
-                    doc.toObject(UserProfile::class.java)?.let { user ->
-                        allUsers.add(user.copy(uid = doc.id))
+                if (!snapshot.isEmpty) {
+                    allUsers.clear()
+                    val userList = mutableListOf<UserProfile>()
+                    for (doc in snapshot.documents) {
+                        doc.toObject(UserProfile::class.java)?.let { user ->
+                            userList.add(user.copy(uid = doc.id))
+                        }
                     }
+
+                    // Group by lowercased email to deduplicate (e.g. admin_01 vs real Auth UID)
+                    val grouped = userList.groupBy { it.email.lowercase().trim() }
+                    val duplicatesToDelete = mutableListOf<String>()
+
+                    for ((email, docs) in grouped) {
+                        if (email.isEmpty()) {
+                            allUsers.addAll(docs)
+                            continue
+                        }
+                        if (docs.size == 1) {
+                            allUsers.add(docs.first())
+                        } else {
+                            // Multiple documents for the same email:
+                            // Prefer the one with a real Auth UID (not starting with admin_ / driver_ / student_demo_)
+                            // or the one with the most complete profile details.
+                            val isPlaceholder = { u: UserProfile ->
+                                u.uid.startsWith("admin_") || u.uid.startsWith("driver_") || u.uid.startsWith("student_demo_")
+                            }
+                            val bestDoc = docs.firstOrNull { !isPlaceholder(it) } ?: docs.first()
+                            allUsers.add(bestDoc)
+
+                            // Mark the stale placeholder documents for deletion to permanently clean up Firestore
+                            for (stale in docs) {
+                                if (stale.uid != bestDoc.uid && isPlaceholder(stale)) {
+                                    duplicatesToDelete.add(stale.uid)
+                                }
+                            }
+                        }
+                    }
+
+                    // Clean up stale placeholder documents from Firestore in batch
+                    if (duplicatesToDelete.isNotEmpty()) {
+                        val batch = db.batch()
+                        for (staleId in duplicatesToDelete) {
+                            batch.delete(db.collection("users").document(staleId))
+                        }
+                        batch.commit()
+                            .addOnSuccessListener {
+                                android.util.Log.d("AdminAccounts", "Cleaned up ${duplicatesToDelete.size} duplicate documents from Firestore")
+                            }
+                            .addOnFailureListener { err ->
+                                android.util.Log.w("AdminAccounts", "Failed to delete stale duplicate docs", err)
+                            }
+                    }
+
+                    com.upsi.smartbus.core.data.AppCache.putUsers(allUsers.toList())
+                    updateHeroStats()
+                    rebuildDisplayList()
+                } else if (allUsers.isEmpty()) {
+                    loadFallbackAccounts()
                 }
-                com.upsi.smartbus.core.data.AppCache.putUsers(allUsers.toList())
-                updateHeroStats()
-                rebuildDisplayList()
             }
+            .addOnFailureListener { e ->
+                android.util.Log.e("AdminAccounts", "Failed to fetch users from Firestore", e)
+                if (_binding != null) {
+                    if (allUsers.isEmpty()) {
+                        loadFallbackAccounts()
+                    }
+                    Toast.makeText(requireContext(), "Firestore Notice: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                }
+            }
+    }
+
+    private fun loadFallbackAccounts() {
+        if (allUsers.isNotEmpty()) return
+        val list = mutableListOf<UserProfile>()
+        list.add(
+            UserProfile(
+                uid = "admin_01",
+                name = "UPSI Bus Admin",
+                email = "admin@upsi.edu.my",
+                role = "ADMIN",
+                staffNo = "ADM-01",
+                accountType = "OFFICIAL"
+            )
+        )
+        AccountSeeder.alignedEntries().forEach { entry ->
+            list.add(
+                UserProfile(
+                    uid = AccountSeeder.driverDocId(entry.number),
+                    name = entry.driver.driverName,
+                    email = "driver${entry.number}@upsi.edu.my",
+                    role = "DRIVER",
+                    staffNo = "DRV-${String.format(java.util.Locale.US, "%02d", entry.number)}",
+                    assignedRoute = entry.route.name,
+                    assignedBus = entry.driver.busId,
+                    plateNumber = entry.driver.plateNumber,
+                    accountType = "OFFICIAL"
+                )
+            )
+        }
+        list.add(UserProfile(uid = "student_01", name = "Ahmad Bin Ali", email = "student1@upsi.edu.my", role = "STUDENT", staffNo = "STU-001", faculty = "FCI", program = "Software Engineering", accountType = "OFFICIAL"))
+        list.add(UserProfile(uid = "student_02", name = "Siti Nurhaliza", email = "student2@upsi.edu.my", role = "STUDENT", staffNo = "STU-002", faculty = "FPM", program = "Pendidikan", accountType = "OFFICIAL"))
+        list.add(UserProfile(uid = "student_03", name = "Muhammad Hafiz", email = "student3@upsi.edu.my", role = "STUDENT", staffNo = "STU-003", faculty = "FSS", program = "Pengurusan", accountType = "OFFICIAL"))
+
+        allUsers.clear()
+        allUsers.addAll(list)
+        com.upsi.smartbus.core.data.AppCache.putUsers(allUsers.toList())
+        updateHeroStats()
+        rebuildDisplayList()
     }
 
     private fun updateHeroStats() {
@@ -383,247 +481,31 @@ class AdminAccountsFragment : Fragment() {
     }
 
     private fun showEditUserDialog(user: UserProfile) {
-        val ctx = requireContext()
-        val dialog = android.app.Dialog(ctx)
-        val b = DialogEditUserBinding.inflate(layoutInflater)
-        dialog.setContentView(b.root)
-        dialog.window?.apply {
-            setBackgroundDrawableResource(android.R.color.transparent)
-            setLayout(
-                (resources.displayMetrics.widthPixels * 0.90).toInt(),
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        }
-
-        b.tvEditDialogTitle.text = "Edit ${user.name}"
-        b.etEditName.setText(user.name)
-        b.etEditStaffNo.setText(user.staffNo)
-
-        val isDriver = user.role.equals("DRIVER", true)
-        val isStudent = user.role.equals("STUDENT", true)
-
-        var currentPhotoUrl = user.photoUrl
-
-        fun updateDialogAvatarPreview() {
-            AccountListAdapter.loadAvatarFromFirebase(b.ivDialogUserAvatar, currentPhotoUrl, user.name)
-        }
-        updateDialogAvatarPreview()
-
-        b.btnPickGallery.setOnClickListener {
-            pendingPhotoCallback = { newPhotoUrl ->
-                currentPhotoUrl = newPhotoUrl
-                updateDialogAvatarPreview()
+        val helper = AdminAccountDialogHelper(
+            context = requireContext(),
+            layoutInflater = layoutInflater,
+            routeNames = routeNames,
+            onPickPhotoRequested = { onPhotoCallback ->
+                pendingPhotoCallback = onPhotoCallback
+                pickImageLauncher.launch("image/*")
             }
-            pickImageLauncher.launch("image/*")
-        }
-
-        if (isDriver) {
-            b.tvLabelStaffNo.text = "DRIVER ID / STAFF NO"
-            b.llEditDriverFields.visibility = View.VISIBLE
-            b.etEditBus.setText(user.assignedBus)
-            b.etEditPlate.setText(user.plateNumber)
-
-            val adapter = ArrayAdapter(ctx, android.R.layout.simple_spinner_dropdown_item, routeNames)
-            b.spinnerEditRoute.adapter = adapter
-            val routeIdx = routeNames.indexOf(user.assignedRoute)
-            if (routeIdx >= 0) b.spinnerEditRoute.setSelection(routeIdx)
-        } else if (isStudent) {
-            b.tvLabelStaffNo.text = "STUDENT ID / MATRIC NO"
-            b.llEditStudentFields.visibility = View.VISIBLE
-            b.etEditFaculty.setText(user.faculty)
-            b.etEditProgram.setText(user.program)
-        } else {
-            b.tvLabelStaffNo.text = "STAFF NO / USERNAME"
-        }
-
-        b.btnDialogClose.setOnClickListener { dialog.dismiss() }
-        b.btnDialogCancel.setOnClickListener { dialog.dismiss() }
-
-        b.btnDialogSave.setOnClickListener {
-            val newName = b.etEditName.text.toString().trim()
-            val newStaffNo = b.etEditStaffNo.text.toString().trim()
-            if (newName.isEmpty()) {
-                Toast.makeText(ctx, "Name cannot be empty", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            val updates = mutableMapOf<String, Any>(
-                "name" to newName,
-                "staffNo" to newStaffNo,
-                "photoUrl" to currentPhotoUrl
-            )
-
-            if (isDriver) {
-                val selRoute = b.spinnerEditRoute.selectedItem?.toString() ?: user.assignedRoute
-                val selBus = b.etEditBus.text.toString().trim()
-                val selPlate = b.etEditPlate.text.toString().trim()
-                updates["assignedRoute"] = selRoute
-                updates["assignedBus"] = selBus
-                updates["plateNumber"] = selPlate
-            } else if (isStudent) {
-                updates["faculty"] = b.etEditFaculty.text.toString().trim()
-                updates["program"] = b.etEditProgram.text.toString().trim()
-            }
-
-            b.btnDialogSave.isEnabled = false
-            b.btnDialogSave.text = "Saving..."
-
-            // 1. Instantly update in-memory list for 0-latency UI reflection
+        )
+        helper.showEditUserDialog(
+            user = user,
+            screenWidthPixels = resources.displayMetrics.widthPixels
+        ) { updatedUser, updates ->
             val targetIdx = allUsers.indexOfFirst { it.uid == user.uid }
-            val updatedUser = user.copy(
-                name = newName,
-                staffNo = newStaffNo,
-                photoUrl = currentPhotoUrl,
-                assignedRoute = if (isDriver) b.spinnerEditRoute.selectedItem?.toString() ?: user.assignedRoute else user.assignedRoute,
-                assignedBus = if (isDriver) b.etEditBus.text.toString().trim() else user.assignedBus,
-                plateNumber = if (isDriver) b.etEditPlate.text.toString().trim() else user.plateNumber,
-                faculty = if (isStudent) b.etEditFaculty.text.toString().trim() else user.faculty,
-                program = if (isStudent) b.etEditProgram.text.toString().trim() else user.program
-            )
             if (targetIdx >= 0) {
                 allUsers[targetIdx] = updatedUser
                 rebuildDisplayList()
             }
-
-            // 2. Safely dismiss dialog immediately
-            dialog.dismiss()
-            Toast.makeText(ctx, "Changes saved successfully", Toast.LENGTH_SHORT).show()
-
-            // 3. Asynchronously sync to Firebase (resilient to quota limits)
             db.collection("users").document(user.uid).update(updates)
         }
-
-        dialog.show()
     }
 
     override fun onDestroyView() {
         usersListener?.remove()
         _binding = null
         super.onDestroyView()
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // ADAPTER & VIEW HOLDERS
-    // ══════════════════════════════════════════════════════════════
-
-    class AccountListAdapter(
-        private val items: List<AccountListItem>,
-        private val onDelete: (UserProfile) -> Unit,
-        private val onEdit: (UserProfile) -> Unit
-    ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
-        companion object {
-            private const val TYPE_HEADER = 0
-            private const val TYPE_USER = 1
-
-            fun loadAvatarFromFirebase(iv: ImageView, photoUrl: String, userName: String) {
-                if (photoUrl.startsWith("data:image")) {
-                    try {
-                        val base64Part = photoUrl.substringAfter("base64,")
-                        val decodedBytes = Base64.decode(base64Part, Base64.DEFAULT)
-                        val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-                        if (bitmap != null) {
-                            iv.setImageBitmap(bitmap)
-                            iv.background = null
-                            iv.setPadding(0, 0, 0, 0)
-                            iv.imageTintList = null
-                            iv.scaleType = ImageView.ScaleType.CENTER_CROP
-                            return
-                        }
-                    } catch (_: Exception) {}
-                }
-                // Fallback default avatar style
-                iv.setImageResource(R.drawable.ic_nav_profile)
-                iv.setBackgroundColor(Color.parseColor("#F1F5F9"))
-                val p = (iv.resources.displayMetrics.density * 8).toInt()
-                iv.setPadding(p, p, p, p)
-                iv.imageTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#9CA3AF"))
-                iv.scaleType = ImageView.ScaleType.CENTER_INSIDE
-            }
-        }
-
-        inner class HeaderVH(val binding: ItemAccountSectionHeaderBinding) : RecyclerView.ViewHolder(binding.root)
-        inner class UserVH(val binding: ItemUserCardBinding) : RecyclerView.ViewHolder(binding.root)
-
-        override fun getItemViewType(pos: Int) =
-            if (items[pos] is AccountListItem.Header) TYPE_HEADER else TYPE_USER
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-            val inf = LayoutInflater.from(parent.context)
-            return if (viewType == TYPE_HEADER) {
-                HeaderVH(ItemAccountSectionHeaderBinding.inflate(inf, parent, false))
-            } else {
-                UserVH(ItemUserCardBinding.inflate(inf, parent, false))
-            }
-        }
-
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, pos: Int) {
-            when (val item = items[pos]) {
-                is AccountListItem.Header -> {
-                    val hb = (holder as HeaderVH).binding
-                    hb.tvSectionTitle.text = item.title
-                    hb.tvSectionCount.text = "${item.count}"
-                }
-                is AccountListItem.User -> bindUser((holder as UserVH).binding, item.profile)
-            }
-        }
-
-        private fun bindUser(b: ItemUserCardBinding, user: UserProfile) {
-            b.tvUserName.text = user.name
-            b.tvUserEmail.text = buildString {
-                append(user.email)
-                if (user.staffNo.isNotEmpty()) append(" · ${user.staffNo}")
-            }
-            b.tvUserInitial.visibility = View.GONE
-            b.ivUserAvatar.visibility = View.VISIBLE
-
-            // Render photo strictly from Firebase photoUrl field
-            loadAvatarFromFirebase(b.ivUserAvatar, user.photoUrl, user.name)
-
-            when (user.role.uppercase()) {
-                "ADMIN" -> {
-                    b.tvUserRole.text = "ADMIN"
-                    b.tvUserRole.setBackgroundResource(R.drawable.bg_badge_admin_red)
-                    b.tvUserRole.setTextColor(Color.parseColor("#991B1B"))
-                    b.tvAssignedRoute.visibility = View.GONE
-                }
-                "DRIVER" -> {
-                    b.tvUserRole.text = "DRIVER"
-                    b.tvUserRole.setBackgroundResource(R.drawable.bg_badge_driver_amber)
-                    b.tvUserRole.setTextColor(Color.parseColor("#92400E"))
-
-                    b.tvAssignedRoute.visibility = View.VISIBLE
-                    val routeText = user.assignedRoute.ifEmpty { "Unassigned" }
-                    val busText = user.assignedBus.ifEmpty { "—" }
-                    b.tvAssignedRoute.text = "$routeText · $busText"
-                }
-                "STUDENT" -> {
-                    b.tvUserRole.text = "STUDENT"
-                    b.tvUserRole.setBackgroundResource(R.drawable.bg_badge_student_violet)
-                    b.tvUserRole.setTextColor(Color.parseColor("#5B21B6"))
-
-                    if (user.faculty.isNotEmpty() || user.program.isNotEmpty()) {
-                        b.tvAssignedRoute.visibility = View.VISIBLE
-                        b.tvAssignedRoute.text = listOfNotNull(
-                            user.faculty.ifEmpty { null },
-                            user.program.ifEmpty { null }
-                        ).joinToString(" · ")
-                    } else {
-                        b.tvAssignedRoute.visibility = View.GONE
-                    }
-                }
-                else -> {
-                    b.tvUserRole.text = user.role.uppercase()
-                    b.tvUserRole.setBackgroundResource(R.drawable.bg_role_badge)
-                    b.tvUserRole.setTextColor(Color.parseColor("#C0181A"))
-                    b.tvAssignedRoute.visibility = View.GONE
-                }
-            }
-
-            b.btnEditUser.setOnClickListener { onEdit(user) }
-            b.btnDeleteUser.setOnClickListener { onDelete(user) }
-        }
-
-        override fun getItemCount() = items.size
     }
 }

@@ -101,24 +101,8 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     private var cycleCount = 1
     private val CYCLE_DURATION_MS = 3_600_000L // 1 hour
 
-    // D-Pad movement step sizes (in degrees ~= meters)
-    // ~0.0002° ≈ 20m, ~0.001° ≈ 100m, ~0.0005° ≈ 50m
-    private val STEP_SIZES = doubleArrayOf(0.0002, 0.0005, 0.001)
-    private val STEP_LABELS = arrayOf("~20m", "~50m", "~100m")
-    private var stepSizeIndex = 0
-
-    // Auto-repeat for long-press
-    private var isRepeating = false
-    private val repeatDelay = 150L // ms between repeated moves
-    private val repeatRunnable = object : Runnable {
-        override fun run() {
-            if (isRepeating && _binding != null) {
-                currentMoveAction?.invoke()
-                handler.postDelayed(this, repeatDelay)
-            }
-        }
-    }
-    private var currentMoveAction: (() -> Unit)? = null
+    // D-Pad simulation & physics controller
+    private val simController by lazy { DriverSimulationController(handler) }
 
     // Exact glowing color palette strictly unified with Admin Live Map
     private val TECH_ROUTE_COLORS = listOf(
@@ -303,65 +287,29 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     // ════════════════════════════════════════════════════════════════════
 
     private fun setupDPad() {
-        setupRepeatButton(binding.btnMoveUp)    { moveBusTowardsTarget(forward = true) }
-        setupRepeatButton(binding.btnMoveDown)  { moveBusTowardsTarget(forward = false) }
-        setupRepeatButton(binding.btnMoveLeft)  { moveBusOffset(0.0, -STEP_SIZES[stepSizeIndex]) }
-        setupRepeatButton(binding.btnMoveRight) { moveBusOffset(0.0, STEP_SIZES[stepSizeIndex]) }
+        simController.attachRepeatButton(binding.btnMoveUp)    { moveBusDirection(forward = true) }
+        simController.attachRepeatButton(binding.btnMoveDown)  { moveBusDirection(forward = false) }
+        simController.attachRepeatButton(binding.btnMoveLeft)  { moveBusOffset(0.0, -simController.currentStepSize) }
+        simController.attachRepeatButton(binding.btnMoveRight) { moveBusOffset(0.0, simController.currentStepSize) }
 
         // Step size toggle
-        binding.tvStepSize.text = STEP_LABELS[stepSizeIndex]
+        binding.tvStepSize.text = simController.stepLabels[simController.stepSizeIndex]
         binding.tvStepSize.setOnClickListener {
-            stepSizeIndex = (stepSizeIndex + 1) % STEP_SIZES.size
-            binding.tvStepSize.text = STEP_LABELS[stepSizeIndex]
-            logTerminal("STEP SIZE >> ${STEP_LABELS[stepSizeIndex]}")
+            binding.tvStepSize.text = simController.toggleStepSize()
+            logTerminal("STEP SIZE >> ${binding.tvStepSize.text}")
         }
     }
 
-    @Suppress("ClickableViewAccessibility")
-    private fun setupRepeatButton(view: View, action: () -> Unit) {
-        view.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    isRepeating = true
-                    currentMoveAction = action
-                    action() // immediate first move
-                    handler.postDelayed(repeatRunnable, 300) // start repeat after 300ms
-                    true
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    isRepeating = false
-                    currentMoveAction = null
-                    handler.removeCallbacks(repeatRunnable)
-                    true
-                }
-                else -> false
-            }
-        }
-    }
-
-    private fun moveBusTowardsTarget(forward: Boolean) {
+    private fun moveBusDirection(forward: Boolean) {
         val targetAbbr = routeStops.getOrNull(nextStopIndex) ?: "PT"
         val targetStop = RouteData.getStopByAbbreviation(targetAbbr)
-        val step = STEP_SIZES[stepSizeIndex]
-
-        if (targetStop != null) {
-            val dLat = targetStop.latitude - currentLat
-            val dLon = targetStop.longitude - currentLon
-            val dist = Math.hypot(dLat, dLon)
-
-            if (dist > 0.00001) {
-                val dirLat = dLat / dist
-                val dirLon = dLon / dist
-                val mult = if (forward) 1.0 else -1.0
-                currentLat += dirLat * step * mult
-                currentLon += dirLon * step * mult
-            } else {
-                currentLat += if (forward) step else -step
-            }
-        } else {
-            currentLat += if (forward) step else -step
-        }
-
+        val (nLat, nLon) = simController.calculateMoveTowards(
+            currentLat, currentLon,
+            targetStop?.latitude, targetStop?.longitude,
+            forward
+        )
+        currentLat = nLat
+        currentLon = nLon
         onBusPositionChanged()
     }
 
@@ -381,32 +329,19 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
         if (currentStatus == "WORKING" && currentSpeed > 0) {
             currentSpeed = 0
             updateDriverPanel()
+            updateBusMarkerPosition()
+            updateNavBanner()
             pushToFirestore()
         }
     }
 
     private fun onBusPositionChanged() {
         val now = System.currentTimeMillis()
-
-        if (currentStatus != "WORKING") {
-            currentSpeed = 0
-        } else if (lastMoveTimestampMs > 0 && (lastMoveLat != 0.0 || lastMoveLon != 0.0)) {
-            // Real physical displacement velocity calculation based on delta time & delta distance
-            val rawMeasuredSpeed = BusSpeedCalculator.calculateGpsSpeedKmh(
-                lastMoveLat, lastMoveLon, lastMoveTimestampMs,
-                currentLat, currentLon, now
-            )
-            val baseProfileSpeed = BusSpeedCalculator.determineSimulatedSpeed(stepSizeIndex, currentStatus)
-
-            // If calculated speed is within a valid range, smooth it; otherwise use base step speed
-            currentSpeed = if (rawMeasuredSpeed in 10.0..75.0) {
-                BusSpeedCalculator.smoothSpeed(baseProfileSpeed.toDouble(), rawMeasuredSpeed, 0.6).roundToInt()
-            } else {
-                baseProfileSpeed
-            }
-        } else {
-            currentSpeed = BusSpeedCalculator.determineSimulatedSpeed(stepSizeIndex, currentStatus)
-        }
+        currentSpeed = simController.computeVelocity(
+            lastMoveLat, lastMoveLon, lastMoveTimestampMs,
+            currentLat, currentLon, now,
+            currentStatus
+        )
 
         lastMoveTimestampMs = now
         lastMoveLat = currentLat
@@ -625,50 +560,18 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
         if (existingStop != null) {
             existingStop.position = nextStopPos
             existingStop.title = "${nextStop.abbreviation} — ${nextStop.fullName}"
-            existingStop.setIcon(createNextStopMarker(requireContext(), color))
+            existingStop.setIcon(MapMarkerHelper.createNextStopMarker(requireContext(), color))
         } else {
             nextStopMarker = gMap.addMarker(
                 MarkerOptions()
                     .position(nextStopPos)
                     .title("${nextStop.abbreviation} — ${nextStop.fullName}")
                     .snippet("🎯 Next Destination Stop")
-                    .icon(createNextStopMarker(requireContext(), color))
+                    .icon(MapMarkerHelper.createNextStopMarker(requireContext(), color))
                     .anchor(0.5f, 0.5f)
                     .zIndex(6f)
             )
         }
-    }
-
-    /**
-     * Creates a clean matching next stop dot (Strictly copied from Admin Live Map)
-     */
-    private fun createNextStopMarker(ctx: Context, color: Int): BitmapDescriptor {
-        val density = ctx.resources.displayMetrics.density
-        val sizePx = (16 * density).toInt()
-        val bm = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bm)
-        val center = sizePx / 2f
-
-        val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.color = Color.WHITE
-            style = Paint.Style.FILL
-        }
-        canvas.drawCircle(center, center, center - (1 * density), bgPaint)
-
-        val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.color = color
-            style = Paint.Style.STROKE
-            strokeWidth = 2.5f * density
-        }
-        canvas.drawCircle(center, center, center - (1 * density), borderPaint)
-
-        val innerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.color = color
-            style = Paint.Style.FILL
-        }
-        canvas.drawCircle(center, center, center - (4.5f * density), innerPaint)
-
-        return BitmapDescriptorFactory.fromBitmap(bm)
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -754,6 +657,7 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
             } else {
                 nextStopIndex++
                 nextStopAbbr = routeStops[nextStopIndex]
+                currentNavStepIndex = 0
             }
         }
     }
@@ -767,15 +671,54 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
         val arrivalTimeClock = BusEtaCalculator.calculateArrivalClock(etaMins)
 
         binding.tvSpeed.text = currentSpeed.toString()
-        binding.tvEtaDriver.text = arrivalTimeClock
+        binding.tvEtaDriver.text = BusEtaCalculator.formatEtaBadge(etaMins)
+        binding.tvArriveClockSub.text = "arr $arrivalTimeClock"
         binding.tvDistDriver.text = BusEtaCalculator.formatDistance(distanceToNextKm)
 
         // AI ETA prediction calculation (Peak-hour & distance heuristic AI engine)
         val aiEtaMinutes = EtaPredictor.predict(distanceToNextKm)
         binding.tvAiPrediction.text = BusEtaCalculator.formatEtaBadge(aiEtaMinutes)
 
+        // Asynchronous remote XGBoost ML model prediction (AI Server)
+        queryDriverAiEta()
+
         // Top-right Live status on bottom card
         binding.tvBottomLiveRoute.text = "● LIVE · ${assignedRouteName.uppercase()}"
+    }
+
+    private var lastDriverAiQueryTime = 0L
+
+    private fun queryDriverAiEta() {
+        if (currentStatus != "WORKING" || distanceToNextKm <= 0.0) return
+        val now = System.currentTimeMillis()
+        // Throttle requests: at most once every 3 seconds to avoid flooding
+        if (now - lastDriverAiQueryTime < 3000L) return
+        lastDriverAiQueryTime = now
+
+        val request = com.upsi.smartbus.core.network.EtaRequest(
+            distance_km = distanceToNextKm,
+            current_speed_kmh = if (currentSpeed > 0) currentSpeed.toDouble() else 25.0,
+            route_name = assignedRouteName,
+            next_stop = nextStopAbbr
+        )
+
+        com.upsi.smartbus.core.network.AiApiClient.getService().predictEta(request)
+            .enqueue(object : retrofit2.Callback<com.upsi.smartbus.core.network.EtaResponse> {
+                override fun onResponse(
+                    call: retrofit2.Call<com.upsi.smartbus.core.network.EtaResponse>,
+                    response: retrofit2.Response<com.upsi.smartbus.core.network.EtaResponse>
+                ) {
+                    if (_binding == null) return
+                    val body = response.body() ?: return
+                    if (response.isSuccessful && body.status == "success") {
+                        binding.tvAiPrediction.text = body.eta_label
+                    }
+                }
+
+                override fun onFailure(call: retrofit2.Call<com.upsi.smartbus.core.network.EtaResponse>, t: Throwable) {
+                    // Graceful fallback: local heuristic already set
+                }
+            })
     }
 
     private fun logTerminal(msg: String) {
@@ -784,83 +727,13 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun buildDriverStopTimeline() {
-        val container = binding.llDriverStopTimeline
-        container.removeAllViews()
-
-        val ctx = requireContext()
-        val dp  = { n: Int -> TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, n.toFloat(), resources.displayMetrics).toInt() }
-        val routeColor = getActiveRouteColor()
-        val colorDone = ColorUtils.setAlphaComponent(routeColor, 120)
-        val colorInactive = Color.parseColor("#CBD5E1")
-
-        for ((idx, abbr) in routeStops.withIndex()) {
-            val isPassed = idx < nextStopIndex
-            val isNext   = idx == nextStopIndex
-            val isActive = isNext
-
-            val stopLayout = LinearLayout(ctx).apply {
-                orientation = LinearLayout.VERTICAL
-                gravity     = Gravity.CENTER
-            }
-
-            val dotSize = if (isNext) dp(14) else dp(9)
-            val dot = View(ctx).apply {
-                layoutParams = LinearLayout.LayoutParams(dotSize, dotSize).also { it.gravity = Gravity.CENTER_HORIZONTAL }
-                background = when {
-                    isNext   -> ContextCompat.getDrawable(ctx, R.drawable.ic_map_stop_next)
-                    isPassed -> createCircle(colorDone)
-                    isActive -> createCircle(routeColor)
-                    else     -> createCircle(colorInactive)
-                }
-            }
-
-            val label = TextView(ctx).apply {
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
-                ).also { it.topMargin = dp(3); it.gravity = Gravity.CENTER_HORIZONTAL }
-                text      = abbr
-                textSize  = if (isNext) 10f else 9f
-                gravity   = Gravity.CENTER
-                typeface  = if (isNext) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
-                setTextColor(when {
-                    isNext   -> routeColor
-                    isPassed -> colorDone
-                    else     -> colorInactive
-                })
-            }
-
-            stopLayout.addView(dot)
-            stopLayout.addView(label)
-
-            val wrapper = LinearLayout(ctx).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity     = Gravity.CENTER_VERTICAL
-                setPadding(dp(3), 0, dp(3), 0)
-            }
-            wrapper.addView(stopLayout)
-            container.addView(wrapper)
-
-            if (idx < routeStops.size - 1) {
-                val isArrowActive = (idx == nextStopIndex - 1)
-                val isArrowDone   = (idx < nextStopIndex - 1)
-                val arrow = TextView(ctx).apply {
-                    layoutParams = LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT, dp(20)
-                    ).also { it.gravity = Gravity.CENTER_VERTICAL }
-                    text      = " ➔ "
-                    textSize  = if (isArrowActive) 14f else 11f
-                    setTextColor(when { isArrowActive -> routeColor; isArrowDone -> colorDone; else -> colorInactive })
-                    typeface = if (isArrowActive) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
-                }
-                container.addView(arrow)
-            }
-        }
-    }
-
-    private fun createCircle(color: Int): android.graphics.drawable.ShapeDrawable {
-        return android.graphics.drawable.ShapeDrawable(android.graphics.drawable.shapes.OvalShape()).apply {
-            paint.color = color
-        }
+        DriverTimelineHelper.buildTimeline(
+            context = requireContext(),
+            container = binding.llDriverStopTimeline,
+            routeStops = routeStops,
+            nextStopIndex = nextStopIndex,
+            routeColor = getActiveRouteColor()
+        )
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -910,10 +783,16 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
     // ════════════════════════════════════════════════════════════════════
 
     private fun pushToFirestore() {
+        // Do not broadcast or push live data if no real driver is logged in or bus is unassigned
+        val currentUser = auth.currentUser
+        if (currentUser == null || assignedBusId.isEmpty() || assignedRouteName.isEmpty()) {
+            return
+        }
+
         val liveStatus = when (currentStatus) {
             "WORKING" -> "Working"; "RESTING" -> "Resting"; else -> "IDLE"
         }
-        val targetBusId = assignedBusId.ifEmpty { "BUS-001" }
+        val targetBusId = assignedBusId
 
         val liveData = hashMapOf(
             "latitude"       to currentLat,
@@ -967,37 +846,41 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
         val targetAbbr = nextStopAbbr.ifEmpty { routeStops.getOrNull(nextStopIndex) ?: "PT" }
         val targetStop = RouteData.getStopByAbbreviation(targetAbbr)
         val targetFullName = targetStop?.fullName ?: targetAbbr
-
-        // 2. UNIFIED DISTANCE — Strictly synchronized with bottom panel!
-        val currentDistKm = distanceToNextKm
-        binding.tvNavDistance.text = BusEtaCalculator.formatDistance(currentDistKm)
-
-        // 3. Compute relative angle and navigation maneuver
         val targetLat = targetStop?.latitude ?: currentLat
         val targetLon = targetStop?.longitude ?: currentLon
 
-        val maneuver = NavigationMathHelper.determineManeuver(
-            currentLat, currentLon, targetLat, targetLon, currentDistKm, targetFullName
+        // 2. Evaluate turn-by-turn guidance via DriverNavEngine
+        val legSteps = DriverNavEngine.filterLegSteps(navSteps, targetAbbr)
+        val guidance = DriverNavEngine.evaluateGuidance(
+            currentLat, currentLon,
+            targetLat, targetLon,
+            targetFullName,
+            distanceToNextKm,
+            legSteps,
+            currentNavStepIndex
         )
 
-        val iconRes = when (maneuver.type) {
-            NavigationMathHelper.ManeuverType.ARRIVED -> R.drawable.ic_nav_arrive
-            NavigationMathHelper.ManeuverType.STRAIGHT -> R.drawable.ic_nav_straight
-            NavigationMathHelper.ManeuverType.TURN_RIGHT -> R.drawable.ic_nav_turn_right
-            NavigationMathHelper.ManeuverType.TURN_LEFT -> R.drawable.ic_nav_turn_left
-            NavigationMathHelper.ManeuverType.U_TURN -> R.drawable.ic_nav_uturn
-            else -> R.drawable.ic_nav_straight
+        currentNavStepIndex = guidance.updatedStepIndex
+
+        binding.tvNavDistance.text = guidance.distanceFormatted
+        binding.tvNavInstruction.text = guidance.mainInstruction
+
+        val iconRes = when (guidance.iconType) {
+            "turn_left"  -> R.drawable.ic_nav_turn_left
+            "turn_right" -> R.drawable.ic_nav_turn_right
+            "uturn"      -> R.drawable.ic_nav_uturn
+            "arrive"     -> R.drawable.ic_nav_arrive
+            else         -> R.drawable.ic_nav_straight
         }
-
         binding.ivNavTurnIcon.setImageResource(iconRes)
-        binding.tvNavInstruction.text = maneuver.instruction
 
-        // Next stop info
+        binding.tvCycleTimer.text = guidance.secondaryInstruction
+        binding.tvCycleTimer.setTextColor(Color.parseColor("#E0FFFFFF"))
+
+        // Next stop info (right side)
         binding.tvNavNextStop.text = targetAbbr
         val etaMins = BusEtaCalculator.calculateStandardEtaMinutes(distanceToNextKm, currentSpeed.toDouble())
         binding.tvNavEta.text = BusEtaCalculator.formatEtaBadge(etaMins)
-
-        updateCycleTimer()
     }
 
     private fun calculateRelativeBearing(fromLat: Double, fromLon: Double, toLat: Double, toLon: Double): Double {
@@ -1011,23 +894,6 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
         brng = (brng + 360) % 360
         if (brng > 180) brng -= 360
         return brng
-    }
-
-    private fun updateCycleTimer() {
-        if (cycleStartTime == 0L) cycleStartTime = System.currentTimeMillis()
-
-        val elapsed = System.currentTimeMillis() - cycleStartTime
-        val remaining = CYCLE_DURATION_MS - elapsed
-
-        if (remaining >= 0) {
-            val remainingMins = (remaining / 60000).toInt()
-            binding.tvCycleTimer.text = "⏱ Pusingan $cycleCount — $remainingMins min lagi"
-            binding.tvCycleTimer.setTextColor(Color.parseColor("#99FFFFFF"))
-        } else {
-            val overdueMins = ((elapsed - CYCLE_DURATION_MS) / 60000).toInt().coerceAtLeast(1)
-            binding.tvCycleTimer.text = "⚠️ LEWAT $overdueMins MIN (Overdue)"
-            binding.tvCycleTimer.setTextColor(Color.parseColor("#FF5252")) // Bright red warning text
-        }
     }
 
     private fun restartRouteCycle() {
@@ -1075,9 +941,8 @@ class DriverControlFragment : Fragment(), OnMapReadyCallback {
         }
 
         handler.removeCallbacks(firestorePushRunnable)
-        handler.removeCallbacks(repeatRunnable)
         handler.removeCallbacks(autoIdleDecayRunnable)
-        isRepeating = false
+        simController.stopRepeating()
         if (assignedBusId.isNotEmpty()) {
             com.upsi.smartbus.core.data.RealtimeDbHelper.busRef(assignedBusId)
                 .updateChildren(mapOf<String, Any>("status" to "IDLE", "speed" to 0.0, "lastUpdated" to System.currentTimeMillis()))

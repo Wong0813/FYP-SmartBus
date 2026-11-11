@@ -50,8 +50,14 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
 
     private var map: GoogleMap? = null
     private val busMarkers = mutableMapOf<String, Marker>()
-    private val activePolylines = mutableMapOf<String, Polyline>()
-    private val stopMarkers = mutableMapOf<String, Marker>()
+    private val mapRenderer by lazy {
+        AdminMapRenderer(
+            context = requireContext(),
+            isFragmentAttached = { _binding != null },
+            getCurrentToken = { currentRenderToken },
+            getSelectedBus = { selectedBus }
+        )
+    }
 
     private val busList = mutableListOf<Bus>()
     private var busListener: ListenerRegistration? = null
@@ -64,17 +70,6 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
 
     // Generation token to strictly reject stale async route callbacks across bus switches
     private var currentRenderToken: Long = 0L
-
-    // High-tech glowing route color palette matching bus marker colors
-    private val TECH_ROUTE_COLORS = listOf(
-        Color.parseColor("#00E5FF"), // 0: Cyber Cyan
-        Color.parseColor("#00E676"), // 1: Neon Green
-        Color.parseColor("#FF9100"), // 2: Amber Blaze
-        Color.parseColor("#E040FB"), // 3: Neon Magenta
-        Color.parseColor("#2979FF"), // 4: Electric Blue
-        Color.parseColor("#FFD600"), // 5: Cyber Gold
-        Color.parseColor("#FF5252")  // 6: Laser Coral
-    )
 
     private val COLOR_RESTING      = Color.parseColor("#FF9800") // Amber
     private val COLOR_OFFLINE      = Color.parseColor("#78909C") // Grey Blue
@@ -185,6 +180,10 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
                     val finalRouteName = routeName.ifEmpty { staticBus?.routeName.orEmpty() }
                     val finalRouteStops = staticBus?.routeStops ?: (com.upsi.smartbus.core.data.RouteRepository.findRoute(finalRouteName)?.stops ?: emptyList())
 
+                    val isStale = (System.currentTimeMillis() - lastUpdated) > (5 * 60 * 1000L)
+                    val effectiveStatus = if (isStale) "IDLE" else status
+                    val effectiveSpeed = if (isStale) 0.0 else speed
+
                     val mergedBus = Bus(
                         id = busId,
                         name = staticBus?.name?.ifEmpty { finalRouteName } ?: finalRouteName,
@@ -194,10 +193,10 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
                         routeStops = finalRouteStops,
                         startStop = finalRouteStops.firstOrNull().orEmpty(),
                         location = com.google.firebase.firestore.GeoPoint(lat, lng),
-                        speed = speed,
-                        nextStop = nextStop,
-                        distanceToNext = dist,
-                        status = status,
+                        speed = effectiveSpeed,
+                        nextStop = if (isStale) "" else nextStop,
+                        distanceToNext = if (isStale) 0.0 else dist,
+                        status = effectiveStatus,
                         photoUrl = staticBus?.photoUrl.orEmpty(),
                         lastUpdated = lastUpdated
                     )
@@ -228,9 +227,9 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
                     if (updated != null) {
                         selectedBus = updated
                     }
-                    renderSingleRouteOnMap(selectedBus ?: current)
+                    mapRenderer.renderSingleRouteOnMap(map, selectedBus ?: current)
                 } else {
-                    renderAllActiveBusSegments()
+                    mapRenderer.renderAllActiveBusSegments(map, busList)
                 }
 
                 updateStatusPanel()
@@ -265,8 +264,8 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
                 bus.status.equals("resting", true) -> COLOR_RESTING
                 bus.status.equals("working", true) -> {
                     val activeIndex = activeList.indexOfFirst { it.id == bus.id }
-                    if (activeIndex != -1) TECH_ROUTE_COLORS[activeIndex % TECH_ROUTE_COLORS.size]
-                    else TECH_ROUTE_COLORS[0]
+                    if (activeIndex != -1) mapRenderer.TECH_ROUTE_COLORS[activeIndex % mapRenderer.TECH_ROUTE_COLORS.size]
+                    else mapRenderer.TECH_ROUTE_COLORS[0]
                 }
                 else -> COLOR_OFFLINE
             }
@@ -337,9 +336,9 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
     private fun selectAllBuses() {
         currentRenderToken++
         selectedBus = null
-        clearAllPolylinesAndStops()
+        mapRenderer.clearAllPolylinesAndStops()
         updateAllBusMarkers()
-        renderAllActiveBusSegments()
+        mapRenderer.renderAllActiveBusSegments(map, busList)
         updateStatusPanel()
         map?.animateCamera(CameraUpdateFactory.newLatLngZoom(upsiCenter, 15f), 600, null)
     }
@@ -347,9 +346,9 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
     private fun selectBus(bus: Bus) {
         currentRenderToken++
         selectedBus = bus
-        clearAllPolylinesAndStops()
+        mapRenderer.clearAllPolylinesAndStops()
         updateAllBusMarkers()
-        renderSingleRouteOnMap(bus)
+        mapRenderer.renderSingleRouteOnMap(map, bus)
         updateStatusPanel()
 
         val lat = bus.location.latitude
@@ -357,133 +356,6 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
         if (lat != 0.0 && lng != 0.0) {
             map?.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 16.5f), 600, null)
             busMarkers[bus.id]?.showInfoWindow()
-        }
-    }
-
-    private fun clearAllPolylinesAndStops() {
-        activePolylines.forEach { it.value.remove() }
-        activePolylines.clear()
-        stopMarkers.forEach { it.value.remove() }
-        stopMarkers.clear()
-    }
-
-    // ══════════════════════════════════════════════════════════════════════════
-    // ONLY RENDER ACTIVE SEGMENTS (Current Location ➔ Next Stop) IN MATCHING COLOR
-    // ══════════════════════════════════════════════════════════════════════════
-
-    private fun renderAllActiveBusSegments() {
-        val gMap = map ?: return
-        val activeWorkingBuses = busList.filter {
-            it.status.equals("working", true) &&
-            (it.location.latitude != 0.0 || it.location.longitude != 0.0)
-        }
-
-        val activeIds = activeWorkingBuses.map { it.id }.toSet()
-
-        // Remove polylines/stops that are no longer working
-        val polylinesToRemove = activePolylines.keys.filter { it !in activeIds }
-        polylinesToRemove.forEach { id -> activePolylines.remove(id)?.remove() }
-
-        val stopsToRemove = stopMarkers.keys.filter { it !in activeIds }
-        stopsToRemove.forEach { id -> stopMarkers.remove(id)?.remove() }
-
-        activeWorkingBuses.forEachIndexed { index, bus ->
-            val color = TECH_ROUTE_COLORS[index % TECH_ROUTE_COLORS.size]
-            renderBusActiveSegment(gMap, bus, color, currentRenderToken)
-        }
-    }
-
-    private fun renderSingleRouteOnMap(bus: Bus) {
-        val gMap = map ?: return
-
-        // In single bus mode, ensure all other polylines/stops are cleared
-        val toRemovePoly = activePolylines.keys.filter { it != bus.id }
-        toRemovePoly.forEach { id -> activePolylines.remove(id)?.remove() }
-
-        val toRemoveStop = stopMarkers.keys.filter { it != bus.id }
-        toRemoveStop.forEach { id -> stopMarkers.remove(id)?.remove() }
-
-        if (bus.status.equals("resting", true)) {
-            // Resting bus: show clean marker at resting position, no distracting segment
-            activePolylines.remove(bus.id)?.remove()
-            stopMarkers.remove(bus.id)?.remove()
-            return
-        }
-
-        val color = TECH_ROUTE_COLORS[0]
-        renderBusActiveSegment(gMap, bus, color, currentRenderToken)
-    }
-
-    /**
-     * Smooth in-place update for the active leg: Current Bus GPS ➔ Next Target Stop
-     * Uses generation tokens to prevent race conditions when switching between buses.
-     */
-    private fun renderBusActiveSegment(gMap: GoogleMap, bus: Bus, color: Int, token: Long) {
-        val busPos = LatLng(bus.location.latitude, bus.location.longitude)
-        val nextStopAbbr = bus.nextStop
-        val nextStop = RouteData.getStopByAbbreviation(nextStopAbbr) ?: return
-        val nextStopPos = LatLng(nextStop.latitude, nextStop.longitude)
-
-        fun applyRoadPoints(roadPts: List<LatLng>) {
-            val poly = activePolylines[bus.id]
-            if (poly != null) {
-                poly.color = color
-                poly.points = roadPts
-            } else {
-                val newPoly = gMap.addPolyline(
-                    PolylineOptions()
-                        .addAll(roadPts)
-                        .color(color)
-                        .width(14f)
-                        .geodesic(true)
-                        .jointType(JointType.ROUND)
-                        .startCap(RoundCap())
-                        .endCap(RoundCap())
-                        .zIndex(5f)
-                )
-                activePolylines[bus.id] = newPoly
-            }
-        }
-
-        // Check if cached road points exist for instant display
-        val cachedRoad = RouteSegmentHelper.getCachedRoad(busPos, nextStopAbbr)
-        if (cachedRoad != null && cachedRoad.size >= 2) {
-            applyRoadPoints(cachedRoad)
-        }
-
-        // Query true street road engine with token protection
-        RouteSegmentHelper.dynamicallyRouteBusToNextStop(
-            busId = bus.id,
-            busPos = busPos,
-            nextStopAbbr = nextStopAbbr,
-            requestToken = token,
-            onRoadPointsReady = { respToken, roadPts ->
-                if (_binding == null || respToken != currentRenderToken) return@dynamicallyRouteBusToNextStop
-                // Double check if in single mode that this bus is still selected
-                val focused = selectedBus
-                if (focused != null && focused.id != bus.id) return@dynamicallyRouteBusToNextStop
-
-                applyRoadPoints(roadPts)
-            }
-        )
-
-        // Update target next stop dot (clean 14dp circle)
-        val existingStop = stopMarkers[bus.id]
-        if (existingStop != null) {
-            existingStop.position = nextStopPos
-            existingStop.title = "${nextStop.abbreviation} — ${nextStop.fullName}"
-            existingStop.setIcon(createNextStopMarker(requireContext(), color))
-        } else {
-            val stopMarker = gMap.addMarker(
-                MarkerOptions()
-                    .position(nextStopPos)
-                    .title("${nextStop.abbreviation} — ${nextStop.fullName}")
-                    .snippet("🎯 Next Destination Stop")
-                    .icon(createNextStopMarker(requireContext(), color))
-                    .anchor(0.5f, 0.5f)
-                    .zIndex(6f)
-            )
-            if (stopMarker != null) stopMarkers[bus.id] = stopMarker
         }
     }
 
@@ -559,6 +431,11 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
             val etaMins = BusEtaCalculator.calculateStandardEtaMinutes(dist, if (isWorking) bus.speed else 0.0)
             binding.tvPanelEta.text = if (isWorking && dist > 0) BusEtaCalculator.formatEtaBadge(etaMins) else "—"
 
+            // Asynchronous remote AI ETA query
+            if (isWorking && dist > 0) {
+                queryAdminAiEta(bus)
+            }
+
             // Pure green stop chain highlight matching Dashboard
             val stops = bus.routeStops.ifEmpty { routeObj?.stops ?: emptyList() }
             if (stops.isNotEmpty()) {
@@ -620,80 +497,34 @@ class AdminLiveMapFragment : Fragment(), OnMapReadyCallback {
         )
     }
 
-    /**
-     * Creates a glowing cyberpunk pulse circle marker in the exact color matching the active route line.
-     */
-    private fun createDynamicCircleMarker(ctx: Context, color: Int, sizeDp: Int = 34): BitmapDescriptor {
-        val density = ctx.resources.displayMetrics.density
-        val sizePx = (sizeDp * density).toInt()
-        val bm = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bm)
-        val center = sizePx / 2f
 
-        // Outer glow aura
-        val auraPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.color = color
-            alpha = 50
-            style = Paint.Style.FILL
-        }
-        canvas.drawCircle(center, center, center - (1 * density), auraPaint)
+    private fun queryAdminAiEta(bus: Bus) {
+        if (!bus.status.equals("working", true) || bus.distanceToNext <= 0.0) return
+        val request = com.upsi.smartbus.core.network.EtaRequest(
+            distance_km = bus.distanceToNext,
+            current_speed_kmh = if (bus.speed > 0) bus.speed else 25.0,
+            route_name = bus.routeName,
+            next_stop = bus.nextStop
+        )
+        com.upsi.smartbus.core.network.AiApiClient.getService().predictEta(request)
+            .enqueue(object : retrofit2.Callback<com.upsi.smartbus.core.network.EtaResponse> {
+                override fun onResponse(
+                    call: retrofit2.Call<com.upsi.smartbus.core.network.EtaResponse>,
+                    response: retrofit2.Response<com.upsi.smartbus.core.network.EtaResponse>
+                ) {
+                    if (_binding == null || selectedBus?.id != bus.id) return
+                    val body = response.body() ?: return
+                    if (response.isSuccessful && body.status == "success") {
+                        val stdEta = BusEtaCalculator.calculateStandardEtaMinutes(bus.distanceToNext, if (bus.status.equals("working", true)) bus.speed else 0.0)
+                        val stdBadge = BusEtaCalculator.formatEtaBadge(stdEta)
+                        binding.tvPanelEta.text = "$stdBadge (AI: ${body.eta_label})"
+                    }
+                }
 
-        // Middle ring
-        val midPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.color = color
-            alpha = 120
-            style = Paint.Style.FILL
-        }
-        canvas.drawCircle(center, center, center - (4 * density), midPaint)
-
-        // Inner solid core
-        val corePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.color = color
-            style = Paint.Style.FILL
-        }
-        canvas.drawCircle(center, center, center - (7 * density), corePaint)
-
-        // White border
-        val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.color = Color.WHITE
-            style = Paint.Style.STROKE
-            strokeWidth = 2.2f * density
-        }
-        canvas.drawCircle(center, center, center - (7 * density), strokePaint)
-
-        return BitmapDescriptorFactory.fromBitmap(bm)
-    }
-
-    /**
-     * Creates a clean matching next stop dot
-     */
-    private fun createNextStopMarker(ctx: Context, color: Int): BitmapDescriptor {
-        val density = ctx.resources.displayMetrics.density
-        val sizePx = (16 * density).toInt()
-        val bm = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bm)
-        val center = sizePx / 2f
-
-        val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.color = Color.WHITE
-            style = Paint.Style.FILL
-        }
-        canvas.drawCircle(center, center, center - (1 * density), bgPaint)
-
-        val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.color = color
-            style = Paint.Style.STROKE
-            strokeWidth = 2.5f * density
-        }
-        canvas.drawCircle(center, center, center - (1 * density), borderPaint)
-
-        val innerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.color = color
-            style = Paint.Style.FILL
-        }
-        canvas.drawCircle(center, center, center - (4.5f * density), innerPaint)
-
-        return BitmapDescriptorFactory.fromBitmap(bm)
+                override fun onFailure(call: retrofit2.Call<com.upsi.smartbus.core.network.EtaResponse>, t: Throwable) {
+                    // Fallback already rendered
+                }
+            })
     }
 
     override fun onDestroyView() {

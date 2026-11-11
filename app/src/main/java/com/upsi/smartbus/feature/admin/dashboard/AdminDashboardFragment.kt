@@ -21,10 +21,12 @@ import com.upsi.smartbus.core.model.Route
 import com.upsi.smartbus.core.util.BusEtaCalculator
 import com.upsi.smartbus.core.util.BusSpeedCalculator
 import com.upsi.smartbus.core.util.EtaPredictor
+import com.upsi.smartbus.core.util.FleetPriorityHelper
 import com.upsi.smartbus.databinding.FragmentAdminDashboardBinding
-import com.upsi.smartbus.databinding.ItemFleetMonitorRowBinding
 import com.upsi.smartbus.feature.admin.AdminActivity
 import com.upsi.smartbus.feature.admin.seeder.AdminSortHelper
+import com.upsi.smartbus.ui.adapter.FleetItem
+import com.upsi.smartbus.ui.adapter.FleetMonitorAdapter
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -35,29 +37,6 @@ class AdminDashboardFragment : Fragment() {
     private val binding get() = _binding!!
     private val db by lazy { FirestoreHelper.db }
     private val etaPredictor = com.upsi.smartbus.core.util.EtaPredictor()
-
-    data class FleetItem(
-        val route: Route,
-        val routeOrder: Int,
-        val driverName: String,
-        val driverUid: String = "",
-        val busId: String,
-        val plateNumber: String,
-        var status: String = "OFFLINE",
-        var speed: Double = 0.0,
-        var nextStop: String = "",
-        var distanceToNext: Double = 0.0,
-        var lastUpdated: Long = 0L,
-        val isActiveDay: Boolean = true
-    ) {
-        val isSpeeding: Boolean get() =
-            com.upsi.smartbus.core.util.DriverSafetyEvaluator.evaluateSpeed(
-                speed,
-                com.upsi.smartbus.core.util.DriverSafetyEvaluator.DEFAULT_CAMPUS_SPEED_LIMIT
-            ) != com.upsi.smartbus.core.util.DriverSafetyEvaluator.SafetyLevel.NORMAL && status.equals("working", true)
-        val isActive: Boolean get() = status.equals("working", true)
-        val isResting: Boolean get() = status.equals("resting", true)
-    }
 
     private val allFleetItems = mutableListOf<FleetItem>()
     private val displayFleetItems = mutableListOf<FleetItem>()
@@ -239,9 +218,29 @@ class AdminDashboardFragment : Fragment() {
                 }
                 filterFleetList()
             } else {
+                fun applyCanonicalFallback() {
+                    val entries = com.upsi.smartbus.feature.admin.seeder.AccountSeeder.alignedEntries()
+                    for (entry in entries) {
+                        val idx = allFleetItems.indexOfFirst { it.route.name == entry.route.name }
+                        if (idx >= 0) {
+                            val item = allFleetItems[idx]
+                            allFleetItems[idx] = item.copy(
+                                driverName = entry.driver.driverName,
+                                driverUid = com.upsi.smartbus.feature.admin.seeder.AccountSeeder.driverDocId(entry.number),
+                                busId = entry.driver.busId,
+                                plateNumber = entry.driver.plateNumber
+                            )
+                        }
+                    }
+                    filterFleetList()
+                }
+
                 db.collection("users").whereEqualTo("role", "DRIVER").get()
                     .addOnSuccessListener { snapshot ->
-                        if (_binding == null || snapshot == null || snapshot.isEmpty) return@addOnSuccessListener
+                        if (_binding == null || snapshot == null || snapshot.isEmpty) {
+                            applyCanonicalFallback()
+                            return@addOnSuccessListener
+                        }
                         val usersList = mutableListOf<com.upsi.smartbus.core.model.UserProfile>()
                         for (doc in snapshot.documents) {
                             doc.toObject(com.upsi.smartbus.core.model.UserProfile::class.java)?.let {
@@ -264,6 +263,9 @@ class AdminDashboardFragment : Fragment() {
                             com.upsi.smartbus.core.data.AppCache.putUsers(usersList)
                         }
                         filterFleetList()
+                    }
+                    .addOnFailureListener {
+                        applyCanonicalFallback()
                     }
             }
 
@@ -317,21 +319,29 @@ class AdminDashboardFragment : Fragment() {
                     }
                 }
 
-                var online = 0; var resting = 0; var offline = 0
+                val now = System.currentTimeMillis()
+                val STALE_TIMEOUT_MS = 5 * 60 * 1000L // 5 minutes without GPS update = OFFLINE
+
+                var online = 0
+                var resting = 0
+                var offline = 0
 
                 allFleetItems.indices.forEach { i ->
                     val item = allFleetItems[i]
                     val bus = busMap[item.busId] ?: busMap[item.route.name]
 
+                    val isStale = (bus == null) || (bus.lastUpdated > 0L && (now - bus.lastUpdated) > STALE_TIMEOUT_MS)
+                    val effectiveStatus = if (isStale) "IDLE" else (bus?.status ?: "IDLE")
+
                     // FleetItem has var fields — assign directly instead of copy()
-                    item.status = bus?.status ?: "IDLE"
-                    item.speed = bus?.speed ?: 0.0
-                    item.nextStop = bus?.nextStop ?: ""
-                    item.distanceToNext = bus?.distanceToNext ?: 0.0
+                    item.status = effectiveStatus
+                    item.speed = if (isStale) 0.0 else (bus?.speed ?: 0.0)
+                    item.nextStop = if (isStale) "" else (bus?.nextStop ?: "")
+                    item.distanceToNext = if (isStale) 0.0 else (bus?.distanceToNext ?: 0.0)
                     item.lastUpdated = bus?.lastUpdated ?: 0L
 
-                    if (item.isActiveDay) {
-                        when ((bus?.status ?: "IDLE").lowercase()) {
+                    if (item.isActiveDay && !isStale) {
+                        when (effectiveStatus.lowercase()) {
                             "working" -> online++
                             "resting" -> resting++
                             else -> offline++
@@ -341,25 +351,13 @@ class AdminDashboardFragment : Fragment() {
                     }
                 }
 
-                // Sort: Speeding first → Active → Resting → Offline
-                allFleetItems.sortWith(
-                    Comparator { a, b ->
-                        val aPriority = when {
-                            a.isSpeeding -> 0
-                            a.isActive -> 1
-                            a.isResting -> 2
-                            else -> 3
-                        }
-                        val bPriority = when {
-                            b.isSpeeding -> 0
-                            b.isActive -> 1
-                            b.isResting -> 2
-                            else -> 3
-                        }
-                        if (aPriority != bPriority) aPriority - bPriority
-                        else a.routeOrder - b.routeOrder
-                    }
-                )
+                // Sort: Speeding first → Active → Resting → Offline (Fast pure Java priority comparator)
+                allFleetItems.sortWith { a, b ->
+                    FleetPriorityHelper.compareFleet(
+                        a.isSpeeding, a.isActive, a.isResting, a.routeOrder,
+                        b.isSpeeding, b.isActive, b.isResting, b.routeOrder
+                    )
+                }
 
                 binding.tvTotalFleetCount.text = "${allFleetItems.size}"
                 binding.tvStatOnlineCountSmall.text = "$online"
@@ -382,135 +380,5 @@ class AdminDashboardFragment : Fragment() {
         busListener?.remove()
         _binding = null
         super.onDestroyView()
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // FLEET MONITOR ADAPTER
-    // ══════════════════════════════════════════════════════════════
-
-    inner class FleetMonitorAdapter(
-        private val items: List<FleetItem>,
-        private val onClick: (FleetItem) -> Unit
-    ) : RecyclerView.Adapter<FleetMonitorAdapter.VH>() {
-
-        inner class VH(val binding: ItemFleetMonitorRowBinding) : RecyclerView.ViewHolder(binding.root)
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-            VH(ItemFleetMonitorRowBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-
-        override fun getItemCount() = items.size
-
-        override fun onBindViewHolder(holder: VH, position: Int) {
-            val item = items[position]
-            val b = holder.binding
-            val ctx = holder.itemView.context
-
-            b.tvFleetRouteName.text = item.route.name
-            b.tvFleetDriverInfo.text = buildString {
-                append(item.driverName)
-                if (item.busId != "—") append("  •  ${item.busId}")
-                if (item.plateNumber != "—") append(" (${item.plateNumber})")
-            }
-
-            val aiEta = EtaPredictor.predict(item.distanceToNext)
-            val etaMinutes = BusEtaCalculator.calculateStandardEtaMinutes(item.distanceToNext, item.speed)
-
-            when {
-                item.isSpeeding -> {
-                    b.statusBar.setBackgroundColor(ContextCompat.getColor(ctx, R.color.crimson_primary))
-                    b.statusDot.setBackgroundResource(R.drawable.dot_green)
-                    b.tvStatusLabel.text = "SPEEDING"
-                    b.tvStatusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.crimson_primary))
-                    b.llStatusPill.setBackgroundResource(R.drawable.bg_status_moving)
-                    b.llSpeedAlert.visibility = View.VISIBLE
-                    b.tvSpeedAlert.text = com.upsi.smartbus.core.util.DriverSafetyEvaluator.getSpeedAlertLabel(
-                        item.speed,
-                        com.upsi.smartbus.core.util.DriverSafetyEvaluator.DEFAULT_CAMPUS_SPEED_LIMIT
-                    )
-                    b.tvFleetSpeed.setTextColor(ContextCompat.getColor(ctx, R.color.crimson_primary))
-                    b.tvFleetSpeed.text = BusSpeedCalculator.formatSpeed(item.speed)
-                    b.tvFleetNextStop.text = "Next: ${item.nextStop.ifEmpty { "En Route" }} (${BusEtaCalculator.formatDistance(item.distanceToNext)})"
-                    b.tvFleetEta.text = "ETA: $etaMinutes min"
-                    b.tvFleetAiEta.text = "AI: ~$aiEta min"
-                }
-
-                item.isActive -> {
-                    b.statusBar.setBackgroundColor(ContextCompat.getColor(ctx, R.color.status_moving))
-                    b.statusDot.setBackgroundResource(R.drawable.dot_green)
-                    b.tvStatusLabel.text = "ACTIVE"
-                    b.tvStatusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.status_moving))
-                    b.llStatusPill.setBackgroundResource(R.drawable.bg_status_moving)
-                    b.llSpeedAlert.visibility = View.GONE
-                    b.tvFleetSpeed.setTextColor(ContextCompat.getColor(ctx, R.color.status_moving))
-                    b.tvFleetSpeed.text = BusSpeedCalculator.formatSpeed(item.speed)
-                    b.tvFleetNextStop.text = "Next: ${item.nextStop.ifEmpty { "En Route" }} (${BusEtaCalculator.formatDistance(item.distanceToNext)})"
-                    b.tvFleetEta.text = "ETA: $etaMinutes min"
-                    b.tvFleetAiEta.text = "AI: ~$aiEta min"
-                }
-
-                item.isResting -> {
-                    b.statusBar.setBackgroundColor(ContextCompat.getColor(ctx, R.color.status_resting))
-                    b.statusDot.setBackgroundResource(R.drawable.dot_orange)
-                    b.tvStatusLabel.text = "RESTING"
-                    b.tvStatusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.status_resting))
-                    b.llStatusPill.setBackgroundResource(R.drawable.bg_status_resting)
-                    b.llSpeedAlert.visibility = View.GONE
-                    b.tvFleetSpeed.setTextColor(ContextCompat.getColor(ctx, R.color.text_secondary))
-                    b.tvFleetSpeed.text = "0 km/h"
-                    b.tvFleetNextStop.text = "Next: Resting at depot"
-                    b.tvFleetEta.text = "ETA: —"
-                    b.tvFleetAiEta.text = "AI: —"
-                }
-
-                else -> {
-                    b.statusBar.setBackgroundColor(ContextCompat.getColor(ctx, R.color.status_offline))
-                    b.statusDot.setBackgroundResource(R.drawable.dot_gray)
-                    b.tvStatusLabel.text = "OFFLINE"
-                    b.tvStatusLabel.setTextColor(ContextCompat.getColor(ctx, R.color.status_offline))
-                    b.llStatusPill.setBackgroundResource(R.drawable.bg_status_offline)
-                    b.llSpeedAlert.visibility = View.GONE
-                    b.tvFleetSpeed.setTextColor(ContextCompat.getColor(ctx, R.color.text_hint))
-                    b.tvFleetSpeed.text = "0 km/h"
-                    b.tvFleetNextStop.text = "Next: Offline / Depot"
-                    b.tvFleetEta.text = "ETA: —"
-                    b.tvFleetAiEta.text = "AI: —"
-                }
-            }
-
-            // Pure green stop chain highlight
-            if (item.route.stops.isNotEmpty()) {
-                b.tvFleetStops.visibility = View.VISIBLE
-                val stops = item.route.stops
-                val currentTarget = item.nextStop.trim()
-                val targetIdx = stops.indexOfFirst { it.trim().equals(currentTarget, ignoreCase = true) }
-
-                val html = if (targetIdx >= 0) {
-                    val sb = StringBuilder()
-                    stops.forEachIndexed { idx, stopName ->
-                        if (idx > 0) sb.append(" <font color='#D1D5DB'>\u2192</font> ")
-                        when {
-                            idx == targetIdx -> {
-                                sb.append("<font color='#059669'><b>$stopName</b></font>")
-                            }
-                            idx < targetIdx -> {
-                                sb.append("<font color='#9CA3AF'>$stopName</font>")
-                            }
-                            else -> {
-                                sb.append("<font color='#6B7280'>$stopName</font>")
-                            }
-                        }
-                    }
-                    sb.toString()
-                } else {
-                    stops.joinToString(" <font color='#D1D5DB'>\u2192</font> ") { stopName -> "<font color='#6B7280'>$stopName</font>" }
-                }
-
-                b.tvFleetStops.text = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
-            } else {
-                b.tvFleetStops.visibility = View.GONE
-            }
-
-            holder.itemView.setOnClickListener { onClick(item) }
-        }
     }
 }

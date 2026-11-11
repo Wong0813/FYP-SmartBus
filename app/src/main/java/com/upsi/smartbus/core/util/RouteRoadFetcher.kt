@@ -112,11 +112,6 @@ object RouteRoadFetcher {
                                         val maneuver = step.optJSONObject("maneuver") ?: continue
                                         val mType = maneuver.optString("type", "continue")
 
-                                        // Skip intermediate leg "arrive" steps (only keep the true final destination arrive)
-                                        if (mType == "arrive" && !isFinalLeg) {
-                                            continue
-                                        }
-
                                         val locArr = maneuver.optJSONArray("location")
                                         val loc = if (locArr != null && locArr.length() >= 2)
                                             LatLng(locArr.getDouble(1), locArr.getDouble(0))
@@ -132,8 +127,8 @@ object RouteRoadFetcher {
                                             targetStopAbbr = targetAbbr
                                         )
 
-                                        // Skip zero distance filler steps unless it's the final arrive
-                                        if (navStep.distanceMeters > 0 || (navStep.type == "arrive" && isFinalLeg)) {
+                                        // Keep all meaningful movement steps and stop arrival steps
+                                        if (navStep.distanceMeters > 0 || navStep.type == "arrive") {
                                             allSteps.add(navStep)
                                         }
                                     }

@@ -19,8 +19,10 @@
 
     <!-- Navigation Drawer -->
     <string name="nav_home_map">Home Map</string>
+    <string name="nav_route_finder">AI Route Finder</string>
     <string name="nav_active_buses">Active Buses</string>
     <string name="nav_route_schedules">Route Schedules</string>
+    <string name="nav_bus_schedules">Bus &amp; Schedules</string>
     <string name="nav_profile">Profile</string>
     <string name="nav_control_desk">Control Desk</string>
     <string name="nav_dashboard">Schedule Dashboard</string>

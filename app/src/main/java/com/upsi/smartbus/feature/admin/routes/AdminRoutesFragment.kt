@@ -68,9 +68,12 @@ class AdminRoutesFragment : Fragment() {
 
     private fun setupScheduleTypeSpinner() {
         val types = listOf("Weekday (Mon-Fri)", "Weekend / Saturday")
-        binding.spinnerScheduleType.adapter = ArrayAdapter(
-            requireContext(), android.R.layout.simple_spinner_dropdown_item, types
-        )
+        val spinnerAdapter = ArrayAdapter(
+            requireContext(), com.upsi.smartbus.R.layout.item_custom_spinner_selected, types
+        ).apply {
+            setDropDownViewResource(com.upsi.smartbus.R.layout.item_custom_spinner_dropdown)
+        }
+        binding.spinnerScheduleType.adapter = spinnerAdapter
     }
 
     private fun setupSearch() {
@@ -140,9 +143,12 @@ class AdminRoutesFragment : Fragment() {
 
     private fun setupStopsSpinner() {
         val allStops = RouteData.stops.map { "${it.abbreviation} - ${it.fullName}" }
-        binding.spinnerStops.adapter = ArrayAdapter(
-            requireContext(), android.R.layout.simple_spinner_dropdown_item, allStops
-        )
+        val spinnerAdapter = ArrayAdapter(
+            requireContext(), com.upsi.smartbus.R.layout.item_custom_spinner_selected, allStops
+        ).apply {
+            setDropDownViewResource(com.upsi.smartbus.R.layout.item_custom_spinner_dropdown)
+        }
+        binding.spinnerStops.adapter = spinnerAdapter
     }
 
     private fun setupAddStop() {
@@ -294,32 +300,131 @@ class AdminRoutesFragment : Fragment() {
 
     private fun showEdit(route: Route) {
         val ctx = requireContext()
-        val et = android.widget.EditText(ctx).apply {
-            hint = "Route Name"
-            setText(route.name)
-            setBackgroundResource(R.drawable.bg_input_field)
-            setPadding(32, 24, 32, 24)
+        val dialog = android.app.Dialog(ctx)
+        val b = com.upsi.smartbus.databinding.DialogEditRouteBinding.inflate(layoutInflater)
+        dialog.setContentView(b.root)
+        dialog.window?.apply {
+            setBackgroundDrawableResource(android.R.color.transparent)
+            setLayout(
+                (resources.displayMetrics.widthPixels * 0.92).toInt(),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
         }
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(ctx)
-            .setTitle("Edit Route")
-            .setView(et)
-            .setPositiveButton("Save") { _, _ ->
-                val newName = et.text.toString().trim()
-                if (newName.isNotEmpty()) {
-                    // Immediately update local list
-                    val idx = allRoutes.indexOfFirst { it.id == route.id }
-                    if (idx >= 0) {
-                        allRoutes[idx] = allRoutes[idx].copy(name = newName)
+
+        b.tvEditRouteDialogTitle.text = "Edit ${route.name}"
+        b.etEditRouteName.setText(route.name)
+        b.etEditRouteShortName.setText(route.shortName)
+
+        // Schedule type spinner
+        val scheduleTypes = listOf("Weekday (Mon-Fri)", "Weekend / Saturday")
+        val schedAdapter = ArrayAdapter(
+            ctx, com.upsi.smartbus.R.layout.item_custom_spinner_selected, scheduleTypes
+        ).apply {
+            setDropDownViewResource(com.upsi.smartbus.R.layout.item_custom_spinner_dropdown)
+        }
+        b.spinnerEditScheduleType.adapter = schedAdapter
+        val isSat = route.scheduleType.equals("SATURDAY", true)
+        b.spinnerEditScheduleType.setSelection(if (isSat) 1 else 0)
+
+        // Stops options spinner
+        val allStops = RouteData.stops.map { "${it.abbreviation} - ${it.fullName}" }
+        val stopsAdapter = ArrayAdapter(
+            ctx, com.upsi.smartbus.R.layout.item_custom_spinner_selected, allStops
+        ).apply {
+            setDropDownViewResource(com.upsi.smartbus.R.layout.item_custom_spinner_dropdown)
+        }
+        b.spinnerEditStopOptions.adapter = stopsAdapter
+
+        // Local mutable copy of stops for editing
+        val currentStops = route.stops.toMutableList()
+
+        fun refreshEditStopsUi() {
+            b.tvEditStopCount.text = "${currentStops.size} Stops"
+            b.llEditStopChips.removeAllViews()
+            currentStops.forEachIndexed { i, stop ->
+                val tv = TextView(ctx).apply {
+                    text = "${i + 1}. $stop \u2715"
+                    setBackgroundResource(R.drawable.bg_role_badge)
+                    setPadding(24, 12, 24, 12)
+                    setTextColor(ContextCompat.getColor(ctx, R.color.crimson_primary))
+                    textSize = 12f
+                    setOnClickListener {
+                        currentStops.removeAt(i)
+                        refreshEditStopsUi()
                     }
-                    RouteRepository.invalidateCache()
-                    rebuildList()
-                    Toast.makeText(ctx, "Route updated", Toast.LENGTH_SHORT).show()
-                    // Persist to Firestore in background
-                    db.collection("routes").document(route.id).update("name", newName)
+                    val lp = android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                    )
+                    lp.marginEnd = 16
+                    layoutParams = lp
                 }
+                b.llEditStopChips.addView(tv)
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }
+        refreshEditStopsUi()
+
+        b.btnEditAddStop.setOnClickListener {
+            val selectedStop = RouteData.stops.getOrNull(b.spinnerEditStopOptions.selectedItemPosition)?.abbreviation
+            if (!selectedStop.isNullOrEmpty()) {
+                currentStops.add(selectedStop)
+                refreshEditStopsUi()
+            }
+        }
+
+        b.btnDialogRouteClose.setOnClickListener { dialog.dismiss() }
+        b.btnDialogRouteCancel.setOnClickListener { dialog.dismiss() }
+
+        b.btnDialogRouteSave.setOnClickListener {
+            val newName = b.etEditRouteName.text.toString().trim()
+            val newShort = b.etEditRouteShortName.text.toString().trim().ifEmpty {
+                newName.split(" ").take(2).joinToString("") { it.take(1) }
+            }
+            val newSchedule = if (b.spinnerEditScheduleType.selectedItemPosition == 1) "SATURDAY" else "WEEKDAY"
+
+            if (newName.isEmpty()) {
+                Toast.makeText(ctx, "Route name cannot be empty", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (currentStops.isEmpty()) {
+                Toast.makeText(ctx, "A route must contain at least 1 stop", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            b.btnDialogRouteSave.isEnabled = false
+            b.btnDialogRouteSave.text = "Saving..."
+
+            // 1. Immediately update in-memory cache for zero latency
+            val targetIdx = allRoutes.indexOfFirst { it.id == route.id || it.name == route.name }
+            val updatedRoute = route.copy(
+                name = newName,
+                shortName = newShort,
+                stops = currentStops.toList(),
+                scheduleType = newSchedule
+            )
+            if (targetIdx >= 0) {
+                allRoutes[targetIdx] = updatedRoute
+            }
+            RouteRepository.invalidateCache()
+            rebuildList()
+            dialog.dismiss()
+            Toast.makeText(ctx, "Route & Stops updated successfully", Toast.LENGTH_SHORT).show()
+
+            // 2. Persist to Firestore document
+            val docId = if (route.id.isNotEmpty()) route.id else AccountSeeder.routeDocId(route.name)
+            val updates = mapOf(
+                "name" to newName,
+                "shortName" to newShort,
+                "stops" to currentStops.toList(),
+                "scheduleType" to newSchedule
+            )
+            db.collection("routes").document(docId).set(updates, com.google.firebase.firestore.SetOptions.merge())
+                .addOnFailureListener { e ->
+                    android.util.Log.w("AdminRoutes", "Failed to sync route update to Firestore", e)
+                }
+        }
+
+        dialog.show()
     }
 
     private fun deleteRoute(route: Route) {

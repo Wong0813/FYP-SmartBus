@@ -139,9 +139,12 @@ class AdminFleetFragment : Fragment() {
             val labels = routes.mapIndexed { i, r ->
                 "${AdminSortHelper.routeNumberLabel(r)} ${r.shortName} — ${r.name}"
             }
-            binding.spinnerBusRoute.adapter = ArrayAdapter(
-                requireContext(), android.R.layout.simple_spinner_dropdown_item, labels
-            )
+            val spinnerAdapter = ArrayAdapter(
+                requireContext(), com.upsi.smartbus.R.layout.item_custom_spinner_selected, labels
+            ).apply {
+                setDropDownViewResource(com.upsi.smartbus.R.layout.item_custom_spinner_dropdown)
+            }
+            binding.spinnerBusRoute.adapter = spinnerAdapter
         }
     }
 
@@ -215,7 +218,9 @@ class AdminFleetFragment : Fragment() {
             pickBusPhotoLauncher.launch("image/*")
         }
 
-        val adapter = ArrayAdapter(ctx, android.R.layout.simple_spinner_dropdown_item, routeNames)
+        val adapter = ArrayAdapter(ctx, com.upsi.smartbus.R.layout.item_custom_spinner_selected, routeNames).apply {
+            setDropDownViewResource(com.upsi.smartbus.R.layout.item_custom_spinner_dropdown)
+        }
         b.spinnerEditBusRoute.adapter = adapter
         val rIdx = routeNames.indexOf(bus.routeName)
         if (rIdx >= 0) b.spinnerEditBusRoute.setSelection(rIdx)

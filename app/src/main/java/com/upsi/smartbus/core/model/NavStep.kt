@@ -22,16 +22,17 @@ data class NavStep(
     /** Target stop abbreviation associated with this leg */
     val targetStopAbbr: String = ""
 ) {
-    /** Human-readable instruction for display */
+    /** Human-readable instruction for display (Google Maps format) */
     fun getInstruction(nextStopFullName: String = ""): String {
-        val destination = when {
-            roadName.isNotEmpty() -> roadName
-            nextStopFullName.isNotEmpty() -> nextStopFullName
-            targetStopAbbr.isNotEmpty() -> targetStopAbbr
-            else -> "Jalan Utama"
+        val hasRoad = roadName.isNotBlank()
+        val dest = when {
+            hasRoad -> " ke $roadName"
+            type.equals("arrive", ignoreCase = true) && nextStopFullName.isNotBlank() -> " di $nextStopFullName"
+            type.equals("depart", ignoreCase = true) && nextStopFullName.isNotBlank() -> " ke arah $nextStopFullName"
+            else -> ""
         }
 
-        val dirAction = when (modifier) {
+        val dirAction = when (modifier.lowercase()) {
             "left"         -> "Belok Kiri"
             "right"        -> "Belok Kanan"
             "slight left"  -> "Belok Sedikit Kiri"
@@ -40,14 +41,17 @@ data class NavStep(
             "sharp right"  -> "Belok Tajam Kanan"
             "uturn"        -> "Pusing Balik"
             "straight"     -> "Terus Lurus"
-            else           -> "Terus Lurus"
+            else           -> if (type.equals("turn", ignoreCase = true)) "Belok" else "Terus Lurus"
         }
 
-        return when (type) {
-            "depart" -> "Bermula ke $destination"
-            "arrive" -> "Tiba di $destination"
-            "roundabout", "rotary" -> "Masuk Bulatan ke $destination"
-            else -> "$dirAction ke $destination"
+        return when (type.lowercase()) {
+            "arrive" -> if (nextStopFullName.isNotBlank()) "Tiba di $nextStopFullName" else "Tiba di Destinasi"
+            "depart" -> if (hasRoad) "Mula ke $roadName" else "Mula perjalanan"
+            "roundabout", "rotary" -> if (hasRoad) "Masuk bulatan ke $roadName" else "Masuk bulatan"
+            "exit roundabout", "exit rotary" -> if (hasRoad) "Keluar bulatan ke $roadName" else "Keluar bulatan"
+            "end of road" -> "$dirAction di hujung jalan$dest"
+            "fork" -> "$dirAction di simpang$dest"
+            else -> "$dirAction$dest"
         }
     }
 

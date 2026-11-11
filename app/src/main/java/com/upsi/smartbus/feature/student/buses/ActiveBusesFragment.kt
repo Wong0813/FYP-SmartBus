@@ -134,6 +134,10 @@ class ActiveBusesFragment : Fragment() {
                     val finalRouteName = routeName.ifEmpty { staticBus?.routeName.orEmpty() }
                     val finalRouteStops = staticBus?.routeStops ?: emptyList()
 
+                    val isStale = (System.currentTimeMillis() - lastUpdated) > (5 * 60 * 1000L)
+                    val effectiveStatus = if (isStale) "IDLE" else status
+                    val effectiveSpeed = if (isStale) 0.0 else speed
+
                     val mergedBus = Bus(
                         id = busId,
                         name = staticBus?.name?.ifEmpty { finalRouteName } ?: finalRouteName,
@@ -143,12 +147,12 @@ class ActiveBusesFragment : Fragment() {
                         routeStops = finalRouteStops,
                         startStop = finalRouteStops.firstOrNull().orEmpty(),
                         location = GeoPoint(lat, lng),
-                        speed = speed,
-                        nextStop = nextStop,
-                        distanceToNext = dist,
+                        speed = effectiveSpeed,
+                        nextStop = if (isStale) "" else nextStop,
+                        distanceToNext = if (isStale) 0.0 else dist,
                         passengerCount = 12,
                         capacity = 40,
-                        status = status,
+                        status = effectiveStatus,
                         photoUrl = staticBus?.photoUrl.orEmpty(),
                         lastUpdated = lastUpdated
                     )

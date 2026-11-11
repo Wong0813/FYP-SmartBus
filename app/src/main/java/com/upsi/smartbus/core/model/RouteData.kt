@@ -8,7 +8,8 @@ data class DriverAccount(
     val driverName: String,
     val email: String,
     val busId: String,
-    val plateNumber: String
+    val plateNumber: String,
+    val phone: String = ""
 )
 
 /**
@@ -62,31 +63,31 @@ object RouteData {
 
     // ── Official Drivers for Each Route (1..18: Laluan 1..18, 19..20: Shuttle) ──
     val defaultDrivers = listOf(
-        DriverAccount("Laluan 1", "Encik Razif Bin Hassan", "driver1@upsi.edu.my", "BUS-001", "WAA 1234 A"),
-        DriverAccount("Laluan 2", "Encik Harun Bin Ismail", "driver2@upsi.edu.my", "BUS-002", "WAA 2345 B"),
-        DriverAccount("Laluan 3", "Encik Azman Bin Rosli", "driver3@upsi.edu.my", "BUS-003", "WAA 3456 C"),
-        DriverAccount("Laluan 4", "Encik Faizal Bin Ahmad", "driver4@upsi.edu.my", "BUS-004", "WAA 4567 D"),
-        DriverAccount("Laluan 5", "Encik Zulkifli Bin Mansor", "driver5@upsi.edu.my", "BUS-005", "WAA 5678 E"),
-        DriverAccount("Laluan 6", "Encik Amirul Bin Zakaria", "driver6@upsi.edu.my", "BUS-006", "WAA 6789 F"),
-        DriverAccount("Laluan 7", "Encik Shafiq Bin Ibrahim", "driver7@upsi.edu.my", "BUS-007", "WAA 7890 G"),
-        DriverAccount("Laluan 8", "Encik Osman Bin Yusof", "driver8@upsi.edu.my", "BUS-008", "WAA 8901 H"),
-        DriverAccount("Laluan 9", "Encik Ridzuan Bin Ali", "driver9@upsi.edu.my", "BUS-009", "WAA 9012 I"),
-        DriverAccount("Laluan 10", "Encik Hafiz Bin Latif", "driver10@upsi.edu.my", "BUS-010", "WAA 1023 J"),
-        DriverAccount("Laluan 11", "Encik Zainal Bin Abidin", "driver11@upsi.edu.my", "BUS-011", "WAA 1134 K"),
-        DriverAccount("Laluan 12", "Encik Badrul Bin Hisham", "driver12@upsi.edu.my", "BUS-012", "WAA 1245 L"),
-        DriverAccount("Laluan 13", "Encik Mustaffa Bin Omar", "driver13@upsi.edu.my", "BUS-013", "WAA 1356 M"),
-        DriverAccount("Laluan 14", "Encik Nazri Bin Hamzah", "driver14@upsi.edu.my", "BUS-014", "WAA 1467 N"),
-        DriverAccount("Laluan 15", "Encik Fikri Bin Daud", "driver15@upsi.edu.my", "BUS-015", "WAA 1578 O"),
-        DriverAccount("Laluan 16", "Encik Saifuddin Bin Abdullah", "driver16@upsi.edu.my", "BUS-016", "WAA 1689 P"),
-        DriverAccount("Laluan 17", "Encik Imran Bin Khalid", "driver17@upsi.edu.my", "BUS-017", "WAA 1790 Q"),
-        DriverAccount("Laluan 18", "Encik Taufik Bin Mahfuz", "driver18@upsi.edu.my", "BUS-018", "WAA 1801 R"),
-        DriverAccount("Shuttle Campus KAB", "Encik Khairul Bin Nordin", "driver19@upsi.edu.my", "BUS-019", "WAA 1122 S"),
-        DriverAccount("Shuttle Campus KUO", "Encik Daniel Bin Kamaruddin", "driver20@upsi.edu.my", "BUS-020", "WAA 3344 S")
+        DriverAccount("Laluan 1", "Encik Razif Bin Hassan", "driver1@upsi.edu.my", "BUS-001", "WAA 1234 A", "012-345 6701"),
+        DriverAccount("Laluan 2", "Encik Harun Bin Ismail", "driver2@upsi.edu.my", "BUS-002", "WAA 2345 B", "012-345 6702"),
+        DriverAccount("Laluan 3", "Encik Azman Bin Rosli", "driver3@upsi.edu.my", "BUS-003", "WAA 3456 C", "012-345 6703"),
+        DriverAccount("Laluan 4", "Encik Faizal Bin Ahmad", "driver4@upsi.edu.my", "BUS-004", "WAA 4567 D", "012-345 6704"),
+        DriverAccount("Laluan 5", "Encik Zulkifli Bin Mansor", "driver5@upsi.edu.my", "BUS-005", "WAA 5678 E", "012-345 6705"),
+        DriverAccount("Laluan 6", "Encik Amirul Bin Zakaria", "driver6@upsi.edu.my", "BUS-006", "WAA 6789 F", "013-456 7806"),
+        DriverAccount("Laluan 7", "Encik Shafiq Bin Ibrahim", "driver7@upsi.edu.my", "BUS-007", "WAA 7890 G", "013-456 7807"),
+        DriverAccount("Laluan 8", "Encik Osman Bin Yusof", "driver8@upsi.edu.my", "BUS-008", "WAA 8901 H", "013-456 7808"),
+        DriverAccount("Laluan 9", "Encik Ridzuan Bin Ali", "driver9@upsi.edu.my", "BUS-009", "WAA 9012 I", "016-567 8909"),
+        DriverAccount("Laluan 10", "Encik Hafiz Bin Latif", "driver10@upsi.edu.my", "BUS-010", "WAA 1023 J", "016-567 8910"),
+        DriverAccount("Laluan 11", "Encik Zainal Bin Abidin", "driver11@upsi.edu.my", "BUS-011", "WAA 1134 K", "017-678 9011"),
+        DriverAccount("Laluan 12", "Encik Badrul Bin Hisham", "driver12@upsi.edu.my", "BUS-012", "WAA 1245 L", "017-678 9012"),
+        DriverAccount("Laluan 13", "Encik Mustaffa Bin Omar", "driver13@upsi.edu.my", "BUS-013", "WAA 1356 M", "018-789 0113"),
+        DriverAccount("Laluan 14", "Encik Nazri Bin Hamzah", "driver14@upsi.edu.my", "BUS-014", "WAA 1467 N", "018-789 0114"),
+        DriverAccount("Laluan 15", "Encik Fikri Bin Daud", "driver15@upsi.edu.my", "BUS-015", "WAA 1578 O", "019-890 1215"),
+        DriverAccount("Laluan 16", "Encik Saifuddin Bin Abdullah", "driver16@upsi.edu.my", "BUS-016", "WAA 1689 P", "019-890 1216"),
+        DriverAccount("Laluan 17", "Encik Imran Bin Khalid", "driver17@upsi.edu.my", "BUS-017", "WAA 1790 Q", "011-234 5617"),
+        DriverAccount("Laluan 18", "Encik Taufik Bin Mahfuz", "driver18@upsi.edu.my", "BUS-018", "WAA 1801 R", "011-234 5618"),
+        DriverAccount("Shuttle Campus KAB", "Encik Khairul Bin Nordin", "driver19@upsi.edu.my", "BUS-019", "WAA 1122 S", "011-345 6719"),
+        DriverAccount("Shuttle Campus KUO", "Encik Daniel Bin Kamaruddin", "driver20@upsi.edu.my", "BUS-020", "WAA 3344 S", "011-456 7820")
     )
 
     fun getDriverForRoute(routeName: String): DriverAccount {
         return defaultDrivers.find { it.routeName.equals(routeName, ignoreCase = true) }
-            ?: DriverAccount(routeName, "Driver $routeName", "driver@upsi.edu.my", "BUS-001", "WAA 1234 A")
+            ?: DriverAccount(routeName, "Driver $routeName", "driver@upsi.edu.my", "BUS-001", "WAA 1234 A", "012-345 6700")
     }
 
     fun getStopFullName(abbreviation: String): String {

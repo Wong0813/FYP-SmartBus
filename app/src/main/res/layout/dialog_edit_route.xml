@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_dialog_rounded"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- ══════════ HEADER ══════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvEditRouteDialogTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit Route &amp; Stops"
+                android:textColor="#111827"
+                android:textSize="17.5sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Customize route name, schedule, and stop sequence"
+                android:textColor="#9CA3AF"
+                android:textSize="11.5sp" />
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btnDialogRouteClose"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_icon_btn_edit"
+            android:contentDescription="Close"
+            android:padding="8dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_close"
+            app:tint="#6B7280" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="14dp"
+        android:background="#F1F5F9" />
+
+    <!-- ══════════ INPUT FORM SCROLLVIEW ══════════ -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="440dp"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Field 1: Route Name -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.08"
+                android:text="ROUTE NAME"
+                android:textColor="#6B7280"
+                android:textSize="9.5sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etEditRouteName"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="e.g. Laluan 1"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:paddingHorizontal="14dp"
+                android:textColor="@color/text_primary"
+                android:textSize="13.5sp" />
+
+            <!-- Field 2: Short Name / Code -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.08"
+                android:text="ROUTE CODE / SHORT NAME"
+                android:textColor="#6B7280"
+                android:textSize="9.5sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etEditRouteShortName"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="e.g. L1 or SH-KAB"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:paddingHorizontal="14dp"
+                android:textColor="@color/text_primary"
+                android:textSize="13.5sp" />
+
+            <!-- Field 3: Schedule Type -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.08"
+                android:text="SCHEDULE TYPE"
+                android:textColor="#6B7280"
+                android:textSize="9.5sp"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/spinnerEditScheduleType"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="14dp"
+                android:background="@drawable/bg_spinner_field"
+                android:dropDownVerticalOffset="4dp"
+                android:overlapAnchor="false"
+                android:paddingStart="14dp"
+                android:paddingEnd="12dp"
+                android:popupBackground="@drawable/bg_popup_dropdown"
+                android:spinnerMode="dropdown" />
+
+            <!-- ══════════ STOPS SEQUENCE SECTION ══════════ -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_dialog_photo_card"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Route Stops Sequence"
+                        android:textColor="#1F2937"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvEditStopCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#C0181A"
+                        android:textSize="11.5sp"
+                        android:textStyle="bold"
+                        tools:text="6 Stops" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="10dp"
+                    android:text="Select stop to add. Tap any chip (✕) to remove."
+                    android:textColor="#9CA3AF"
+                    android:textSize="10.5sp" />
+
+                <!-- Add Stop Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <Spinner
+                        android:id="@+id/spinnerEditStopOptions"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_spinner_field"
+                        android:dropDownVerticalOffset="4dp"
+                        android:overlapAnchor="false"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="10dp"
+                        android:popupBackground="@drawable/bg_popup_dropdown"
+                        android:spinnerMode="dropdown" />
+
+                    <TextView
+                        android:id="@+id/btnEditAddStop"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_btn_new_account"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:gravity="center"
+                        android:paddingHorizontal="14dp"
+                        android:text="+ Add"
+                        android:textColor="@color/text_white"
+                        android:textSize="12.5sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <!-- Stops Chips Container (Horizontal scroll for sequence) -->
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:overScrollMode="never"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/llEditStopChips"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal" />
+
+                </HorizontalScrollView>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <!-- ══════════ ACTION BUTTONS ══════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/btnDialogRouteCancel"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_btn_sync_white"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:text="Cancel"
+            android:textColor="#4B5563"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/btnDialogRouteSave"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1.3"
+            android:background="@drawable/bg_btn_new_account"
+            android:clickable="true"
+            android:elevation="2dp"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:text="Save Route"
+            android:textColor="@color/text_white"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</LinearLayout>

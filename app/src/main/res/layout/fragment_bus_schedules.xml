@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_screen"
+    android:orientation="vertical">
+
+    <!-- ══════════ HERO ZONE (Deep Crimson Gradient) ══════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_account_hero_gradient"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="36dp"
+        android:paddingBottom="24dp">
+
+        <!-- Hero Top Bar (Integrated Hamburger & STUDENT Badge) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btnHeroDrawer"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_hero_drawer_btn"
+                android:contentDescription="Open Menu"
+                android:padding="10dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_menu_burger"
+                app:tint="@color/text_white" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_hero_admin_badge"
+                android:letterSpacing="0.1"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="5dp"
+                android:text="STUDENT"
+                android:textColor="@color/text_white"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Subtitle Label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:letterSpacing="0.15"
+            android:text="REAL-TIME FLEET &amp; TIMETABLES"
+            android:textColor="#FECACA"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvHeaderTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Bus &amp; Schedules"
+            android:textColor="@color/text_white"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvHeaderSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="All campus buses listed • Tap card to view driver details"
+            android:textColor="#FECACA"
+            android:textSize="11.5sp" />
+
+    </LinearLayout>
+
+    <!-- ══════════ FLOATING SEARCH BAR ══════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="-18dp"
+        android:background="@drawable/bg_search_card_floating"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="4dp">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:contentDescription="Search"
+            android:src="@android:drawable/ic_menu_search"
+            app:tint="@color/text_secondary" />
+
+        <EditText
+            android:id="@+id/etSearch"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:background="@null"
+            android:hint="Search route, bus, driver or stop..."
+            android:imeOptions="actionDone"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:textSize="13sp" />
+
+        <ImageButton
+            android:id="@+id/btnClearSearch"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Clear"
+            android:padding="5dp"
+            android:src="@drawable/ic_close"
+            android:visibility="gone"
+            app:tint="@color/text_secondary" />
+
+    </LinearLayout>
+
+    <!-- ══════════ TABS (Weekdays vs Weekend) ══════════ -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        style="@style/SmartBus.TabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@color/card_bg"
+        android:elevation="2dp"
+        app:tabGravity="fill"
+        app:tabIndicatorColor="@color/crimson_primary"
+        app:tabMode="fixed"
+        app:tabSelectedTextColor="@color/crimson_primary"
+        app:tabTextColor="@color/text_secondary" />
+
+    <!-- ══════════ VIEWPAGER2 ══════════ -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

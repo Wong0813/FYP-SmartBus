@@ -166,11 +166,7 @@ class BusDetailActivity : AppCompatActivity() {
         }
 
         // ── ETA Comparison Card ──
-        val standardEta = if (bus.speed > 0) {
-            ((bus.distanceToNext / bus.speed) * 60).toInt().coerceAtLeast(1)
-        } else {
-            0
-        }
+        val standardEta = com.upsi.smartbus.core.util.BusEtaCalculator.calculateStandardEtaMinutes(bus.distanceToNext, bus.speed)
         val aiEta = etaPredictor.predictEta(bus.distanceToNext, hourOfDay)
 
         binding.tvStandardEta.text = "$standardEta min"

@@ -286,17 +286,29 @@ object AccountSeeder {
 
     fun seedAdminProfile(onComplete: (() -> Unit)? = null) {
         val db = FirestoreHelper.db
-        val adminData = mapOf(
-            "uid" to "admin_01",
-            "name" to "UPSI Bus Admin",
-            "email" to "admin@upsi.edu.my",
-            "role" to "ADMIN",
-            "staffNo" to "ADM-01",
-            "accountType" to "OFFICIAL"
-        )
-        db.collection("users").document("admin_01")
-            .set(adminData, SetOptions.merge())
-            .addOnCompleteListener { onComplete?.invoke() }
+        // Check if an admin already exists before creating placeholder admin_01
+        db.collection("users").whereEqualTo("email", "admin@upsi.edu.my").get()
+            .addOnSuccessListener { snap ->
+                if (!snap.isEmpty) {
+                    // Admin already exists (probably with real Auth UID), don't create duplicate admin_01
+                    onComplete?.invoke()
+                } else {
+                    val adminData = mapOf(
+                        "uid" to "admin_01",
+                        "name" to "UPSI Bus Admin",
+                        "email" to "admin@upsi.edu.my",
+                        "role" to "ADMIN",
+                        "staffNo" to "ADM-01",
+                        "accountType" to "OFFICIAL"
+                    )
+                    db.collection("users").document("admin_01")
+                        .set(adminData, SetOptions.merge())
+                        .addOnCompleteListener { onComplete?.invoke() }
+                }
+            }
+            .addOnFailureListener {
+                onComplete?.invoke()
+            }
     }
 
     fun seedEverything(context: Context? = null, onComplete: (() -> Unit)? = null) {

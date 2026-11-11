@@ -381,7 +381,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_input_field" />
+                    android:background="@drawable/bg_spinner_field"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="12dp"
+                    android:popupBackground="@drawable/bg_popup_dropdown"
+                    android:dropDownVerticalOffset="4dp"
+                    android:overlapAnchor="false"
+                    android:spinnerMode="dropdown" />
 
                 <HorizontalScrollView
                     android:layout_width="match_parent"
@@ -411,7 +417,13 @@
                         android:layout_width="0dp"
                         android:layout_height="48dp"
                         android:layout_weight="1"
-                        android:background="@drawable/bg_input_field" />
+                        android:background="@drawable/bg_spinner_field"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="12dp"
+                        android:popupBackground="@drawable/bg_popup_dropdown"
+                        android:dropDownVerticalOffset="4dp"
+                        android:overlapAnchor="false"
+                        android:spinnerMode="dropdown" />
 
                     <TextView
                         android:id="@+id/btnAddStop"

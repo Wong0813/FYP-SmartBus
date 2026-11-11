@@ -56,12 +56,8 @@ class StudentActivity : AppCompatActivity() {
                     loadFragment(StudentMapFragment())
                     true
                 }
-                R.id.nav_active_buses -> {
-                    loadFragment(ActiveBusesFragment())
-                    true
-                }
-                R.id.nav_route_schedules -> {
-                    loadFragment(RouteSchedulesFragment())
+                R.id.nav_bus_schedules -> {
+                    loadFragment(com.upsi.smartbus.feature.student.schedule.BusSchedulesFragment())
                     true
                 }
                 R.id.nav_profile -> {

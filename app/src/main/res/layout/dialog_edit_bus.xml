@@ -66,9 +66,9 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:layout_marginBottom="14dp"
-        android:background="#F8FAFC"
-        android:padding="12dp">
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_dialog_photo_card"
+        android:padding="14dp">
 
         <androidx.cardview.widget.CardView
             android:layout_width="80dp"
@@ -205,11 +205,16 @@
             <Spinner
                 android:id="@+id/spinnerEditBusRoute"
                 android:layout_width="match_parent"
-                android:layout_height="44dp"
+                android:layout_height="46dp"
                 android:layout_marginTop="4dp"
-                android:layout_marginBottom="10dp"
-                android:background="@drawable/bg_input_field"
-                android:paddingHorizontal="12dp" />
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_spinner_field"
+                android:paddingStart="14dp"
+                android:paddingEnd="12dp"
+                android:popupBackground="@drawable/bg_popup_dropdown"
+                android:dropDownVerticalOffset="4dp"
+                android:overlapAnchor="false"
+                android:spinnerMode="dropdown" />
 
         </LinearLayout>
 

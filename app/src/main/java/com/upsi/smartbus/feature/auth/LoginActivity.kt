@@ -25,6 +25,7 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        com.upsi.smartbus.core.network.AiApiClient.init(applicationContext)
 
         // Check if already logged in
         if (auth.currentUser != null) {
@@ -124,8 +125,16 @@ class LoginActivity : AppCompatActivity() {
                     db.collection("users").whereEqualTo("email", email).get()
                         .addOnSuccessListener { snap ->
                             if (!snap.isEmpty) {
-                                // Account already exists in Firestore! Do NOT duplicate.
-                                navigateToMain()
+                                val oldDoc = snap.documents.first()
+                                val existingData = oldDoc.data?.toMutableMap() ?: mutableMapOf()
+                                existingData["uid"] = currentUid
+                                db.collection("users").document(currentUid).set(existingData, com.google.firebase.firestore.SetOptions.merge())
+                                    .addOnCompleteListener {
+                                        if (oldDoc.id != currentUid) {
+                                            db.collection("users").document(oldDoc.id).delete()
+                                        }
+                                        navigateToMain()
+                                    }
                             } else {
                                 // Only create new document for genuinely new users
                                 val isDriver = email.startsWith("driver")

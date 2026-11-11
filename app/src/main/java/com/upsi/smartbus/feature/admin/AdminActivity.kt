@@ -61,20 +61,70 @@ class AdminActivity : AppCompatActivity() {
     }
 
     private fun verifyAdminAccess() {
-        val uid = auth.currentUser?.uid ?: run {
+        val currentUser = auth.currentUser ?: run {
             redirectToLogin()
             return
         }
+        val uid = currentUser.uid
+        val email = currentUser.email?.lowercase() ?: ""
+        val isOfficialAdminEmail = email.startsWith("admin")
+
         db.collection("users").document(uid).get()
             .addOnSuccessListener { doc ->
-                val role = doc.getString("role")?.uppercase()
-                if (role != "ADMIN") {
-                    Toast.makeText(this, "Admin access required", Toast.LENGTH_SHORT).show()
-                    redirectToLogin()
+                if (doc.exists()) {
+                    val role = doc.getString("role")?.uppercase()
+                    if (role != "ADMIN" && !isOfficialAdminEmail) {
+                        Toast.makeText(this, "Admin access required", Toast.LENGTH_SHORT).show()
+                        redirectToLogin()
+                    }
+                } else {
+                    // Fallback: check by email in users collection
+                    db.collection("users").whereEqualTo("email", email).get()
+                        .addOnSuccessListener { snap ->
+                            val role = snap.documents.firstOrNull()?.getString("role")?.uppercase()
+                            if (role == "ADMIN" || isOfficialAdminEmail) {
+                                // Sync document for this auth UID so future direct lookups succeed instantly
+                                val existingDoc = snap.documents.firstOrNull()
+                                val existingData = existingDoc?.data?.toMutableMap() ?: mutableMapOf()
+                                existingData["uid"] = uid
+                                existingData["email"] = email
+                                existingData["role"] = "ADMIN"
+                                if (!existingData.containsKey("name") || (existingData["name"] as? String).isNullOrEmpty()) {
+                                    existingData["name"] = currentUser.displayName?.ifEmpty { "UPSI Bus Admin" } ?: "UPSI Bus Admin"
+                                }
+                                if (!existingData.containsKey("staffNo")) {
+                                    existingData["staffNo"] = "ADM-01"
+                                }
+                                if (!existingData.containsKey("accountType")) {
+                                    existingData["accountType"] = "OFFICIAL"
+                                }
+                                db.collection("users").document(uid).set(existingData, com.google.firebase.firestore.SetOptions.merge())
+                                    .addOnSuccessListener {
+                                        // Delete the old placeholder document if it has a different ID
+                                        if (existingDoc != null && existingDoc.id != uid) {
+                                            db.collection("users").document(existingDoc.id).delete()
+                                        }
+                                    }
+                            } else {
+                                Toast.makeText(this, "Admin access required", Toast.LENGTH_SHORT).show()
+                                redirectToLogin()
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            if (!isOfficialAdminEmail) {
+                                Toast.makeText(this, "Admin verification failed: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                 }
             }
-            .addOnFailureListener {
-                Toast.makeText(this, "Unable to verify admin role", Toast.LENGTH_SHORT).show()
+            .addOnFailureListener { e ->
+                android.util.Log.e("AdminActivity", "verifyAdminAccess failed", e)
+                val errorDetail = e.localizedMessage ?: e.message ?: "Connection error"
+                if (isOfficialAdminEmail) {
+                    Toast.makeText(this, "Firestore Warning: $errorDetail", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this, "Unable to verify admin role: $errorDetail", Toast.LENGTH_SHORT).show()
+                }
             }
     }
 

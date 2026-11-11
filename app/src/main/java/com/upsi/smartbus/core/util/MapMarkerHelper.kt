@@ -202,4 +202,77 @@ object MapMarkerHelper {
             anchorY = anchorY
         )
     }
+
+    /**
+     * Creates a glowing pulse circle marker in the exact color matching the active route line.
+     */
+    fun createDynamicCircleMarker(ctx: Context, color: Int, sizeDp: Int = 34): BitmapDescriptor {
+        val density = ctx.resources.displayMetrics.density
+        val sizePx = (sizeDp * density).toInt()
+        val bm = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bm)
+        val center = sizePx / 2f
+
+        val auraPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = color
+            alpha = 50
+            style = Paint.Style.FILL
+        }
+        canvas.drawCircle(center, center, center - (1 * density), auraPaint)
+
+        val midPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = color
+            alpha = 120
+            style = Paint.Style.FILL
+        }
+        canvas.drawCircle(center, center, center - (4 * density), midPaint)
+
+        val corePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = color
+            style = Paint.Style.FILL
+        }
+        canvas.drawCircle(center, center, center - (7 * density), corePaint)
+
+        val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = Color.WHITE
+            style = Paint.Style.STROKE
+            strokeWidth = 2.2f * density
+        }
+        canvas.drawCircle(center, center, center - (7 * density), strokePaint)
+
+        return BitmapDescriptorFactory.fromBitmap(bm)
+    }
+
+    /**
+     * Creates a clean matching next stop dot with an outer white halo and inner theme color.
+     */
+    fun createNextStopMarker(ctx: Context, color: Int): BitmapDescriptor {
+        val density = ctx.resources.displayMetrics.density
+        val sizePx = (16 * density).toInt()
+        val bm = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bm)
+        val center = sizePx / 2f
+
+        val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = Color.WHITE
+            style = Paint.Style.FILL
+        }
+        canvas.drawCircle(center, center, center - (1 * density), bgPaint)
+
+        val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = color
+            style = Paint.Style.STROKE
+            strokeWidth = 2.5f * density
+        }
+        canvas.drawCircle(center, center, center - (1 * density), borderPaint)
+
+        val innerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = color
+            style = Paint.Style.FILL
+        }
+        canvas.drawCircle(center, center, center - (4.5f * density), innerPaint)
+
+        return BitmapDescriptorFactory.fromBitmap(bm)
+    }
 }
+

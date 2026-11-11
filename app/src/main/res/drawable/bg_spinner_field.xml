@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#F8FAFC" />
+            <corners android:radius="12dp" />
+            <stroke android:width="1.2dp" android:color="#E2E8F0" />
+        </shape>
+    </item>
+    <item
+        android:drawable="@drawable/ic_dropdown_chevron"
+        android:gravity="end|center_vertical"
+        android:width="20dp"
+        android:height="20dp"
+        android:end="14dp" />
+</layer-list>

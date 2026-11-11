@@ -88,14 +88,14 @@
                     android:textSize="10sp"
                     tools:text="Terus lurus ke Kolej Ungku Omar" />
 
-                <!-- Route cycle timer -->
+                <!-- Secondary turn / upcoming maneuver info -->
                 <TextView
                     android:id="@+id/tvCycleTimer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#B0FFFFFF"
                     android:textSize="9sp"
-                    tools:text="Pusingan 1 · 59 min lagi" />
+                    tools:text="Kemudian: Belok Kiri" />
 
             </LinearLayout>
 
@@ -460,7 +460,7 @@
                     android:layout_height="32dp"
                     android:background="#E5E7EB" />
 
-                <!-- 2. ARRIVE -->
+                <!-- 2. STD ETA -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -472,7 +472,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:letterSpacing="0.06"
-                        android:text="ARRIVE"
+                        android:text="STD ETA"
                         android:textColor="#9CA3AF"
                         android:textSize="8sp" />
 
@@ -484,7 +484,15 @@
                         android:textColor="#111827"
                         android:textSize="17sp"
                         android:textStyle="bold"
-                        tools:text="16:56" />
+                        tools:text="8 min" />
+
+                    <TextView
+                        android:id="@+id/tvArriveClockSub"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#6B7280"
+                        android:textSize="8.5sp"
+                        tools:text="arr 16:17" />
 
                 </LinearLayout>
 

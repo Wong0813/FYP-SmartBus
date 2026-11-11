@@ -37,36 +37,6 @@
             android:src="@drawable/ic_menu_burger"
             app:tint="@color/text_primary" />
 
-        <!-- Live active bus count pill (100% unified with Admin Live Map) -->
-        <LinearLayout
-            android:id="@+id/pillLiveCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_floating_role_badge"
-            android:elevation="4dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="7dp">
-
-            <View
-                android:id="@+id/livePulseDot"
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:background="@drawable/dot_green" />
-
-            <TextView
-                android:id="@+id/tvLiveBusCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:text="0 Active Buses"
-                android:textColor="@color/text_primary"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-        </LinearLayout>
-
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -117,6 +87,95 @@
         </LinearLayout>
 
     </LinearLayout>
+
+    <!-- ══ WEATHER / AI ADVISORY BANNER (Hidden by default, shown when delay detected) ══ -->
+    <LinearLayout
+        android:id="@+id/llWeatherAdvisory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="88dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/bg_weather_advisory"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvWeatherIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🌧️"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/tvWeatherAdvisoryText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="Monsoon Rain: ETA adjusted +25%"
+            android:textColor="@color/text_primary"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btnCloseWeather"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Close Advisory"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="@color/text_secondary" />
+    </LinearLayout>
+
+    <!-- ══ FLOATING ACTION BUTTON: AI ROUTE FINDER ══ -->
+    <FrameLayout
+        android:id="@+id/btnFabRouteFinder"
+        android:layout_width="54dp"
+        android:layout_height="54dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="282dp"
+        android:background="@drawable/bg_fab_route_finder"
+        android:clickable="true"
+        android:elevation="5dp"
+        android:focusable="true">
+
+        <ImageView
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_gravity="center"
+            android:contentDescription="Route Finder"
+            android:src="@drawable/ic_fab_route_finder"
+            app:tint="#0284C7" />
+    </FrameLayout>
+
+    <!-- ══ FLOATING ACTION BUTTON: AI CHATBOT ══ -->
+    <FrameLayout
+        android:id="@+id/btnFabAiChat"
+        android:layout_width="54dp"
+        android:layout_height="54dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="220dp"
+        android:background="@drawable/bg_fab_ai_chat"
+        android:clickable="true"
+        android:elevation="5dp"
+        android:focusable="true">
+
+        <ImageView
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_gravity="center"
+            android:contentDescription="AI Chat"
+            android:src="@drawable/ic_ai_chat"
+            app:tint="#0284C7" />
+    </FrameLayout>
 
     <!-- ══ BOTTOM PANEL: Modern Unified CardView (hidden in All Buses mode) ══ -->
     <androidx.cardview.widget.CardView
@@ -265,15 +324,16 @@
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1.1"
+                        android:layout_weight="1.2"
                         android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Arrive At"
+                            android:text="⏱ Std ETA"
                             android:textColor="@color/text_secondary"
-                            android:textSize="10sp" />
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/tvPanelArriveClock"
@@ -282,7 +342,7 @@
                             android:textColor="@color/text_primary"
                             android:textSize="13sp"
                             android:textStyle="bold"
-                            tools:text="14:35" />
+                            tools:text="~4 min (14:35)" />
                     </LinearLayout>
 
                     <!-- AI Prediction -->
